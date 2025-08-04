@@ -8,7 +8,7 @@ SRCS = \
 #	CONFIG
 
 CC = cc
-CFLAGS += -Wall -Wextra -Werror -O3
+CFLAGS += -Wall -Wextra -Werror -g3
 OBJS_PATH = objs/
 
 LIBFT_PATH = libft/
