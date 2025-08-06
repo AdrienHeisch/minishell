@@ -54,6 +54,8 @@ typedef struct s_expr
 		struct				s_cmd
 		{
 			t_list			*args;
+			int				fd_in;
+			int				fd_out;
 		} cmd;
 		struct				s_pipe
 		{
@@ -73,6 +75,8 @@ t_list						*lex(t_string *str);
 t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
 t_list						*parse(t_string *str);
+void						exec(t_expr expr, char **envp);
 void						exec_cmd(t_cmd cmd, char **envp);
+void						exec_pipe(t_pipe pipe, char **envp);
 
 #endif // !MINISHELL_H

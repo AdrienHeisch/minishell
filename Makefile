@@ -3,7 +3,9 @@
 NAME = minishell
 
 SRCS = \
+	exec.c \
 	exec_cmd.c \
+	exec_pipe.c \
 	free_token.c \
 	lex.c \
 	main.c \

@@ -1,29 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   exec.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/04 15:47:53 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/04 15:47:53 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/06 14:07:14 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/06 14:07:14 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
 
-int	main(int argc, char **argv, char **envp)
+void	exec(t_expr expr, char **envp)
 {
-	t_string	str;
-	t_list		*exprs;
-
-	(void)argc;
-	str = ft_string_new();
-	ft_string_cat(&str, argv[1]);
-	exprs = parse(&str);
-	ft_lstiter(exprs, (void (*)(void *))print_expr);
-	exec(*((t_expr *)exprs->content), envp);
-	ft_string_destroy(&str);
-	return (0);
+	if (expr.type == EX_CMD)
+		exec_cmd(expr.data.cmd, envp);
+	else if (expr.type == EX_PIPE)
+		exec_pipe(expr.data.pipe, envp);
 }
