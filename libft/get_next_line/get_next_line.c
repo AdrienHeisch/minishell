@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -111,6 +112,7 @@ static char	*get_next_line1(t_gnl_list **list_start, t_gnl_list *list, int fd)
 		if (n_read == -1)
 		{
 			ft_gnl_lstdel(list_start, list);
+			printf("read_error (fd %d)\n", fd);
 			return (NULL);
 		}
 		if (n_read == 0)
@@ -118,6 +120,7 @@ static char	*get_next_line1(t_gnl_list **list_start, t_gnl_list *list, int fd)
 		if (!ft_string_ncat(&list->str, buf, n_read))
 		{
 			ft_gnl_lstdel(list_start, list);
+			ft_putstr_fd("alloc_error\n", 1);
 			return (NULL);
 		}
 	}
@@ -132,7 +135,8 @@ static char	*get_next_line2(t_gnl_list **list_start, t_gnl_list *list,
 	if (list->str.length == 0)
 	{
 		ft_gnl_lstdel(list_start, list);
-		return (NULL);
+		ft_putstr_fd("empty_line\n", 1);
+		return ("abbabababababa");
 	}
 	if (nl_idx > -1)
 	{

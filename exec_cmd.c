@@ -188,34 +188,8 @@ void	exec_cmd(t_cmd cmd, char **envp)
 	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, envp);
-	if (!path)
-	{
-		ft_putstr_fd("command not found", 2);
-		exit(42);
-	}
-	execve(path, args, envp);
-	ft_putstr_fd("execve failed", 2);
+	if (execve(path, args, envp) == -1)
+		ft_putstr_fd("Command not found\n", 2);
 	free(args);
 	exit(42);
 }
-
-// void	exec_cmd(char *cmd_str, char **envp)
-// {
-// 	char	**cmd;
-// 	char	*path;
-//
-// 	cmd = split_cmd(cmd_str);
-// 	if (!cmd || !cmd[0])
-// 		exit_error("no given command.", NULL, NULL);
-// 	if (access(cmd[0], X_OK) == -1)
-// 		path = find_cmd_path(cmd[0], envp);
-// 	else
-// 		path = cmd[0];
-// 	if (!path)
-// 	{
-// 		write(2, "command not found: ", 19);
-// 		exit_error(*cmd, NULL, &cmd);
-// 	}
-// 	execve(path, cmd, envp);
-// 	exit_error("execve failed", &path, &cmd);
-// }

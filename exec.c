@@ -15,7 +15,8 @@
 void	exec(t_expr expr, char **envp)
 {
 	if (expr.type == EX_CMD)
-		exec_cmd(expr.data.cmd, envp);
+		child_last(expr.data.cmd, envp, expr.data.cmd.fd_in,
+			expr.data.cmd.fd_out);
 	else if (expr.type == EX_PIPE)
 		exec_pipe(expr.data.pipe, envp);
 }

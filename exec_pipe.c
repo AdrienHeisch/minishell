@@ -51,7 +51,7 @@ static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
 	*prev_fd = next_fd[0];
 }
 
-static void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
+void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
 {
 	pid_t	pid;
 
@@ -60,7 +60,7 @@ static void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
 		exit(42);
 	if (pid == 0)
 		run_child(cmd, envp, prev_fd, outfile);
-	if (prev_fd != -1)
+	if (prev_fd > 0)
 		close(prev_fd);
 }
 

@@ -14,6 +14,7 @@
 # define MINISHELL_H
 
 # include "libft.h"
+# include <stdbool.h>
 
 enum						e_error
 {
@@ -79,5 +80,7 @@ t_list						*parse(t_string *str);
 void						exec(t_expr expr, char **envp);
 void						exec_cmd(t_cmd cmd, char **envp);
 void						exec_pipe(t_pipe pipe, char **envp);
+void						child_last(t_cmd cmd, char **envp, int prev_fd,
+								int outfile);
 
 #endif // !MINISHELL_H
