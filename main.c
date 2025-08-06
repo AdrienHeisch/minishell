@@ -125,14 +125,14 @@ t_expr	*parse_cmd(t_list **tokens)
 
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(42);
+		exit(MS_ALLOC);
 	expr->type = EX_CMD;
 	while (*tokens && ((t_token *)(*tokens)->content)->type == TK_ARG)
 	{
 		token = ft_lstpop_front(tokens);
 		string = malloc(sizeof(t_string));
 		if (!string)
-			exit(42);
+			exit(MS_ALLOC);
 		ft_string_move(&((t_token *)token->content)->data.arg.string, string);
 		arg = ft_lstnew(string);
 		ft_lstadd_back(&expr->data.cmd.args, arg);
@@ -148,13 +148,11 @@ t_expr	*parse_pipe(t_list **tokens, t_list **exprs)
 
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(42);
+		exit(MS_ALLOC);
 	expr->type = EX_PIPE;
 	token = ft_lstpop_front(tokens);
 	ft_lstdelone(token, (void (*)(void *))free_token);
 	expr->data.pipe.left = ft_lstpop_back(exprs)->content;
-	if (expr->data.pipe.left->type != EX_CMD)
-		exit(42);
 	expr->data.pipe.right = parse_cmd(tokens);
 	return (expr);
 }

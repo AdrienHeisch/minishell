@@ -14,6 +14,13 @@
 # define MINISHELL_H
 
 # include "libft.h"
+
+enum e_error {
+	MS_SUCCESS,
+	MS_USAGE,
+	MS_ALLOC,
+};
+
 typedef enum s_token_type
 {
 	TK_ARG,
