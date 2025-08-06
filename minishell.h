@@ -51,17 +51,20 @@ typedef struct s_expr
 	t_expr_type				type;
 	union
 	{
-		struct
+		struct				s_cmd
 		{
 			t_list			*args;
 		} cmd;
-		struct
+		struct				s_pipe
 		{
 			struct s_expr	*left;
 			struct s_expr	*right;
 		} pipe;
 	} data;
 }							t_expr;
+
+typedef struct s_cmd		t_cmd;
+typedef struct s_pipe		t_pipe;
 
 void						print_token(t_token *token);
 void						free_token(t_token *token);
@@ -70,5 +73,6 @@ t_list						*lex(t_string *str);
 t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
 t_list						*parse(t_string *str);
+void						exec_cmd(t_cmd cmd, char **envp);
 
 #endif // !MINISHELL_H

@@ -13,7 +13,7 @@
 #include "libft.h"
 #include "minishell.h"
 
-int	main(int argc, char **argv)
+int	main(int argc, char **argv, char **envp)
 {
 	t_string	str;
 	t_list		*exprs;
@@ -23,6 +23,8 @@ int	main(int argc, char **argv)
 	ft_string_cat(&str, argv[1]);
 	exprs = parse(&str);
 	ft_lstiter(exprs, (void (*)(void *))print_expr);
+	if (((t_expr *)exprs->content)->type == EX_CMD)
+		exec_cmd(((t_expr *)exprs->content)->data.cmd, envp);
 	ft_string_destroy(&str);
 	return (0);
 }
