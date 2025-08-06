@@ -41,7 +41,6 @@ static void	ft_gnl_lstdel(t_gnl_list **list_start, t_gnl_list *el)
 	t_gnl_list	*prev;
 	t_gnl_list	*list;
 
-	free(el->str.content);
 	list = *list_start;
 	prev = NULL;
 	while (list)
@@ -54,13 +53,12 @@ static void	ft_gnl_lstdel(t_gnl_list **list_start, t_gnl_list *el)
 				*list_start = el->next;
 			prev = list;
 			list = list->next;
+			free(el->str.content);
 			free(el);
+			continue ;
 		}
-		else
-		{
-			prev = list;
-			list = list->next;
-		}
+		prev = list;
+		list = list->next;
 	}
 }
 
@@ -74,7 +72,7 @@ char	*ft_get_next_line(int fd)
 	t_gnl_list			*list;
 
 	if (fd == -1)
-		return (NULL);
+		return (ft_gnl_lstdel(&list_start, NULL), NULL);
 	list = list_start;
 	while (list && list->fd != fd)
 		list = list->next;
@@ -112,7 +110,6 @@ static char	*get_next_line1(t_gnl_list **list_start, t_gnl_list *list, int fd)
 		if (n_read == -1)
 		{
 			ft_gnl_lstdel(list_start, list);
-			printf("read_error (fd %d)\n", fd);
 			return (NULL);
 		}
 		if (n_read == 0)
@@ -135,8 +132,7 @@ static char	*get_next_line2(t_gnl_list **list_start, t_gnl_list *list,
 	if (list->str.length == 0)
 	{
 		ft_gnl_lstdel(list_start, list);
-		ft_putstr_fd("empty_line\n", 1);
-		return ("abbabababababa");
+		return (NULL);
 	}
 	if (nl_idx > -1)
 	{

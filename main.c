@@ -19,15 +19,18 @@ int	main(int argc, char **argv, char **envp)
 {
 	t_string	str;
 	t_list		*exprs;
+	t_list		*history;
 
 	(void)argv;
 	if (argc > 1)
 		return (MS_USAGE);
+	history = NULL;
 	while (1)
 	{
 		str = ft_string_from(ft_get_next_line(STDIN_FILENO));
 		if (!str.content)
-			exit(MS_ALLOC);
+			return (ft_get_next_line(-1), ft_lstclear(&history,
+					lstclear_string), MS_ALLOC);
 		if (str.length == 0)
 			continue ;
 		ft_string_term(&str);
@@ -38,5 +41,6 @@ int	main(int argc, char **argv, char **envp)
 		exec(*((t_expr *)exprs->content), envp);
 		ft_lstclear(&exprs, (void (*)(void *))free_expr);
 	}
-	return (0);
+	return (ft_get_next_line(-1), ft_string_destroy(&str), ft_lstclear(&history, lstclear_string),
+		MS_SUCCESS);
 }

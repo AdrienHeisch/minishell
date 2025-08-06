@@ -83,4 +83,6 @@ void						exec_pipe(t_pipe pipe, char **envp);
 void						child_last(t_cmd cmd, char **envp, int prev_fd,
 								int outfile);
 
+void						lstclear_string(void *str);
+
 #endif // !MINISHELL_H
