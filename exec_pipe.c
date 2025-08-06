@@ -46,7 +46,7 @@ static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
 		run_child(cmd, envp, *prev_fd, next_fd[1]);
 	}
 	close(next_fd[1]);
-	if (*prev_fd != -1)
+	if (*prev_fd > 0)
 		close(*prev_fd);
 	*prev_fd = next_fd[0];
 }
@@ -62,7 +62,6 @@ static void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
 		run_child(cmd, envp, prev_fd, outfile);
 	if (prev_fd != -1)
 		close(prev_fd);
-	close(outfile);
 }
 
 static void	wait_all(void)
@@ -79,6 +78,11 @@ static void	build_cmd_list(t_list **cmds, t_pipe pipe)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.left->data.cmd));
 	if (pipe.right->type == EX_CMD)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.right->data.cmd));
+}
+
+static void	no_op(void *el)
+{
+	(void)el;
 }
 
 void	exec_pipe(t_pipe pipe, char **envp)
@@ -101,5 +105,6 @@ void	exec_pipe(t_pipe pipe, char **envp)
 	}
 	child_last(*((t_cmd *)cmd->content), envp, prev_fd,
 		((t_cmd *)cmd->content)->fd_out);
+	ft_lstclear(&cmds, no_op);
 	wait_all();
 }

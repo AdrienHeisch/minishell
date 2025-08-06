@@ -184,6 +184,7 @@ void	exec_cmd(t_cmd cmd, char **envp)
 		idx++;
 		cmd.args = cmd.args->next;
 	}
+	args[idx] = NULL;
 	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, envp);
@@ -194,6 +195,7 @@ void	exec_cmd(t_cmd cmd, char **envp)
 	}
 	execve(path, args, envp);
 	ft_putstr_fd("execve failed", 2);
+	free(args);
 	exit(42);
 }
 

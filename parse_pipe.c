@@ -17,6 +17,7 @@ t_expr	*parse_pipe(t_list **tokens, t_list **exprs)
 {
 	t_expr	*expr;
 	t_list	*token;
+	t_list	*left;
 
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
@@ -24,7 +25,9 @@ t_expr	*parse_pipe(t_list **tokens, t_list **exprs)
 	expr->type = EX_PIPE;
 	token = ft_lstpop_front(tokens);
 	ft_lstdelone(token, (void (*)(void *))free_token);
-	expr->data.pipe.left = ft_lstpop_back(exprs)->content;
+	left = ft_lstpop_back(exprs);
+	expr->data.pipe.left = left->content;
+	free(left);
 	expr->data.pipe.right = parse_cmd(tokens);
 	return (expr);
 }

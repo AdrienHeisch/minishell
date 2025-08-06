@@ -15,8 +15,7 @@
 
 void	ft_string_term(t_string *str)
 {
-	if (str->content[str->length] != '\0')
-		ft_string_ncat(str, "", 1);
+	ft_string_ncat(str, "", 1);
 }
 
 void	ft_string_move(t_string *from, t_string *to)

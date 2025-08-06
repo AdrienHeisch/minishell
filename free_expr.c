@@ -1,31 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   free_expr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/04 15:47:53 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/04 15:47:53 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/06 15:53:27 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/06 15:53:27 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 
-int	main(int argc, char **argv, char **envp)
+void	lstclear_string(t_string *str)
 {
-	t_string	str;
-	t_list		*exprs;
+	ft_string_delete(&str);
+}
 
-	(void)argc;
-	str = ft_string_new();
-	ft_string_cat(&str, argv[1]);
-	exprs = parse(&str);
-	// printf("n_exprs: %d\n", ft_lstsize(exprs));
-	// ft_lstiter(exprs, (void (*)(void *))print_expr);
-	exec(*((t_expr *)exprs->content), envp);
-	ft_lstclear(&exprs, (void (*)(void *))free_expr);
-	ft_string_destroy(&str);
-	return (0);
+void	free_expr(t_expr *expr)
+{
+	if (expr->type == EX_CMD)
+	{
+		ft_lstclear(&expr->data.cmd.args, (void (*)(void *))lstclear_string);
+	}
+	else if (expr->type == EX_PIPE)
+	{
+		free_expr(expr->data.pipe.left);
+		free_expr(expr->data.pipe.right);
+	}
+	free(expr);
 }

@@ -71,6 +71,7 @@ typedef struct s_pipe		t_pipe;
 void						print_token(t_token *token);
 void						free_token(t_token *token);
 void						print_expr(t_expr *expr);
+void						free_expr(t_expr *expr);
 t_list						*lex(t_string *str);
 t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
