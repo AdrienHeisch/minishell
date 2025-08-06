@@ -22,7 +22,7 @@ int	main(int argc, char **argv, char **envp)
 	str = ft_string_new();
 	ft_string_cat(&str, argv[1]);
 	exprs = parse(&str);
-	ft_lstiter(exprs, (void (*)(void *))print_expr);
+	// ft_lstiter(exprs, (void (*)(void *))print_expr);
 	exec(*((t_expr *)exprs->content), envp);
 	ft_string_destroy(&str);
 	return (0);

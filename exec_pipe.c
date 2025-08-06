@@ -10,10 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 static void	run_child(t_cmd cmd, char **envp, int in_fd, int out_fd)
 {
@@ -21,36 +22,8 @@ static void	run_child(t_cmd cmd, char **envp, int in_fd, int out_fd)
 		exit(42);
 	if (dup2(out_fd, STDOUT_FILENO) == -1)
 		exit(42);
-	close(in_fd);
+	// close(in_fd);
 	exec_cmd(cmd, envp);
-}
-
-static void	initialize_or_close_files(int close_them, int in, int out, int *pipe)
-{
-	static int	infile = -42;
-	static int	outfile = -42;
-	static int	fd[2] = {-42, -42};
-
-	if (close_them)
-	{
-		close(infile);
-		close(outfile);
-		close(fd[0]);
-		close(fd[1]);
-	}
-	else
-	{
-		if (pipe != NULL)
-		{
-			fd[0] = pipe[0];
-			fd[1] = pipe[1];
-		}
-		else
-		{
-			infile = in;
-			outfile = out;
-		}
-	}
 }
 
 static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
@@ -59,7 +32,6 @@ static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
 
 	if (pipe(next_fd) == -1)
 		exit(42);
-	initialize_or_close_files(0, -42, -42, next_fd);
 	pid = fork();
 	if (pid == -1)
 	{
@@ -93,19 +65,41 @@ static void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
 	close(outfile);
 }
 
-void	wait_all(void)
+static void	wait_all(void)
 {
 	while (wait(NULL) > 0)
 		;
 }
 
+static void	build_cmd_list(t_list **cmds, t_pipe pipe)
+{
+	if (pipe.left->type == EX_PIPE)
+		build_cmd_list(cmds, pipe.left->data.pipe);
+	else if (pipe.left->type == EX_CMD)
+		ft_lstadd_back(cmds, ft_lstnew(&pipe.left->data.cmd));
+	if (pipe.right->type == EX_CMD)
+		ft_lstadd_back(cmds, ft_lstnew(&pipe.right->data.cmd));
+}
+
 void	exec_pipe(t_pipe pipe, char **envp)
 {
+	t_list	*cmds;
+	t_list	*cmd;
 	int		prev_fd;
 	int		next_fd[2];
 
-	prev_fd = pipe.left->data.cmd.fd_in;
-	child_and_pipe(pipe.left->data.cmd, envp, &prev_fd, next_fd);
-	child_last(pipe.right->data.cmd, envp, prev_fd, 1);
+	cmds = NULL;
+	build_cmd_list(&cmds, pipe);
+	if (!cmds)
+		exit(42);
+	prev_fd = ((t_cmd *)cmds->content)->fd_in;
+	cmd = cmds;
+	while (cmd->next != NULL)
+	{
+		child_and_pipe(*((t_cmd *)cmd->content), envp, &prev_fd, next_fd);
+		cmd = cmd->next;
+	}
+	child_last(*((t_cmd *)cmd->content), envp, prev_fd,
+		((t_cmd *)cmd->content)->fd_out);
 	wait_all();
 }

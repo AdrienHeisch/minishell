@@ -38,7 +38,7 @@ SRCS = \
 #	CONFIG
 
 CC = cc
-CFLAGS += -Wall -Wextra -Werror
+CFLAGS += -Wall -Wextra -Werror -g3
 OBJS_PATH = objs/
 
 #	VARS

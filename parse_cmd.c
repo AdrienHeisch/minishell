@@ -12,6 +12,7 @@
 
 #include "minishell.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 t_expr	*parse_cmd(t_list **tokens)
 {
@@ -24,6 +25,8 @@ t_expr	*parse_cmd(t_list **tokens)
 	if (!expr)
 		exit(MS_ALLOC);
 	expr->type = EX_CMD;
+	expr->data.cmd.fd_in = STDIN_FILENO;
+	expr->data.cmd.fd_out = STDOUT_FILENO;
 	while (*tokens && ((t_token *)(*tokens)->content)->type == TK_ARG)
 	{
 		token = ft_lstpop_front(tokens);
