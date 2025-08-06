@@ -1,28 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   free_token.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/04 15:47:53 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/04 15:47:53 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/06 12:58:49 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/06 12:58:49 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 
-int	main(int argc, char **argv)
+void	free_token(t_token *token)
 {
-	t_string	str;
-	t_list		*exprs;
-
-	(void)argc;
-	str = ft_string_new();
-	ft_string_cat(&str, argv[1]);
-	exprs = parse(&str);
-	ft_lstiter(exprs, (void (*)(void *))print_expr);
-	ft_string_destroy(&str);
-	return (0);
+	if (token->type == TK_ARG)
+		ft_string_destroy(&token->data.arg.string);
+	free(token);
 }

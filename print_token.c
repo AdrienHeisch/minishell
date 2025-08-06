@@ -1,28 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   print_token.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/04 15:47:53 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/04 15:47:53 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/06 12:57:27 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/06 12:58:25 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
+#include <stdio.h>
 
-int	main(int argc, char **argv)
+void	print_token(t_token *token)
 {
-	t_string	str;
-	t_list		*exprs;
-
-	(void)argc;
-	str = ft_string_new();
-	ft_string_cat(&str, argv[1]);
-	exprs = parse(&str);
-	ft_lstiter(exprs, (void (*)(void *))print_expr);
-	ft_string_destroy(&str);
-	return (0);
+	if (token->type == TK_ARG)
+		printf("ARG: %s\n", ft_string_get(&token->data.arg.string));
+	else if (token->type == TK_PIPE)
+		printf("PIPE\n");
 }

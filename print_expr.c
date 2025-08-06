@@ -1,28 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   print_expr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/04 15:47:53 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/04 15:47:53 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/06 12:59:18 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/06 12:59:18 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
+#include <stdio.h>
 
-int	main(int argc, char **argv)
+void	print_expr(t_expr *expr)
 {
-	t_string	str;
-	t_list		*exprs;
+	t_list	*lst;
 
-	(void)argc;
-	str = ft_string_new();
-	ft_string_cat(&str, argv[1]);
-	exprs = parse(&str);
-	ft_lstiter(exprs, (void (*)(void *))print_expr);
-	ft_string_destroy(&str);
-	return (0);
+	if (expr->type == EX_CMD)
+	{
+		printf("CMD: ");
+		lst = expr->data.cmd.args;
+		while (lst)
+		{
+			printf("%s ", ft_string_get(lst->content));
+			lst = lst->next;
+		}
+	}
+	else if (expr->type == EX_PIPE)
+	{
+		printf("PIPE_START\n");
+		print_expr(expr->data.pipe.left);
+		print_expr(expr->data.pipe.right);
+		printf("PIPE_END");
+	}
+	printf("\n");
 }

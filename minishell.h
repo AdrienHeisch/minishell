@@ -15,7 +15,8 @@
 
 # include "libft.h"
 
-enum e_error {
+enum						e_error
+{
 	MS_SUCCESS,
 	MS_USAGE,
 	MS_ALLOC,
@@ -61,5 +62,13 @@ typedef struct s_expr
 		} pipe;
 	} data;
 }							t_expr;
+
+void						print_token(t_token *token);
+void						free_token(t_token *token);
+void						print_expr(t_expr *expr);
+t_list						*lex(t_string *str);
+t_expr						*parse_cmd(t_list **tokens);
+t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
+t_list						*parse(t_string *str);
 
 #endif // !MINISHELL_H
