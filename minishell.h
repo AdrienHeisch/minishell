@@ -38,8 +38,6 @@ typedef enum s_expr_type
 	EX_PIPE
 }							t_expr_type;
 
-typedef t_list *t_list_expr;
-
 typedef struct s_expr
 {
 	t_expr_type				type;
@@ -47,7 +45,7 @@ typedef struct s_expr
 	{
 		struct
 		{
-			t_list_expr *args;
+			t_list			*args;
 		} cmd;
 		struct
 		{

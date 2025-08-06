@@ -93,6 +93,7 @@ typedef struct s_string
 
 t_string			ft_string_new(void);
 t_string			*ft_string_new_alloc(void);
+void				ft_string_move(t_string *from, t_string *to);
 t_string			ft_string_destroy(t_string *str);
 void				*ft_string_delete(t_string **str);
 char				*ft_string_into(t_string *str);

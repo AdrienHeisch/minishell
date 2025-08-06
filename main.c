@@ -26,8 +26,8 @@ t_token	*get_token(t_string *str, size_t *idx)
 	c = str->content[*idx];
 	if (c >= 'a' && c <= 'z')
 	{
-		while (*idx + len < str->length && str->content[*idx + len] >= 'a' && str->content[*idx
-			+ len] <= 'z')
+		while (*idx + len < str->length && str->content[*idx + len] >= 'a'
+			&& str->content[*idx + len] <= 'z')
 		{
 			len++;
 		}
@@ -74,7 +74,6 @@ t_list	*lex(t_string *str)
 			break ; // TODO ????
 		ft_lstadd_back(&tokens, new_list);
 	}
-	printf("oui %d\n", ft_lstsize(tokens));
 	return (tokens);
 }
 
@@ -88,43 +87,105 @@ void	print_token(t_token *token)
 
 void	free_token(t_token *token)
 {
-	(void)token;
-	// TODO
+	if (token->type == TK_ARG)
+		ft_string_destroy(&token->data.arg.string);
+	free(token);
 }
 
-t_expr	parse(t_string *str)
+void	print_expr(t_expr *expr)
+{
+	t_list	*lst;
+
+	if (expr->type == EX_CMD)
+	{
+		printf("CMD: ");
+		lst = expr->data.cmd.args;
+		while (lst)
+		{
+			printf("%s ", ft_string_get(lst->content));
+			lst = lst->next;
+		}
+	}
+	else if (expr->type == EX_PIPE)
+	{
+		printf("PIPE_START\n");
+		print_expr(expr->data.pipe.left);
+		print_expr(expr->data.pipe.right);
+		printf("PIPE_END");
+	}
+	printf("\n");
+}
+
+t_expr	*parse_cmd(t_list **tokens)
+{
+	t_expr		*expr;
+	t_list		*token;
+	t_string	*string;
+	t_list		*arg;
+
+	expr = malloc(sizeof(t_expr));
+	if (!expr)
+		exit(42);
+	expr->type = EX_CMD;
+	while (*tokens && ((t_token *)(*tokens)->content)->type == TK_ARG)
+	{
+		token = ft_lstpop_front(tokens);
+		string = malloc(sizeof(t_string));
+		if (!string)
+			exit(42);
+		ft_string_move(&((t_token *)token->content)->data.arg.string, string);
+		arg = ft_lstnew(string);
+		ft_lstadd_back(&expr->data.cmd.args, arg);
+		ft_lstdelone(token, (void (*)(void *))free_token);
+	}
+	return (expr);
+}
+
+t_expr	*parse_pipe(t_list **tokens, t_list **exprs)
+{
+	t_expr		*expr;
+	t_list		*token;
+
+	expr = malloc(sizeof(t_expr));
+	if (!expr)
+		exit(42);
+	expr->type = EX_PIPE;
+	token = ft_lstpop_front(tokens);
+	ft_lstdelone(token, (void (*)(void *))free_token);
+	expr->data.pipe.left = ft_lstpop_back(exprs)->content;
+	if (expr->data.pipe.left->type != EX_CMD)
+		exit(42);
+	expr->data.pipe.right = parse_cmd(tokens);
+	return (expr);
+}
+
+t_list	*parse(t_string *str)
 {
 	t_list	*tokens;
-	t_list	*token;
 	t_list	*exprs;
-	t_expr	expr;
 
 	tokens = lex(str);
+	exprs = NULL;
 	while (tokens)
 	{
-		token = ft_lstpop_front(&tokens);
-		if (((t_token *)token->content)->type == TK_ARG)
-		{
-			expr.type = EX_CMD;
-			ft_lstdelone(token, (void (*)(void *))free_token);
-			while (((t_token *)tokens->content)->type == TK_ARG)
-			{
-
-			}
-		}
-
+		if (((t_token *)tokens->content)->type == TK_ARG)
+			ft_lstadd_back(&exprs, ft_lstnew(parse_cmd(&tokens)));
+		else if (((t_token *)tokens->content)->type == TK_PIPE)
+			ft_lstadd_back(&exprs, ft_lstnew(parse_pipe(&tokens, &exprs)));
 	}
-	exit(0);
+	return (exprs);
 }
 
 int	main(int argc, char **argv)
 {
 	t_string	str;
+	t_list		*exprs;
 
 	(void)argc;
 	str = ft_string_new();
 	ft_string_cat(&str, argv[1]);
-	parse(&str);
+	exprs = parse(&str);
+	ft_lstiter(exprs, (void (*)(void *))print_expr);
 	ft_string_destroy(&str);
 	return (0);
 }
