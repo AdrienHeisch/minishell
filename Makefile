@@ -29,6 +29,8 @@ LIBFT = $(LIBFT_PATH)lib$(LIBFT_NAME).a
 IFLAGS += -I$(LIBFT_PATH)
 LFLAGS += -L$(LIBFT_PATH) -l$(LIBFT_NAME)
 
+LFLAGS += -lreadline
+
 #	VARS
 
 OBJS = $(addprefix $(OBJS_PATH), ${SRCS:.c=.o})

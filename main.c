@@ -13,6 +13,8 @@
 #include "libft.h"
 #include "minishell.h"
 #include <unistd.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 int	main(int argc, char **argv, char **envp)
 {
@@ -26,19 +28,22 @@ int	main(int argc, char **argv, char **envp)
 	history = NULL;
 	while (1)
 	{
-		ft_putstr_fd("> ", 1);
-		str = ft_string_from(ft_get_next_line(STDIN_FILENO));
+		str = ft_string_from(readline("> "));
 		if (!str.content)
 			return (ft_get_next_line(-1), ft_lstclear(&history,
 					lstclear_string), MS_ALLOC);
 		if (str.length == 0)
 			continue ;
 		exprs = parse(&str);
-		ft_string_destroy(&str);
 		if (!exprs)
+		{
+			ft_string_destroy(&str);
 			continue ;
+		}
 		exec(*((t_expr *)exprs->content), envp); // TODO multiple expressions
 		ft_lstclear(&exprs, (void (*)(void *))free_expr);
+		add_history(str.content);
+		ft_string_destroy(&str);
 	}
 	return (ft_get_next_line(-1), ft_string_destroy(&str), ft_lstclear(&history, lstclear_string),
 		MS_SUCCESS);
