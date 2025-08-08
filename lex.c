@@ -37,7 +37,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 
 	len = 0;
 	c = str->content[*idx];
-	if (c >= 'a' && c <= 'z')
+	if (is_arg(c))
 	{
 		while (*idx + len < str->length && is_arg(str->content[*idx + len]))
 			len++;
