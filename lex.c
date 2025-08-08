@@ -45,6 +45,31 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		token.data.arg.string = ft_string_new();
 		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
 	}
+	else if (c == '\'')
+	{
+		(*idx)++;
+		while (*idx + len < str->length && str->content[*idx + len] != '\'')
+			len++;
+		if (!str->content[*idx + len])
+			exit(42);
+		token.type = TK_ARG;
+		token.data.arg.string = ft_string_new();
+		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
+		len++;
+	}
+	else if (c == '"')
+	{
+		(*idx)++;
+		while (*idx + len < str->length && str->content[*idx + len] != '"')
+			len++;
+		if (!str->content[*idx + len])
+			exit(42);
+		token.type = TK_ARG;
+		token.data.arg.string = ft_string_new();
+		// TODO $ expansion
+		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
+		len++;
+	}
 	else if (c == '|')
 	{
 		token.type = TK_PIPE;
