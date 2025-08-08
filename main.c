@@ -12,9 +12,9 @@
 
 #include "libft.h"
 #include "minishell.h"
-#include <unistd.h>
-#include <readline/readline.h>
 #include <readline/history.h>
+#include <readline/readline.h>
+#include <unistd.h>
 
 int	main(int argc, char **argv, char **envp)
 {
@@ -40,11 +40,12 @@ int	main(int argc, char **argv, char **envp)
 			ft_string_destroy(&str);
 			continue ;
 		}
+		// ft_lstiter(exprs, (void (*)(void *))print_expr);
 		exec(*((t_expr *)exprs->content), envp); // TODO multiple expressions
 		ft_lstclear(&exprs, (void (*)(void *))free_expr);
 		add_history(str.content);
 		ft_string_destroy(&str);
 	}
-	return (ft_get_next_line(-1), ft_string_destroy(&str), ft_lstclear(&history, lstclear_string),
-		MS_SUCCESS);
+	return (ft_get_next_line(-1), ft_string_destroy(&str), ft_lstclear(&history,
+			lstclear_string), MS_SUCCESS);
 }

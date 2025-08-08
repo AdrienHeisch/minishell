@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 
 t_list	*parse(t_string *str)
 {
@@ -26,6 +27,8 @@ t_list	*parse(t_string *str)
 			ft_lstadd_back(&exprs, ft_lstnew(parse_cmd(&tokens)));
 		else if (((t_token *)tokens->content)->type == TK_PIPE)
 			ft_lstadd_back(&exprs, ft_lstnew(parse_pipe(&tokens, &exprs)));
+		else
+			exit(42);
 	}
 	return (exprs);
 }
