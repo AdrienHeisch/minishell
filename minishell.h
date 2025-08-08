@@ -34,12 +34,16 @@ typedef struct s_token
 	t_token_type			type;
 	union
 	{
-		struct
+		struct s_arg_data
 		{
 			t_string		string;
+			bool			expand;
+			bool			is_dq;
 		} arg;
 	} data;
 }							t_token;
+
+typedef struct s_arg_data t_arg_data;
 
 typedef enum s_expr_type
 {

@@ -16,16 +16,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static char	*get_path_var(char **envp)
+static char	*get_env_var(char **envp, char *name)
 {
 	int	i;
 
 	i = 0;
 	while (envp[i])
 	{
-		if (!ft_strncmp(envp[i], "PATH=", 5))
+		if (!ft_strncmp(envp[i], name, ft_strlen(name)))
 		{
-			return (envp[i] + 5);
+			return (envp[i] + ft_strlen(name) + 1);
 		}
 		i++;
 	}
@@ -146,7 +146,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	char	*path;
 	int		i;
 
-	path = get_path_var(envp);
+	path = get_env_var(envp, "PATH=");
 	if (!path)
 		return (NULL);
 	dirs = split_path(path);
@@ -169,6 +169,52 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	return (NULL);
 }
 
+static void	expand_var(t_string *var, char **envp)
+{
+	t_string	var_name;
+
+	ft_string_move(var, &var_name);
+	ft_string_cat(&var_name, "=");
+	*var = ft_string_new();
+	ft_string_cat(var, get_env_var(envp, var_name.content));
+	ft_string_destroy(&var_name);
+}
+
+static void	expand_dq(t_string *dq, char **envp)
+{
+	size_t		idx;
+	size_t		len;
+	t_string	exp;
+	t_string	var;
+
+	exp = ft_string_new();
+	idx = 0;
+	while (idx < dq->length)
+	{
+		if (dq->content[idx] == '$')
+		{
+			idx++;
+			len = 0;
+			// TODO any whitespace
+			while (idx < dq->length && dq->content[idx + len] != ' ')
+				len++;
+			var = ft_string_new();
+			ft_string_ncat(&var, &dq->content[idx], len);
+			expand_var(&var, envp);
+			ft_string_ncat(&exp, var.content, var.length);
+			ft_string_destroy(&var);
+			idx += len;
+		}
+		else
+		{
+			ft_string_ncat(&exp, &dq->content[idx], 1);
+			idx++;
+		}
+	}
+	ft_string_destroy(dq);
+	*dq = exp;
+}
+
 void	exec_cmd(t_cmd cmd, char **envp)
 {
 	char	**args;
@@ -179,7 +225,11 @@ void	exec_cmd(t_cmd cmd, char **envp)
 	idx = 0;
 	while (cmd.args && cmd.args->content)
 	{
-		ft_string_term(cmd.args->content);
+		if (((t_arg_data *)cmd.args->content)->expand)
+			expand_var(&((t_arg_data *)cmd.args->content)->string, envp);
+		if (((t_arg_data *)cmd.args->content)->is_dq)
+			expand_dq(&((t_arg_data *)cmd.args->content)->string, envp);
+		ft_string_term(&((t_arg_data *)cmd.args->content)->string);
 		args[idx] = ((t_string *)cmd.args->content)->content;
 		idx++;
 		cmd.args = cmd.args->next;

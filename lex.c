@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 static bool	is_arg(char c)
@@ -42,6 +43,19 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		while (*idx + len < str->length && is_arg(str->content[*idx + len]))
 			len++;
 		token.type = TK_ARG;
+		token.data.arg.expand = false;
+		token.data.arg.is_dq = false;
+		token.data.arg.string = ft_string_new();
+		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
+	}
+	else if (c == '$')
+	{
+		(*idx)++;
+		while (*idx + len < str->length && is_arg(str->content[*idx + len]))
+			len++;
+		token.type = TK_ARG;
+		token.data.arg.expand = true;
+		token.data.arg.is_dq = false;
 		token.data.arg.string = ft_string_new();
 		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
 	}
@@ -53,6 +67,8 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		if (!str->content[*idx + len])
 			exit(42);
 		token.type = TK_ARG;
+		token.data.arg.expand = false;
+		token.data.arg.is_dq = false;
 		token.data.arg.string = ft_string_new();
 		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
 		len++;
@@ -65,8 +81,9 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		if (!str->content[*idx + len])
 			exit(42);
 		token.type = TK_ARG;
+		token.data.arg.expand = false;
+		token.data.arg.is_dq = true;
 		token.data.arg.string = ft_string_new();
-		// TODO $ expansion
 		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
 		len++;
 	}
