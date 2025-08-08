@@ -13,14 +13,18 @@
 #include "minishell.h"
 #include <sys/wait.h>
 
-void	exec(t_expr expr, char **envp)
+void	exec(t_expr expr, t_shell_data *shell_data)
 {
+	int status;
+
+	status = -1;
 	if (expr.type == EX_CMD)
 	{
-		child_last(expr.data.cmd, envp, expr.data.cmd.fd_in,
+		child_last(expr.data.cmd, shell_data, expr.data.cmd.fd_in,
 			expr.data.cmd.fd_out);
-		wait(NULL);
+		waitpid(0, &status, 0);
 	}
 	else if (expr.type == EX_PIPE)
-		exec_pipe(expr.data.pipe, envp);
+		status = exec_pipe(expr.data.pipe, shell_data);
+	shell_data->status = status;
 }

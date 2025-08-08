@@ -169,18 +169,24 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	return (NULL);
 }
 
-static void	expand_var(t_string *var, char **envp)
+static void	expand_var(t_string *var, t_shell_data *shell_data)
 {
 	t_string	var_name;
 
+	if (var->length == 1 && var->content[0] == '?')
+	{
+		var->length = 0;
+		ft_string_cat(var, ft_itoa(shell_data->status));
+		return ;
+	}
 	ft_string_move(var, &var_name);
 	ft_string_cat(&var_name, "=");
 	*var = ft_string_new();
-	ft_string_cat(var, get_env_var(envp, var_name.content));
+	ft_string_cat(var, get_env_var(shell_data->envp, var_name.content));
 	ft_string_destroy(&var_name);
 }
 
-static void	expand_dq(t_string *dq, char **envp)
+static void	expand_dq(t_string *dq, t_shell_data *shell_data)
 {
 	size_t		idx;
 	size_t		len;
@@ -200,7 +206,7 @@ static void	expand_dq(t_string *dq, char **envp)
 				len++;
 			var = ft_string_new();
 			ft_string_ncat(&var, &dq->content[idx], len);
-			expand_var(&var, envp);
+			expand_var(&var, shell_data);
 			ft_string_ncat(&exp, var.content, var.length);
 			ft_string_destroy(&var);
 			idx += len;
@@ -215,7 +221,7 @@ static void	expand_dq(t_string *dq, char **envp)
 	*dq = exp;
 }
 
-void	exec_cmd(t_cmd cmd, char **envp)
+void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
 	size_t	idx;
@@ -226,9 +232,9 @@ void	exec_cmd(t_cmd cmd, char **envp)
 	while (cmd.args && cmd.args->content)
 	{
 		if (((t_arg_data *)cmd.args->content)->expand)
-			expand_var(&((t_arg_data *)cmd.args->content)->string, envp);
+			expand_var(&((t_arg_data *)cmd.args->content)->string, shell_data);
 		if (((t_arg_data *)cmd.args->content)->is_dq)
-			expand_dq(&((t_arg_data *)cmd.args->content)->string, envp);
+			expand_dq(&((t_arg_data *)cmd.args->content)->string, shell_data);
 		ft_string_term(&((t_arg_data *)cmd.args->content)->string);
 		args[idx] = ((t_string *)cmd.args->content)->content;
 		idx++;
@@ -237,8 +243,8 @@ void	exec_cmd(t_cmd cmd, char **envp)
 	args[idx] = NULL;
 	path = args[0];
 	if (access(path, X_OK) == -1)
-		path = find_cmd_path(path, envp);
-	if (execve(path, args, envp) == -1)
+		path = find_cmd_path(path, shell_data->envp);
+	if (execve(path, args, shell_data->envp) == -1)
 		ft_putstr_fd("Command not found\n", 2);
 	free(args);
 	exit(42);

@@ -16,17 +16,17 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static void	run_child(t_cmd cmd, char **envp, int in_fd, int out_fd)
+static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd, int out_fd)
 {
 	if (dup2(in_fd, STDIN_FILENO) == -1)
 		exit(42);
 	if (dup2(out_fd, STDOUT_FILENO) == -1)
 		exit(42);
 	// close(in_fd);
-	exec_cmd(cmd, envp);
+	exec_cmd(cmd, shell_data);
 }
 
-static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
+static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd, int *next_fd)
 {
 	pid_t	pid;
 
@@ -43,7 +43,7 @@ static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
 	if (pid == 0)
 	{
 		close(next_fd[0]);
-		run_child(cmd, envp, *prev_fd, next_fd[1]);
+		run_child(cmd, shell_data, *prev_fd, next_fd[1]);
 	}
 	close(next_fd[1]);
 	if (*prev_fd > 0)
@@ -51,7 +51,7 @@ static void	child_and_pipe(t_cmd cmd, char **envp, int *prev_fd, int *next_fd)
 	*prev_fd = next_fd[0];
 }
 
-void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
+void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
 {
 	pid_t	pid;
 
@@ -59,15 +59,19 @@ void	child_last(t_cmd cmd, char **envp, int prev_fd, int outfile)
 	if (pid == -1)
 		exit(42);
 	if (pid == 0)
-		run_child(cmd, envp, prev_fd, outfile);
+		run_child(cmd, shell_data, prev_fd, outfile);
 	if (prev_fd > 0)
 		close(prev_fd);
 }
 
-static void	wait_all(void)
+static int	wait_all(void)
 {
-	while (wait(NULL) > 0)
+	int	status;
+
+	status = -1;
+	while (waitpid(0, &status, 0) > 0)
 		;
+	return (status);
 }
 
 static void	build_cmd_list(t_list **cmds, t_pipe pipe)
@@ -85,7 +89,7 @@ static void	no_op(void *el)
 	(void)el;
 }
 
-void	exec_pipe(t_pipe pipe, char **envp)
+int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 {
 	t_list	*cmds;
 	t_list	*cmd;
@@ -100,11 +104,11 @@ void	exec_pipe(t_pipe pipe, char **envp)
 	cmd = cmds;
 	while (cmd->next != NULL)
 	{
-		child_and_pipe(*((t_cmd *)cmd->content), envp, &prev_fd, next_fd);
+		child_and_pipe(*((t_cmd *)cmd->content), shell_data, &prev_fd, next_fd);
 		cmd = cmd->next;
 	}
-	child_last(*((t_cmd *)cmd->content), envp, prev_fd,
+	child_last(*((t_cmd *)cmd->content), shell_data, prev_fd,
 		((t_cmd *)cmd->content)->fd_out);
 	ft_lstclear(&cmds, no_op);
-	wait_all();
+	return (wait_all());
 }
