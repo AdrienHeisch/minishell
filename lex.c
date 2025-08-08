@@ -13,6 +13,21 @@
 #include "minishell.h"
 #include <stdlib.h>
 
+static bool	is_arg(char c)
+{
+	char	list[] = {' ', '\t', '\n', '"', '\'', '$', '|', 0};
+	size_t	i;
+
+	i = 0;
+	while (list[i])
+	{
+		if (list[i] == c)
+			return (false);
+		i++;
+	}
+	return (true);
+}
+
 static t_token	*get_token(t_string *str, size_t *idx)
 {
 	t_token	token;
@@ -24,11 +39,8 @@ static t_token	*get_token(t_string *str, size_t *idx)
 	c = str->content[*idx];
 	if (c >= 'a' && c <= 'z')
 	{
-		while (*idx + len < str->length && str->content[*idx + len] >= 'a'
-			&& str->content[*idx + len] <= 'z')
-		{
+		while (*idx + len < str->length && is_arg(str->content[*idx + len]))
 			len++;
-		}
 		token.type = TK_ARG;
 		token.data.arg.string = ft_string_new();
 		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);

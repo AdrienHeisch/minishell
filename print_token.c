@@ -16,7 +16,7 @@
 void	print_token(t_token *token)
 {
 	if (token->type == TK_ARG)
-		printf("ARG: %s\n", ft_string_get(&token->data.arg.string));
+		printf("ARG: |%s|\n", ft_string_get(&token->data.arg.string));
 	else if (token->type == TK_PIPE)
 		printf("PIPE\n");
 }

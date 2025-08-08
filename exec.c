@@ -11,12 +11,16 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <sys/wait.h>
 
 void	exec(t_expr expr, char **envp)
 {
 	if (expr.type == EX_CMD)
+	{
 		child_last(expr.data.cmd, envp, expr.data.cmd.fd_in,
 			expr.data.cmd.fd_out);
+		wait(NULL);
+	}
 	else if (expr.type == EX_PIPE)
 		exec_pipe(expr.data.pipe, envp);
 }
