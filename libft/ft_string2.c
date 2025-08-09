@@ -13,6 +13,21 @@
 #include "libft.h"
 #include <stdlib.h>
 
+void	ft_string_term(t_string *str)
+{
+	ft_string_ncat(str, "", 1);
+}
+
+void	ft_string_move(t_string *from, t_string *to)
+{
+	to->content = from->content;
+	from->content = NULL;
+	to->length = from->length;
+	from->length = 0;
+	to->capacity = from->capacity;
+	from->capacity = 0;
+}
+
 t_string	ft_string_destroy(t_string *str)
 {
 	if (str->content)

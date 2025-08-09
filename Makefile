@@ -3,12 +3,24 @@
 NAME = minishell
 
 SRCS = \
-	main.c
+	exec.c \
+	exec_cmd.c \
+	exec_pipe.c \
+	free_expr.c \
+	free_token.c \
+	lex.c \
+	main.c \
+	parse.c \
+	parse_cmd.c \
+	parse_pipe.c \
+	print_expr.c \
+	print_token.c \
+	utils.c \
 
 #	CONFIG
 
 CC = cc
-CFLAGS += -Wall -Wextra -Werror -O3
+CFLAGS += -Wall -Wextra -Werror -g3
 OBJS_PATH = objs/
 
 LIBFT_PATH = libft/
@@ -16,6 +28,8 @@ LIBFT_NAME = ft
 LIBFT = $(LIBFT_PATH)lib$(LIBFT_NAME).a
 IFLAGS += -I$(LIBFT_PATH)
 LFLAGS += -L$(LIBFT_PATH) -l$(LIBFT_NAME)
+
+LFLAGS += -lreadline
 
 #	VARS
 

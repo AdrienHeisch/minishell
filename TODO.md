@@ -1,0 +1,5 @@
+# TODO
+
+- builtins
+- signaux
+- redirections

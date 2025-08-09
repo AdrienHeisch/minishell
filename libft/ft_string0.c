@@ -32,6 +32,22 @@ t_string	ft_string_new(void)
 	return (str);
 }
 
+t_string	ft_string_from(char *s)
+{
+	t_string	str;
+
+	str.content = s;
+	if (!str.content)
+	{
+		str.length = 0;
+		str.capacity = 0;
+		return (str);
+	}
+	str.length = ft_strlen(s);
+	str.capacity = str.length + 1;
+	return (str);
+}
+
 t_string	*ft_string_new_alloc(void)
 {
 	t_string	*str;
