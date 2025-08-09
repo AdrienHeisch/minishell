@@ -98,12 +98,13 @@ t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
 t_expr						*parse_redir_in(t_list **tokens, t_list **exprs);
 t_list						*parse(t_string *str);
-void						exec(t_expr expr, t_shell_data *shell_data);
+void						exec(t_expr *expr, t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
 void						child_last(t_cmd cmd, t_shell_data *shell_data,
 								int prev_fd, int outfile);
 
 void						lstclear_string(void *str);
+bool						is_whitespace(t_string *str);
 
 #endif // !MINISHELL_H

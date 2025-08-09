@@ -22,30 +22,47 @@ int	main(int argc, char **argv, char **envp)
 	t_list			*exprs;
 	t_shell_data	data;
 
-	(void)argv;
-	if (argc > 1)
-		return (MS_USAGE);
 	data.envp = envp;
 	data.status = 0;
+	if (argc == 3 && ft_strncmp("-c", argv[1], 2) == 0)
+	{
+		str = ft_string_new();
+		ft_string_cat(&str, argv[2]);
+		if (is_whitespace(&str))
+			return (ft_string_destroy(&str), 0);
+		exprs = parse(&str);
+		if (!exprs)
+			return (ft_string_destroy(&str), 2);
+		exec(((t_expr *)exprs->content), &data);
+		ft_lstclear(&exprs, (void (*)(void *))free_expr);
+		ft_string_destroy(&str);
+		return (data.status);
+	}
+	if (argc > 1)
+		return (MS_USAGE);
+	str.content = NULL;
 	while (1)
 	{
+		ft_string_destroy(&str);
 		str = ft_string_from(readline("> "));
 		if (!str.content)
-			return (ft_get_next_line(-1), MS_ALLOC);
-		if (str.length == 0)
+			return (MS_ALLOC);
+		if (is_whitespace(&str))
+		{
+			data.status = 0;
 			continue ;
+		}
 		exprs = parse(&str);
 		if (!exprs)
 		{
-			ft_string_destroy(&str);
+			data.status = 2;
 			continue ;
 		}
-		// ft_lstiter(exprs, (void (*)(void *))print_expr);
-		exec(*((t_expr *)exprs->content), &data);
-			// TODO multiple expressions
+		// TODO multiple expressions
+		exec(((t_expr *)exprs->content), &data);
 		ft_lstclear(&exprs, (void (*)(void *))free_expr);
 		add_history(str.content);
-		ft_string_destroy(&str);
 	}
-	return (ft_get_next_line(-1), ft_string_destroy(&str), MS_SUCCESS);
+	ft_string_destroy(&str);
+	return (MS_SUCCESS);
 }

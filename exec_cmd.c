@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dirent.h>
 
 static char	*get_env_var(char **envp, char *name)
 {
@@ -221,11 +222,22 @@ static void	expand_dq(t_string *dq, t_shell_data *shell_data)
 	*dq = exp;
 }
 
+static void	free_args_list(char **args)
+{
+	size_t	idx;
+
+	idx = 0;
+	while (args[idx])
+		free(args[idx++]);
+	free(args);
+}
+
 void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
 	size_t	idx;
 	char	*path;
+	DIR		*dir;
 
 	args = malloc(sizeof(char *) * (ft_lstsize(cmd.args) + 1));
 	idx = 0;
@@ -244,8 +256,26 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);
-	if (execve(path, args, shell_data->envp) == -1)
+	dir = opendir(path);
+	if (dir != NULL)
+	{
+		free(dir);
 		ft_putstr_fd("Command not found\n", 2);
-	free(args);
-	exit(42);
+		free_args_list(args);
+		exit(126);
+	}
+	if (!path)
+	{
+		ft_putstr_fd("Command not found\n", 2);
+		free_args_list(args);
+		exit(127);
+	}
+	if (execve(path, args, shell_data->envp) == -1)
+	{
+		ft_putstr_fd("Command not found\n", 2);
+		free_args_list(args);
+		exit(126);
+	}
+	free_args_list(args);
+	exit(0);
 }

@@ -16,7 +16,7 @@
 
 static bool	is_arg(char c)
 {
-	char	list[] = {' ', '\t', '\n', '"', '\'', '$', '|', 0};
+	char	list[] = {' ', '\t', '\n', '"', '\'', '$', '|', '<', '>', 0};
 	size_t	i;
 
 	i = 0;
@@ -65,7 +65,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		while (*idx + len < str->length && str->content[*idx + len] != '\'')
 			len++;
 		if (!str->content[*idx + len])
-			exit(42);
+			exit(-1);
 		token.type = TK_ARG;
 		token.data.arg.expand = false;
 		token.data.arg.is_dq = false;
@@ -79,7 +79,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		while (*idx + len < str->length && str->content[*idx + len] != '"')
 			len++;
 		if (!str->content[*idx + len])
-			exit(42);
+			exit(-1);
 		token.type = TK_ARG;
 		token.data.arg.expand = false;
 		token.data.arg.is_dq = true;

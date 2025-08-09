@@ -21,6 +21,7 @@ t_list	*parse(t_string *str)
 	t_expr	*expr;
 
 	tokens = lex(str);
+	// ft_lstiter(tokens, (void (*)(void *))print_token);
 	exprs = NULL;
 	while (tokens)
 	{
@@ -30,7 +31,9 @@ t_list	*parse(t_string *str)
 		else if (((t_token *)tokens->content)->type == TK_ARG)
 			expr = parse_cmd(&tokens);
 		else
-			exit(42);
+			return (ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
+		if (!expr)
+			return (ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
 		ft_lstadd_back(&exprs, ft_lstnew(expr));
 	}
 	return (exprs);

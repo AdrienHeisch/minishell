@@ -30,8 +30,7 @@ void	ft_string_move(t_string *from, t_string *to)
 
 t_string	ft_string_destroy(t_string *str)
 {
-	if (str->content)
-		free(str->content);
+	free(str->content);
 	str->content = NULL;
 	str->length = 0;
 	str->capacity = 0;

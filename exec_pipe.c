@@ -19,9 +19,9 @@
 static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd, int out_fd)
 {
 	if (dup2(in_fd, STDIN_FILENO) == -1)
-		exit(42);
+		exit(-1);
 	if (dup2(out_fd, STDOUT_FILENO) == -1)
-		exit(42);
+		exit(-1);
 	// close(in_fd);
 	exec_cmd(cmd, shell_data);
 }
@@ -31,14 +31,14 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd, in
 	pid_t	pid;
 
 	if (pipe(next_fd) == -1)
-		exit(42);
+		exit(-1);
 	pid = fork();
 	if (pid == -1)
 	{
 		close(*prev_fd);
 		close(next_fd[0]);
 		close(next_fd[1]);
-		exit(42);
+		exit(-1);
 	}
 	if (pid == 0)
 	{
@@ -57,7 +57,7 @@ void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
 
 	pid = fork();
 	if (pid == -1)
-		exit(42);
+		exit(-1);
 	if (pid == 0)
 		run_child(cmd, shell_data, prev_fd, outfile);
 	if (prev_fd > 0)
@@ -71,6 +71,7 @@ static int	wait_all(void)
 	status = -1;
 	while (waitpid(0, &status, 0) > 0)
 		;
+	status = WEXITSTATUS(status);
 	return (status);
 }
 
@@ -99,7 +100,7 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 	cmds = NULL;
 	build_cmd_list(&cmds, pipe);
 	if (!cmds)
-		exit(42);
+		exit(-1);
 	prev_fd = ((t_cmd *)cmds->content)->fd_in;
 	cmd = cmds;
 	while (cmd->next != NULL)
