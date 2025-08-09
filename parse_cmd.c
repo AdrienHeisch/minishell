@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,9 +34,17 @@ t_expr	*parse_cmd(t_list **tokens)
 	expr->data.cmd.args = NULL;
 	expr->data.cmd.fd_in = STDIN_FILENO;
 	expr->data.cmd.fd_out = STDOUT_FILENO;
+	ft_string_destroy(&expr->data.cmd.file_in);
+	ft_string_destroy(&expr->data.cmd.file_out);
 	while (*tokens && is_arg(((t_token *)(*tokens)->content)->type))
 	{
 		token = ft_lstpop_front(tokens);
+		// TODO build list of redirections
+		// if (( (t_token *)token->content )->type == TK_REDIR_IN)
+		// {
+		// 	// expr->data.cmd.file_in
+		// 	continue ;
+		// }
 		arg_data = malloc(sizeof(t_arg_data));
 		if (!arg_data)
 			exit(MS_ALLOC);

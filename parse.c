@@ -18,17 +18,20 @@ t_list	*parse(t_string *str)
 {
 	t_list	*tokens;
 	t_list	*exprs;
+	t_expr	*expr;
 
 	tokens = lex(str);
 	exprs = NULL;
 	while (tokens)
 	{
-		if (((t_token *)tokens->content)->type == TK_ARG)
-			ft_lstadd_back(&exprs, ft_lstnew(parse_cmd(&tokens)));
-		else if (((t_token *)tokens->content)->type == TK_PIPE)
-			ft_lstadd_back(&exprs, ft_lstnew(parse_pipe(&tokens, &exprs)));
+		expr = NULL;
+		if (((t_token *)tokens->content)->type == TK_PIPE)
+			expr = parse_pipe(&tokens, &exprs);
+		else if (((t_token *)tokens->content)->type == TK_ARG)
+			expr = parse_cmd(&tokens);
 		else
 			exit(42);
+		ft_lstadd_back(&exprs, ft_lstnew(expr));
 	}
 	return (exprs);
 }
