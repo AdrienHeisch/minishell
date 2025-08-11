@@ -26,6 +26,8 @@ t_expr	*parse_pipe(t_list **tokens, t_list **exprs)
 	token = ft_lstpop_front(tokens);
 	ft_lstdelone(token, (void (*)(void *))free_token);
 	left = ft_lstpop_back(exprs);
+	if (!left)
+		return (free(expr), NULL);
 	expr->data.pipe.left = left->content;
 	free(left);
 	expr->data.pipe.right = parse_cmd(tokens);

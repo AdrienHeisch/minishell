@@ -73,20 +73,20 @@ static t_token	*get_token(t_string *str, size_t *idx)
 	else if (c == '|')
 	{
 		token.type = TK_PIPE;
-		idx++;
+		(*idx)++;
 	}
 	// TODO redir fd
 	else if (c == '<')
 	{
 		token.type = TK_REDIR_IN;
 		token.data.redir.fd = 0;
-		idx++;
+		(*idx)++;
 	}
 	else if (c == '>')
 	{
 		token.type = TK_REDIR_OUT;
 		token.data.redir.fd = 1;
-		idx++;
+		(*idx)++;
 	}
 	else
 		return (NULL);

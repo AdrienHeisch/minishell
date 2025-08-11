@@ -64,7 +64,8 @@ static char	*copy_dir(const char *start, int len)
 	dir[i] = '\0';
 	return (dir);
 }
-void	free_tab(char ***tab)
+
+static void	free_tab(char ***tab)
 {
 	int	i;
 
@@ -146,7 +147,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	int		i;
 
 	path = get_env_var(envp, "PATH=");
-	if (!path)
+	if (!path || !*path)
 		return (NULL);
 	dirs = split_path(path);
 	if (!dirs)

@@ -32,6 +32,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	}
 	exec(((t_expr *)exprs->content), data);
 	ft_lstclear(&exprs, (void (*)(void *))free_expr);
+	ft_string_term(str);
 	add_history(str->content);
 }
 
