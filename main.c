@@ -14,12 +14,30 @@
 #include "minishell.h"
 #include <readline/history.h>
 #include <readline/readline.h>
-#include <unistd.h>
+
+static void	parse_and_exec(t_string *str, t_shell_data *data)
+{
+	t_list	*exprs;
+
+	if (is_whitespace(str))
+	{
+		data->status = 0;
+		return ;
+	}
+	exprs = parse(str);
+	if (!exprs)
+	{
+		data->status = 2;
+		return ;
+	}
+	exec(((t_expr *)exprs->content), data);
+	ft_lstclear(&exprs, (void (*)(void *))free_expr);
+	add_history(str->content);
+}
 
 int	main(int argc, char **argv, char **envp)
 {
 	t_string		str;
-	t_list			*exprs;
 	t_shell_data	data;
 
 	data.envp = envp;
@@ -28,15 +46,8 @@ int	main(int argc, char **argv, char **envp)
 	{
 		str = ft_string_new();
 		ft_string_cat(&str, argv[2]);
-		if (is_whitespace(&str))
-			return (ft_string_destroy(&str), 0);
-		exprs = parse(&str);
-		if (!exprs)
-			return (ft_string_destroy(&str), 2);
-		exec(((t_expr *)exprs->content), &data);
-		ft_lstclear(&exprs, (void (*)(void *))free_expr);
-		ft_string_destroy(&str);
-		return (data.status);
+		parse_and_exec(&str, &data);
+		return (ft_string_destroy(&str), data.status);
 	}
 	if (argc > 1)
 		return (MS_USAGE);
@@ -47,21 +58,7 @@ int	main(int argc, char **argv, char **envp)
 		str = ft_string_from(readline("> "));
 		if (!str.content)
 			return (MS_ALLOC);
-		if (is_whitespace(&str))
-		{
-			data.status = 0;
-			continue ;
-		}
-		exprs = parse(&str);
-		if (!exprs)
-		{
-			data.status = 2;
-			continue ;
-		}
-		// TODO multiple expressions
-		exec(((t_expr *)exprs->content), &data);
-		ft_lstclear(&exprs, (void (*)(void *))free_expr);
-		add_history(str.content);
+		parse_and_exec(&str, &data);
 	}
 	ft_string_destroy(&str);
 	return (MS_SUCCESS);
