@@ -15,6 +15,20 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
+static char **dup_env(char **envp)
+{
+	char	**dup;
+	size_t	len;
+
+	len = 0;
+	while (envp[len])
+		len++;
+	dup = ft_calloc(len + 1, sizeof(char *));
+	ft_memcpy(dup, envp, len * sizeof(char *));
+	dup[len] = 0;
+	return (dup);
+}
+
 static void	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*exprs;
@@ -24,7 +38,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 		data->status = 0;
 		return ;
 	}
-	exprs = parse_command(str);
+	exprs = parse(str);
 	if (!exprs)
 	{
 		data->status = 2;
@@ -41,7 +55,7 @@ int	main(int argc, char **argv, char **envp)
 	t_string		str;
 	t_shell_data	data;
 
-	data.envp = envp;
+	data.envp = dup_env(envp);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 2) == 0)
 	{

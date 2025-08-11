@@ -1,34 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_command.c                                    :+:      :+:    :+:   */
+/*   builtin_export.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/06 13:01:13 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/11 18:23:00 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/11 19:30:36 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/11 19:30:36 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "minishell.h"
-#include <stdlib.h>
 
-t_list	*parse_command(t_string *str)
+void	builtin_export(char **args, t_shell_data *shell_data)
 {
-	t_list	*tokens;
-	t_list	*exprs;
-	t_expr	*expr;
+	char	**split;
 
-	tokens = lex(str);
-	// ft_lstiter(tokens, (void (*)(void *))print_token);
-	exprs = NULL;
-	while (tokens)
-	{
-		expr = parse_expr(&tokens, &exprs);
-		if (!expr)
-			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
-		ft_lstadd_back(&exprs, ft_lstnew(expr));
-	}
-	return (exprs);
+	// TODO list env
+	if (!args[1])
+		return ;
+	split = ft_split(args[1], '=');
+	if (!split[0] || !split[1])
+		return ;
+	ft_setenv(&shell_data->envp, split[0], split[1], true);
+	shell_data->status = 0;
 }

@@ -11,7 +11,9 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include "minishell.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
 void	no_op(void *p)
 {
@@ -30,9 +32,46 @@ bool	is_whitespace(t_string *str)
 	idx = 0;
 	while (idx < str->length)
 	{
-		if (str->content[idx] != ' ' && str->content[idx] != '\t' && str->content[idx] != '\n')
-			return false;
+		if (str->content[idx] != ' ' && str->content[idx] != '\t'
+			&& str->content[idx] != '\n')
+			return (false);
 		idx++;
 	}
-	return true;
+	return (true);
+}
+
+char	*ft_getenv(char **envp, char *name)
+{
+	int	i;
+
+	i = 0;
+	while (envp[i])
+	{
+		if (!ft_strncmp(envp[i], name, ft_strlen(name)))
+			return (envp[i] + ft_strlen(name));
+		i++;
+	}
+	return ("");
+}
+
+void	ft_setenv(char ***envp, const char *name, const char *value, int overwrite)
+{
+	char	**old;
+	char	**new;
+	char	*name_suffix;
+	size_t	len;
+
+	(void)overwrite;
+	old = *envp;
+	len = 0;
+	while (old[len])
+		len++;
+	new = malloc(( len + 2 ) * sizeof(char *));
+	ft_memcpy(new, old, len * sizeof(char *));
+	name_suffix = ft_strjoin(name, "=");
+	new[len] = ft_strjoin(name_suffix, value);
+	new[len + 1] = NULL;
+	free(name_suffix);
+	free(old);
+	*envp = new;
 }

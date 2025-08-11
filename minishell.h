@@ -94,7 +94,7 @@ void						free_token(t_token *token);
 void						print_expr(t_expr *expr);
 void						free_expr(t_expr *expr);
 t_list						*lex(t_string *str);
-t_list						*parse_command(t_string *str);
+t_list						*parse(t_string *str);
 t_expr						*parse_expr(t_list **tokens, t_list **exprs);
 t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
@@ -104,13 +104,23 @@ void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
 void						child_last(t_cmd cmd, t_shell_data *shell_data,
 								int prev_fd, int outfile);
-bool						exec_builtin(char **args, t_shell_data *shell_data);
 
+bool						is_builtin(t_string *name);
+bool						exec_builtin(char **args, t_shell_data *shell_data);
 void						builtin_echo(char **args, t_shell_data *shell_data);
 void						builtin_env(t_shell_data *shell_data);
+void						builtin_export(char **args,
+								t_shell_data *shell_data);
+
+char						**make_arg_list(t_cmd cmd,
+								t_shell_data *shell_data);
+void						free_args_list(char **args);
 
 void						no_op(void *p);
 void						lstclear_string(void *str);
 bool						is_whitespace(t_string *str);
+char					*ft_getenv(char **envp, char *name);
+void						ft_setenv(char ***envp, const char *name,
+								const char *value, int overwrite);
 
 #endif // !MINISHELL_H

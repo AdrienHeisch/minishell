@@ -1,34 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   exec_builtin.c                                     :+:      :+:    :+:   */
+/*   parse.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/11 12:51:44 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/11 12:58:23 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/06 13:01:13 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/11 19:59:12 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 
-bool	exec_builtin(char **args, t_shell_data *shell_data)
+t_list	*parse(t_string *str)
 {
-	char	*cmd;
-	size_t	len;
+	t_list	*tokens;
+	t_list	*exprs;
+	t_expr	*expr;
 
-	cmd = args[0];
-	len = ft_strlen(cmd);
-	if (len == 0)
-		return (false);
-	if (ft_strncmp("echo", cmd, len) == 0)
-		builtin_echo(args, shell_data);
-	else if (ft_strncmp("env", cmd, len) == 0)
-		builtin_env(shell_data);
-	else if (ft_strncmp("export", cmd, len) == 0)
-		builtin_export(args, shell_data);
-	else
-		return (false);
-	return (true);
+	tokens = lex(str);
+	// ft_lstiter(tokens, (void (*)(void *))print_token);
+	exprs = NULL;
+	while (tokens)
+	{
+		expr = parse_expr(&tokens, &exprs);
+		if (!expr)
+			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
+		ft_lstadd_back(&exprs, ft_lstnew(expr));
+	}
+	return (exprs);
 }
