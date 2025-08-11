@@ -50,8 +50,6 @@ t_expr	*parse_cmd(t_list **tokens)
 		arg_data = malloc(sizeof(t_arg_data));
 		if (!arg_data)
 			exit(MS_ALLOC);
-		arg_data->expand = ((t_token *)token->content)->data.arg.expand;
-		arg_data->is_dq = ((t_token *)token->content)->data.arg.is_dq;
 		ft_string_move(&((t_token *)token->content)->data.arg.string, &arg_data->string);
 		arg = ft_lstnew(arg_data);
 		ft_lstadd_back(&expr->data.cmd.args, arg);

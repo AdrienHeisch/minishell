@@ -31,9 +31,9 @@ t_list	*parse(t_string *str)
 		else if (((t_token *)tokens->content)->type == TK_ARG)
 			expr = parse_cmd(&tokens);
 		else
-			return (ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
+			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
 		if (!expr)
-			return (ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
+			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
 		ft_lstadd_back(&exprs, ft_lstnew(expr));
 	}
 	return (exprs);

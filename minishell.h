@@ -32,6 +32,7 @@ typedef struct s_shell_data
 
 typedef enum s_token_type
 {
+	TK_INVALID,
 	TK_ARG,
 	TK_PIPE,
 	TK_REDIR_IN,
@@ -46,8 +47,6 @@ typedef struct s_token
 		struct				s_arg_data
 		{
 			t_string		string;
-			bool			expand;
-			bool			is_dq;
 		} arg;
 		struct				s_redir_data
 		{

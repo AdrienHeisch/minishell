@@ -16,7 +16,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd, int out_fd)
+static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd,
+		int out_fd)
 {
 	if (dup2(in_fd, STDIN_FILENO) == -1)
 		exit(-1);
@@ -26,7 +27,8 @@ static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd, int out_fd
 	exec_cmd(cmd, shell_data);
 }
 
-static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd, int *next_fd)
+static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
+		int *next_fd)
 {
 	pid_t	pid;
 
@@ -51,7 +53,8 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd, in
 	*prev_fd = next_fd[0];
 }
 
-void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
+void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd,
+		int outfile)
 {
 	pid_t	pid;
 

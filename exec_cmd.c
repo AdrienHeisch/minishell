@@ -28,7 +28,7 @@ static char	*get_env_var(char **envp, char *name)
 			return (envp[i] + ft_strlen(name));
 		i++;
 	}
-	return (NULL);
+	return ("");
 }
 
 static int	count_paths(const char *s)
@@ -171,18 +171,25 @@ static char	*find_cmd_path(char *cmd, char **envp)
 static void	expand_var(t_string *var, t_shell_data *shell_data)
 {
 	t_string	var_name;
+	char		*value;
 
-	if (var->length == 1 && var->content[0] == '?')
-	{
-		var->length = 0;
-		ft_string_cat(var, ft_itoa(shell_data->status));
-		return ;
-	}
 	ft_string_move(var, &var_name);
 	ft_string_cat(&var_name, "=");
 	*var = ft_string_new();
-	ft_string_cat(var, get_env_var(shell_data->envp, var_name.content));
+	ft_string_term(&var_name);
+	value = get_env_var(shell_data->envp, var_name.content);
+	ft_string_cat(var, value);
 	ft_string_destroy(&var_name);
+}
+
+static bool	is_var_name_start_char(char c)
+{
+	return (ft_isalpha(c) || c == '_');
+}
+
+static bool	is_var_name_char(char c)
+{
+	return (ft_isalnum(c) || c == '_');
 }
 
 static void	expand_dq(t_string *dq, t_shell_data *shell_data)
@@ -191,32 +198,79 @@ static void	expand_dq(t_string *dq, t_shell_data *shell_data)
 	size_t		len;
 	t_string	exp;
 	t_string	var;
+	char		del;
+	bool		has_empty_var;
 
 	exp = ft_string_new();
+	del = '\0';
 	idx = 0;
+	has_empty_var = false;
 	while (idx < dq->length)
 	{
-		if (dq->content[idx] == '$')
+		if (!del && (dq->content[idx] == '\'' || dq->content[idx] == '"'))
 		{
+			del = dq->content[idx];
 			idx++;
-			len = 0;
-			// TODO any whitespace
-			while (idx < dq->length && dq->content[idx + len] != ' ')
-				len++;
-			var = ft_string_new();
-			ft_string_ncat(&var, &dq->content[idx], len);
-			expand_var(&var, shell_data);
-			ft_string_ncat(&exp, var.content, var.length);
-			ft_string_destroy(&var);
-			idx += len;
+			continue ;
 		}
-		else
+		if (del && del == dq->content[idx])
 		{
-			ft_string_ncat(&exp, &dq->content[idx], 1);
+			del = '\0';
 			idx++;
+			has_empty_var = false;
+			continue ;
 		}
+		if (dq->content[idx] == '$' && del != '\'' && idx + 1 < dq->length)
+		{
+			if (dq->content[idx + 1] == '?')
+			{
+				idx += 2;
+				ft_string_cat(&exp, ft_itoa(shell_data->status));
+				continue ;
+			}
+			if (!del && (dq->content[idx + 1] == '\'' || dq->content[idx
+					+ 1] == '"'))
+			{
+				del = dq->content[idx + 1];
+				idx += 2;
+				len = 0;
+				while (idx + len < dq->length && dq->content[idx + len] != del)
+					len++;
+				ft_string_ncat(&exp, &dq->content[idx], len);
+				idx += len;
+				continue ;
+			}
+			if (is_var_name_start_char(dq->content[idx + 1]))
+			{
+				idx++;
+				len = 0;
+				var = ft_string_new();
+				while (idx + len < dq->length
+					&& is_var_name_char(dq->content[idx + len]))
+					len++;
+				ft_string_ncat(&var, &dq->content[idx], len);
+				expand_var(&var, shell_data);
+				ft_string_ncat(&exp, var.content, var.length);
+				if (var.length == 0)
+					has_empty_var = true;
+				ft_string_destroy(&var);
+				idx += len;
+				continue ;
+			}
+			if (ft_isdigit(dq->content[idx + 1]))
+			{
+				idx++;
+				while (idx < dq->length && ft_isdigit(dq->content[idx]))
+					idx++;
+				continue ;
+			}
+		}
+		ft_string_ncat(&exp, &dq->content[idx], 1);
+		idx++;
 	}
 	ft_string_destroy(dq);
+	if (exp.length == 0 && has_empty_var)
+		return (ft_string_destroy(&exp), (void)0);
 	*dq = exp;
 }
 
@@ -255,18 +309,21 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	idx = 0;
 	while (cmd.args && cmd.args->content)
 	{
-		if (((t_arg_data *)cmd.args->content)->expand)
-			expand_var(&((t_arg_data *)cmd.args->content)->string, shell_data);
-		if (((t_arg_data *)cmd.args->content)->is_dq)
-			expand_dq(&((t_arg_data *)cmd.args->content)->string, shell_data);
-		ft_string_term(&((t_arg_data *)cmd.args->content)->string);
-		args[idx] = ((t_string *)cmd.args->content)->content;
-		idx++;
+		expand_dq(&((t_arg_data *)cmd.args->content)->string, shell_data);
+		if (((t_arg_data *)cmd.args->content)->string.content)
+		{
+			ft_string_term(&((t_arg_data *)cmd.args->content)->string);
+			args[idx] = ((t_string *)cmd.args->content)->content;
+			idx++;
+		}
 		cmd.args = cmd.args->next;
 	}
 	args[idx] = NULL;
 	if (exec_builtin(args, shell_data))
+	{
+		free_args_list(args);
 		exit(0);
+	}
 	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);

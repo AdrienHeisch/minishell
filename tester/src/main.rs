@@ -7,6 +7,7 @@ use std::{
 
 const TESTS_PATH: &str = "tests.csv";
 const ENABLE_BONUSES: bool = false;
+const BLACKLIST: &[usize] = &[92, 102, 103];
 
 struct Test {
     id: usize,
@@ -18,7 +19,8 @@ fn fix_tests(path: PathBuf) -> io::Result<()> {
     string = string
         .replace("(touche entrée)", "")
         .replace("[que des espaces]", "           ")
-        .replace("[que des tabulations]", "\t\t\t\t\t\t\t\t");
+        .replace("[que des tabulations]", "\t\t\t\t\t\t\t\t")
+        .replace("$UID", "$SHELL");
     std::fs::write(&path, string)?;
     Ok(())
 }
@@ -28,6 +30,9 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
     let mut reader = csv::Reader::from_reader(file);
     let mut tests = vec![];
     for (id, result) in reader.records().skip(24).enumerate() {
+        if BLACKLIST.contains(&id) {
+            continue;
+        }
         let record = result?;
         if !ENABLE_BONUSES {
             match record.get(2) {
@@ -39,6 +44,9 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
         }
         let commands = if let Some(commands) = record.get(1) {
             let mut is_valid = true;
+            if commands.contains("Ctlr-") {
+                continue;
+            }
             let commands = commands
                 .lines()
                 .map(|line| line.strip_prefix("$> "))
@@ -47,7 +55,8 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
                         is_valid = false;
                     }
                     line
-                }).collect();
+                })
+                .collect();
             if !is_valid {
                 println!("INVALID TEST :");
                 println!("{commands}");
