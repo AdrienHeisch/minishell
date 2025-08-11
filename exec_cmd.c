@@ -259,7 +259,7 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	dir = opendir(path);
 	if (dir != NULL)
 	{
-		free(dir);
+		closedir(dir);
 		ft_putstr_fd("Command not found\n", 2);
 		free_args_list(args);
 		exit(126);

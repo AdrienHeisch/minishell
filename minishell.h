@@ -14,6 +14,7 @@
 # define MINISHELL_H
 
 # include "libft.h"
+# include <stdio.h>
 # include <stdbool.h>
 
 enum						e_error
