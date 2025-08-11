@@ -20,9 +20,10 @@ void	builtin_echo(char **args, t_shell_data *shell_data)
 
 	opt_n = false;
 	idx = 1;
-	if (args[idx] && ft_strncmp(args[idx], "-n", 2) == 0)
+	while (args[idx] && args[idx][0] == '-')
 	{
-		opt_n = true;
+		if (args[idx][1] == 'n')
+			opt_n = true;
 		idx++;
 	}
 	while (args[idx])
