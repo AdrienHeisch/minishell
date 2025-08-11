@@ -13,16 +13,36 @@
 #include "libft.h"
 #include "minishell.h"
 
-void	builtin_echo(char **args, t_shell_data *shell_data)
+static bool	parse_options(char *arg, int *flags)
 {
-	bool	opt_n;
+	int		new_flags;
 	size_t	idx;
 
-	opt_n = false;
+	new_flags = 0;
 	idx = 1;
-	while (args[idx] && ft_strncmp(args[idx], "-n", 2) == 0)
+	while (arg[idx])
 	{
-		opt_n = true;
+		if (arg[idx] == 'n')
+			new_flags |= 1;
+		else
+			return (false);
+		idx++;
+	}
+	*flags |= new_flags;
+	return (true);
+}
+
+void	builtin_echo(char **args, t_shell_data *shell_data)
+{
+	int		flags;
+	size_t	idx;
+
+	flags = 0;
+	idx = 1;
+	while (args[idx] && *args[idx] == '-')
+	{
+		if (!parse_options(args[idx], &flags))
+			break ;
 		idx++;
 	}
 	while (args[idx])
@@ -31,7 +51,7 @@ void	builtin_echo(char **args, t_shell_data *shell_data)
 		if (args[idx])
 			ft_putstr_fd(" ", 1);
 	}
-	if (!opt_n)
+	if (!(flags & 1))
 		ft_putstr_fd("\n", 1);
 	shell_data->status = 0;
 }

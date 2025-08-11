@@ -13,13 +13,21 @@
 #include "libft.h"
 #include "minishell.h"
 
+#define EXPORT_PREFIX "declare -x"
+
 void	builtin_export(char **args, t_shell_data *shell_data)
 {
+	size_t	idx;
 	char	**split;
 
-	// TODO list env
 	if (!args[1])
+	{
+		idx = 0;
+		while (shell_data->envp[idx])
+			printf("%s %s\n", EXPORT_PREFIX, shell_data->envp[idx++]);
+		shell_data->status = 0;
 		return ;
+	}
 	split = ft_split(args[1], '=');
 	if (!split[0] || !split[1])
 		return ;

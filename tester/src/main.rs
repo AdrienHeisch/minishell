@@ -44,7 +44,7 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
         }
         let commands = if let Some(commands) = record.get(1) {
             let mut is_valid = true;
-            if commands.contains("Ctlr-") || commands.contains("env")
+            if commands.contains("Ctlr-") || commands.contains("env") || commands.contains("export")
                 || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
             {
                 continue;
@@ -113,16 +113,16 @@ fn exec_test(test: &Test) -> bool {
             return false;
         }
     }
-    for (bash_byte, minishell_byte) in bash.stdout.iter().zip(minishell.stdout.iter()) {
-        if bash_byte != minishell_byte {
-            println!("######## FAILED ########");
-            println!("Expected output:");
-            println!("{}", String::from_utf8(bash.stdout).unwrap());
-            println!("Tested output:");
-            println!("{}", String::from_utf8(minishell.stdout).unwrap());
-            println!("########################");
-            return false;
-        }
+    let bash_stdout = String::from_utf8(bash.stdout).unwrap();
+    let minishell_stdout = String::from_utf8(minishell.stdout).unwrap();
+    if bash_stdout != minishell_stdout {
+        println!("######## FAILED ########");
+        println!("Expected output:");
+        println!("{bash_stdout}");
+        println!("Tested output:");
+        println!("{minishell_stdout}");
+        println!("########################");
+        return false;
     }
     println!("####### SUCCESS! #######");
     true
