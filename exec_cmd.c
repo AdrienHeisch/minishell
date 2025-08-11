@@ -272,6 +272,12 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);
+	if (!path)
+	{
+		cmd_error(args[0], "command not found...");
+		free_args_list(args);
+		exit(127);
+	}
 	dir = opendir(path);
 	if (dir != NULL)
 	{
@@ -279,12 +285,6 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 		cmd_error(path, "Is a directory");
 		free_args_list(args);
 		exit(126);
-	}
-	if (!path)
-	{
-		cmd_error(path, NULL);
-		free_args_list(args);
-		exit(127);
 	}
 	if (execve(path, args, shell_data->envp) == -1)
 	{
