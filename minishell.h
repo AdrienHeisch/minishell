@@ -14,8 +14,8 @@
 # define MINISHELL_H
 
 # include "libft.h"
-# include <stdio.h>
 # include <stdbool.h>
+# include <stdio.h>
 
 enum						e_error
 {
@@ -104,6 +104,9 @@ void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
 void						child_last(t_cmd cmd, t_shell_data *shell_data,
 								int prev_fd, int outfile);
+bool						exec_builtin(char **args, t_shell_data *shell_data);
+
+void						builtin_echo(char **args, t_shell_data *shell_data);
 
 void						lstclear_string(void *str);
 bool						is_whitespace(t_string *str);

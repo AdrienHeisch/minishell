@@ -267,6 +267,8 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 		cmd.args = cmd.args->next;
 	}
 	args[idx] = NULL;
+	if (exec_builtin(args, shell_data))
+		exit(0);
 	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);

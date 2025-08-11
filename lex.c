@@ -16,8 +16,9 @@
 
 static bool	is_arg(char c)
 {
-	char	list[] = {' ', '\t', '\n', '"', '\'', '$', '|', '<', '>', 0};
-	size_t	i;
+	static const char	list[] = {' ', '\t', '\n', '"', '\'', '$', '|', '<',
+			'>', 0};
+	size_t				i;
 
 	i = 0;
 	while (list[i])
