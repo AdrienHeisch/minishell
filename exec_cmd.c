@@ -12,10 +12,10 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dirent.h>
 
 static char	*get_env_var(char **envp, char *name)
 {
@@ -232,6 +232,20 @@ static void	free_args_list(char **args)
 	free(args);
 }
 
+static void	cmd_error(char *path, char *err)
+{
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(path, 2);
+	ft_putstr_fd(": ", 2);
+	if (err)
+	{
+		ft_putstr_fd(err, 2);
+		ft_putstr_fd("\n", 2);
+	}
+	else
+		perror("");
+}
+
 void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
@@ -260,19 +274,19 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	if (dir != NULL)
 	{
 		closedir(dir);
-		ft_putstr_fd("Command not found\n", 2);
+		cmd_error(path, "Is a directory");
 		free_args_list(args);
 		exit(126);
 	}
 	if (!path)
 	{
-		ft_putstr_fd("Command not found\n", 2);
+		cmd_error(path, NULL);
 		free_args_list(args);
 		exit(127);
 	}
 	if (execve(path, args, shell_data->envp) == -1)
 	{
-		ft_putstr_fd("Command not found\n", 2);
+		cmd_error(path, NULL);
 		free_args_list(args);
 		exit(126);
 	}
