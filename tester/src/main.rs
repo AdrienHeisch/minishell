@@ -132,10 +132,10 @@ fn main() -> io::Result<()> {
     fix_tests(TESTS_PATH.into())?;
     for test in parse_tests(TESTS_PATH.into())?.iter() {
         if !exec_test(test) {
-            // break;
+            break;
         }
-        let mut str = String::new();
-        io::stdin().read_line(&mut str)?;
+        // let mut str = String::new();
+        // io::stdin().read_line(&mut str)?;
     }
     Ok(())
 }

@@ -30,8 +30,9 @@ t_expr	*parse_pipe(t_list **tokens, t_list **exprs)
 		return (free(expr), NULL);
 	expr->data.pipe.left = left->content;
 	free(left);
-	expr->data.pipe.right = parse_cmd(tokens);
-	if (!expr->data.pipe.right->data.cmd.args)
-		exit(-1);
+	expr->data.pipe.right = parse_expr(tokens, exprs);
+	if (!expr->data.pipe.right || expr->data.pipe.right->type != EX_CMD
+		|| !expr->data.pipe.right->data.cmd.args)
+		return (free(expr->data.pipe.right), free(expr), NULL);
 	return (expr);
 }

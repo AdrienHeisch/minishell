@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse.c                                            :+:      :+:    :+:   */
+/*   parse_command.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 13:01:13 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/06 13:01:13 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/08/11 18:23:00 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "minishell.h"
 #include <stdlib.h>
 
-t_list	*parse(t_string *str)
+t_list	*parse_command(t_string *str)
 {
 	t_list	*tokens;
 	t_list	*exprs;
@@ -25,13 +25,7 @@ t_list	*parse(t_string *str)
 	exprs = NULL;
 	while (tokens)
 	{
-		expr = NULL;
-		if (((t_token *)tokens->content)->type == TK_PIPE)
-			expr = parse_pipe(&tokens, &exprs);
-		else if (((t_token *)tokens->content)->type == TK_ARG)
-			expr = parse_cmd(&tokens);
-		else
-			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
+		expr = parse_expr(&tokens, &exprs);
 		if (!expr)
 			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
 		ft_lstadd_back(&exprs, ft_lstnew(expr));

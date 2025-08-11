@@ -12,8 +12,9 @@ SRCS = \
 	free_token.c \
 	lex.c \
 	main.c \
-	parse.c \
 	parse_cmd.c \
+	parse_command.c \
+	parse_expr.c \
 	parse_pipe.c \
 	print_expr.c \
 	print_token.c \

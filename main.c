@@ -24,7 +24,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 		data->status = 0;
 		return ;
 	}
-	exprs = parse(str);
+	exprs = parse_command(str);
 	if (!exprs)
 	{
 		data->status = 2;
