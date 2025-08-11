@@ -20,6 +20,8 @@ bool	exec_builtin(char **args, t_shell_data *shell_data)
 
 	cmd = args[0];
 	len = ft_strlen(cmd);
+	if (len == 0)
+		return (false);
 	if (ft_strncmp("echo", cmd, len) == 0)
 		builtin_echo(args, shell_data);
 	else

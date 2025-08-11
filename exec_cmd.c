@@ -235,7 +235,8 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 				del = arg->content[idx + 1];
 				idx += 2;
 				len = 0;
-				while (idx + len < arg->length && arg->content[idx + len] != del)
+				while (idx + len < arg->length && arg->content[idx
+					+ len] != del)
 					len++;
 				ft_string_ncat(&exp, &arg->content[idx], len);
 				idx += len;
@@ -306,7 +307,7 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	char	*path;
 	DIR		*dir;
 
-	args = malloc(sizeof(char *) * (ft_lstsize(cmd.args) + 1));
+	args = ft_calloc((ft_lstsize(cmd.args) + 1), sizeof(char *));
 	idx = 0;
 	while (cmd.args && cmd.args->content)
 	{
@@ -319,13 +320,22 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 		}
 		cmd.args = cmd.args->next;
 	}
-	args[idx] = NULL;
+	path = args[0];
+	if (!path) 
+	{
+		free_args_list(args);
+		exit(0);
+	}
+	if (ft_strlen(path) == 0)
+	{
+		free_args_list(args);
+		exit(127);
+	}
 	if (exec_builtin(args, shell_data))
 	{
 		free_args_list(args);
 		exit(0);
 	}
-	path = args[0];
 	if (access(path, X_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);
 	if (!path)
