@@ -25,9 +25,7 @@ static char	*get_env_var(char **envp, char *name)
 	while (envp[i])
 	{
 		if (!ft_strncmp(envp[i], name, ft_strlen(name)))
-		{
-			return (envp[i] + ft_strlen(name) + 1);
-		}
+			return (envp[i] + ft_strlen(name));
 		i++;
 	}
 	return (NULL);
