@@ -24,6 +24,8 @@ bool	exec_builtin(char **args, t_shell_data *shell_data)
 		return (false);
 	if (ft_strncmp("echo", cmd, len) == 0)
 		builtin_echo(args, shell_data);
+	if (ft_strncmp("env", cmd, len) == 0)
+		builtin_env(shell_data);
 	else
 		return (false);
 	return (true);

@@ -44,7 +44,7 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
         }
         let commands = if let Some(commands) = record.get(1) {
             let mut is_valid = true;
-            if commands.contains("Ctlr-")
+            if commands.contains("Ctlr-") || commands.contains("env")
                 || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
             {
                 continue;

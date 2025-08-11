@@ -90,11 +90,6 @@ static void	build_cmd_list(t_list **cmds, t_pipe pipe)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.right->data.cmd));
 }
 
-static void	no_op(void *el)
-{
-	(void)el;
-}
-
 int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 {
 	t_list	*cmds;

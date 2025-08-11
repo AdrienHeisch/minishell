@@ -4,6 +4,7 @@ NAME = minishell
 
 SRCS = \
 	builtin_echo.c \
+	builtin_env.c \
 	exec.c \
 	exec_builtin.c \
 	exec_cmd.c \

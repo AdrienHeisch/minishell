@@ -107,7 +107,9 @@ void						child_last(t_cmd cmd, t_shell_data *shell_data,
 bool						exec_builtin(char **args, t_shell_data *shell_data);
 
 void						builtin_echo(char **args, t_shell_data *shell_data);
+void						builtin_env(t_shell_data *shell_data);
 
+void						no_op(void *p);
 void						lstclear_string(void *str);
 bool						is_whitespace(t_string *str);
 

@@ -1,38 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   builtin_env.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/06 17:58:29 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/06 17:58:29 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/11 19:09:20 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/11 19:09:20 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include <stdbool.h>
+#include "minishell.h"
+#include <stddef.h>
+#include <stdlib.h>
 
-void	no_op(void *p)
-{
-	(void)p;
-}
-
-void	lstclear_string(void *str)
-{
-	ft_string_delete((t_string **)&str);
-}
-
-bool	is_whitespace(t_string *str)
+void	builtin_env(t_shell_data *shell_data)
 {
 	size_t	idx;
 
 	idx = 0;
-	while (idx < str->length)
-	{
-		if (str->content[idx] != ' ' && str->content[idx] != '\t' && str->content[idx] != '\n')
-			return false;
-		idx++;
-	}
-	return true;
+	while (shell_data->envp[idx])
+		printf("%s\n", shell_data->envp[idx++]);
+	shell_data->status = 0;
 }
