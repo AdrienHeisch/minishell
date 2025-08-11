@@ -66,13 +66,15 @@ void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
 
 static int	wait_all(void)
 {
-	int	status;
+	int	status_location;
 
-	status = -1;
-	while (waitpid(0, &status, 0) > 0)
+	status_location = -1;
+	while (waitpid(0, &status_location, 0) > 0)
 		;
-	status = WEXITSTATUS(status);
-	return (status);
+	if (WIFEXITED(status_location))
+		return (WEXITSTATUS(status_location));
+	else
+		return (-1);
 }
 
 static void	build_cmd_list(t_list **cmds, t_pipe pipe)
