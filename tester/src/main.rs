@@ -11,8 +11,6 @@ const ENABLE_BONUSES: bool = false;
 struct Test {
     id: usize,
     commands: String,
-    expected: String,
-    exit_code: i32,
 }
 
 fn fix_tests(path: PathBuf) -> io::Result<()> {
@@ -40,42 +38,27 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
             }
         }
         let commands = if let Some(commands) = record.get(1) {
-            let lines = commands.lines().map(|line| line.strip_prefix("$> "));
-            if lines.clone().any(|line| line.is_none()) {
+            let mut is_valid = true;
+            let commands = commands
+                .lines()
+                .map(|line| line.strip_prefix("$> "))
+                .filter_map(|line| {
+                    if line.is_none() {
+                        is_valid = false;
+                    }
+                    line
+                }).collect();
+            if !is_valid {
                 println!("INVALID TEST :");
                 println!("{commands}");
                 println!();
                 continue;
             }
-            lines.map(Option::unwrap).collect()
-            // .filter_map(|line| {
-            //     let mut words = line.split(' ');
-            //     let cmd = words.next()?;
-            //     let args = words.collect::<Vec<_>>();
-            //     let mut command = Command::new(cmd);
-            //     command.args(args);
-            //     Some(command)
-            // })
-            // .collect::<Vec<_>>()
+            commands
         } else {
             continue;
         };
-        let expected = if let Some(expected) = record.get(7) {
-            expected.to_owned()
-        } else {
-            continue;
-        };
-        let exit_code = if let Some(Ok(exit_code)) = record.get(8).map(str::parse) {
-            exit_code
-        } else {
-            continue;
-        };
-        tests.push(Test {
-            id,
-            commands,
-            expected,
-            exit_code,
-        });
+        tests.push(Test { id, commands });
     }
     Ok(tests)
 }
@@ -84,14 +67,13 @@ fn exec_test(test: &Test) -> bool {
     println!();
     println!("##### TEST {:>7} #####", test.id);
     println!("{}", test.commands);
-    if Command::new("bash")
-        .args(["-c", &test.commands])
-        .output()
-        .is_err()
-    {
-        println!("##### INVALID TEST #####");
-        return false;
-    }
+    let bash = match Command::new("bash").args(["-c", &test.commands]).output() {
+        Ok(minishell) => minishell,
+        Err(_) => {
+            println!("##### INVALID TEST #####");
+            return false;
+        }
+    };
     let minishell = match Command::new("../minishell")
         .args(["-c", &test.commands])
         .output()
@@ -102,29 +84,29 @@ fn exec_test(test: &Test) -> bool {
             return false;
         }
     };
-    match minishell.status.code() {
-        Some(code) => {
-            if code != test.exit_code {
+    match (bash.status.code(), minishell.status.code()) {
+        (Some(bash_code), Some(minishell_code)) => {
+            if bash_code != minishell_code {
                 println!("######## FAILED ########");
-                println!(
-                    "Expected status {}, got {}",
-                    test.exit_code,
-                    minishell.status.code().unwrap()
-                );
+                println!("Expected status {bash_code}, got {minishell_code}");
                 println!("########################");
                 return false;
             }
         }
-        None => {
+        (None, _) => {
+            println!("#### FAILED TO RUN! ####");
+            return false;
+        }
+        (_, None) => {
             println!("### PROGRAM CRASHED! ###");
             return false;
         }
     }
-    for (minishell_byte, test_byte) in minishell.stdout.iter().zip(test.expected.bytes()) {
-        if *minishell_byte != test_byte {
+    for (bash_byte, minishell_byte) in bash.stdout.iter().zip(minishell.stdout.iter()) {
+        if bash_byte != minishell_byte {
             println!("######## FAILED ########");
             println!("Expected output:");
-            println!("{}", test.expected);
+            println!("{}", String::from_utf8(bash.stdout).unwrap());
             println!("Tested output:");
             println!("{}", String::from_utf8(minishell.stdout).unwrap());
             println!("########################");
