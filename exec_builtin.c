@@ -19,7 +19,7 @@ bool	exec_builtin(char **args, t_shell_data *shell_data)
 	size_t	len;
 
 	cmd = args[0];
-	len = ft_strlen(cmd);
+	len = ft_strlen(cmd) + 1;
 	if (len == 0)
 		return (false);
 	if (ft_strncmp("echo", cmd, len) == 0)

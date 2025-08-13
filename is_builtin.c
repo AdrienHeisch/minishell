@@ -18,10 +18,11 @@ bool	is_builtin(t_string *name)
 	static const char *list[] = {"echo", "env", "export", 0};
 	size_t	idx;
 
+	ft_string_term(name);
 	idx = 0;
 	while (list[idx])
 	{
-		if (ft_strncmp(list[idx], name->content, name->length) == 0)
+		if (ft_strncmp(list[idx], name->content, name->length + 1) == 0)
 			return (true);
 		idx++;
 	}
