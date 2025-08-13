@@ -51,8 +51,9 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 		ft_string_ncat(&arg, &str->content[*idx], 1);
 		(*idx)++;
 	}
-	if (del)
-		ft_string_destroy(&arg);
+	// STRICTLY NOT INTERPRETING UNCLOSED QUOTES RATHER THAN RAISING AN ERROR
+	// if (del)
+	// 	ft_string_destroy(&arg);
 	return (arg);
 }
 
