@@ -57,7 +57,7 @@ int	main(int argc, char **argv, char **envp)
 
 	data.envp = dup_env(envp);
 	data.status = 0;
-	if (argc == 3 && ft_strncmp("-c", argv[1], 2) == 0)
+	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
 	{
 		str = ft_string_new();
 		ft_string_cat(&str, argv[2]);
