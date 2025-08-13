@@ -15,7 +15,7 @@
 
 bool	is_builtin(t_string *name)
 {
-	static const char	*list[] = {"echo", "env", "export", "pwd", "unset", 0};
+	static const char	*list[] = {"cd", "echo", "env", "export", "pwd", "unset", 0};
 	size_t				idx;
 
 	ft_string_term(name);

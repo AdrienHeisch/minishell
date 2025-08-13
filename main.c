@@ -20,12 +20,18 @@ static char **dup_env(char **envp)
 {
 	char	**dup;
 	size_t	len;
+	size_t	idx;
 
 	len = 0;
 	while (envp[len])
 		len++;
 	dup = ft_calloc(len + 1, sizeof(char *));
-	ft_memcpy(dup, envp, len * sizeof(char *));
+	idx = 0;
+	while (envp[idx])
+	{
+		dup[idx] = ft_strdup(envp[idx]);
+		idx++;
+	}
 	dup[len] = 0;
 	return (dup);
 }
@@ -56,7 +62,6 @@ int	main(int argc, char **argv, char **envp)
 	t_string		str;
 	t_shell_data	data;
 
-	data.pwd = getenv("PWD");
 	data.envp = dup_env(envp);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)

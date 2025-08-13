@@ -4,6 +4,7 @@ NAME = minishell
 
 SRCS = \
 	arg_list.c \
+	builtin_cd.c \
 	builtin_echo.c \
 	builtin_env.c \
 	builtin_export.c \
