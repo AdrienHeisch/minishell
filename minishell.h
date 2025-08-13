@@ -26,6 +26,7 @@ enum						e_error
 
 typedef struct s_shell_data
 {
+	char					*pwd;
 	char					**envp;
 	int						status;
 }							t_shell_data;
@@ -113,6 +114,7 @@ void						builtin_export(char **args,
 								t_shell_data *shell_data);
 void						builtin_unset(char **args,
 								t_shell_data *shell_data);
+void						builtin_pwd(char **args, t_shell_data *shell_data);
 
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);

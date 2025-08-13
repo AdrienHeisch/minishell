@@ -14,6 +14,7 @@
 #include "minishell.h"
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <stdlib.h>
 
 static char **dup_env(char **envp)
 {
@@ -55,6 +56,7 @@ int	main(int argc, char **argv, char **envp)
 	t_string		str;
 	t_shell_data	data;
 
+	data.pwd = getenv("PWD");
 	data.envp = dup_env(envp);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
