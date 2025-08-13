@@ -132,7 +132,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	char	*path;
 	int		i;
 
-	path = ft_getenv(envp, "PATH=");
+	path = ft_getenv(envp, "PATH");
 	if (!path || !*path)
 		return (NULL);
 	dirs = split_path(path);

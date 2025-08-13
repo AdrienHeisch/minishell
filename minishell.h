@@ -111,6 +111,8 @@ void						builtin_echo(char **args, t_shell_data *shell_data);
 void						builtin_env(t_shell_data *shell_data);
 void						builtin_export(char **args,
 								t_shell_data *shell_data);
+void						builtin_unset(char **args,
+								t_shell_data *shell_data);
 
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
@@ -119,8 +121,9 @@ void						free_args_list(char **args);
 void						no_op(void *p);
 void						lstclear_string(void *str);
 bool						is_whitespace(t_string *str);
-char					*ft_getenv(char **envp, char *name);
+char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
+void						ft_unsetenv(char ***envp, const char *name);
 
 #endif // !MINISHELL_H

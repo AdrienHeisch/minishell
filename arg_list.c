@@ -20,10 +20,11 @@ static void	expand_var(t_string *var, t_shell_data *shell_data)
 	char		*value;
 
 	ft_string_move(var, &var_name);
-	ft_string_cat(&var_name, "=");
 	*var = ft_string_new();
 	ft_string_term(&var_name);
 	value = ft_getenv(shell_data->envp, var_name.content);
+	if (!value)
+		value = "";
 	ft_string_cat(var, value);
 	ft_string_destroy(&var_name);
 }

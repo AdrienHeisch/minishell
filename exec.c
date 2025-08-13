@@ -22,6 +22,7 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 		return ;
 	if (expr->type == EX_CMD)
 	{
+		// TODO merge is_builtin exec_builtin
 		if (expr->data.cmd.args->content
 			&& is_builtin(&((t_arg_data *)expr->data.cmd.args->content)->string))
 		{

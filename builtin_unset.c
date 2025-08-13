@@ -1,30 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   is_builtin.c                                       :+:      :+:    :+:   */
+/*   builtin_unset.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/11 21:18:18 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/11 21:18:18 by aheisch          ###   ########.fr       */
+/*   Created: 2025/08/13 19:11:34 by aheisch           #+#    #+#             */
+/*   Updated: 2025/08/13 19:11:34 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
 
-bool	is_builtin(t_string *name)
+void	builtin_unset(char **args, t_shell_data *shell_data)
 {
-	static const char *list[] = {"echo", "env", "export", "unset", 0};
-	size_t	idx;
-
-	ft_string_term(name);
-	idx = 0;
-	while (list[idx])
-	{
-		if (ft_strncmp(list[idx], name->content, name->length + 1) == 0)
-			return (true);
-		idx++;
-	}
-	return (false);
+	if (args[1])
+		ft_unsetenv(&shell_data->envp, args[1]);
+	shell_data->status = 0;
 }
