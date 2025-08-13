@@ -12,9 +12,27 @@
 
 #include "minishell.h"
 
+static bool	parse_args(char **args)
+{
+	size_t	idx;
+
+	idx = 1;
+	while (args[idx])
+	{
+		if (args[idx][0] == '-')
+			return (false);
+		idx++;
+	}
+	return (true);
+}
+
 void	builtin_pwd(char **args, t_shell_data *shell_data)
 {
-	(void)args;
+	if (!parse_args(args))
+	{
+		shell_data->status = 2;
+		return ;
+	}
 	printf("%s\n", shell_data->pwd);
 	shell_data->status = 0;
 }
