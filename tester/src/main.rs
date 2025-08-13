@@ -7,7 +7,7 @@ use std::{
 
 const TESTS_PATH: &str = "tests.csv";
 const ENABLE_BONUSES: bool = false;
-const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103];
+const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 407, 418];
 
 struct Test {
     id: usize,

@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -19,6 +20,12 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	char	*path;
 	char	*pwd;
 
+	if (args[1] && args[2])
+	{
+		ft_putstr_fd("cd: too many arguments\n", 2);
+		shell_data->status = 1;
+		return ;
+	}
 	path = args[1];
 	if (!path)
 		path = ft_getenv(shell_data->envp, "HOME");
