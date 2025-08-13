@@ -42,7 +42,7 @@ bool	is_whitespace(t_string *str)
 
 char	*ft_getenv(char **envp, const char *name)
 {
-	int		i;
+	int		idx;
 	size_t	len;
 	char	*name_suffix;
 
@@ -50,26 +50,24 @@ char	*ft_getenv(char **envp, const char *name)
 	if (!name_suffix)
 		exit(MS_ALLOC);
 	len = ft_strlen(name_suffix);
-	i = 0;
-	while (envp[i])
+	idx = 0;
+	while (envp[idx])
 	{
-		if (ft_strncmp(envp[i], name_suffix, len) == 0)
-			return (free(name_suffix), envp[i] + len);
-		i++;
+		if (ft_strncmp(envp[idx], name_suffix, len) == 0)
+			return (free(name_suffix), envp[idx] + len);
+		idx++;
 	}
 	free(name_suffix);
 	return (NULL);
 }
 
-void	ft_setenv(char ***envp, const char *name, const char *value,
-		int overwrite)
+static void	add_to_env(char ***envp, const char *name, const char *value)
 {
 	char	**old;
 	char	**new;
 	char	*name_suffix;
 	size_t	len;
 
-	(void)overwrite;
 	old = *envp;
 	len = 0;
 	while (old[len])
@@ -88,6 +86,39 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 	free(name_suffix);
 	free(old);
 	*envp = new;
+}
+
+void	ft_setenv(char ***envp, const char *name, const char *value,
+		int overwrite)
+{
+	char	*name_suffix;
+	size_t	len;
+	size_t	idx;
+
+	if (!ft_getenv(*envp, name))
+	{
+		add_to_env(envp, name, value);
+		return ;
+	}
+	if (!overwrite)
+		return ;
+	name_suffix = ft_strjoin(name, "=");
+	if (!name_suffix)
+		exit(MS_ALLOC);
+	len = ft_strlen(name_suffix);
+	idx = 0;
+	while ((*envp)[idx])
+	{
+		if (ft_strncmp((*envp)[idx], name_suffix, len) == 0)
+		{
+			free((*envp)[idx]);
+			(*envp)[idx] = ft_strjoin(name_suffix, value);
+			if (!(*envp)[idx])
+				exit(MS_SUCCESS);
+			break ;
+		}
+		idx++;
+	}
 }
 
 void	ft_unsetenv(char ***envp, const char *name)
