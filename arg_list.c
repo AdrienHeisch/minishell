@@ -52,7 +52,7 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 	del = '\0';
 	idx = 0;
 	has_empty_var = false;
-	while (idx < arg->length)
+	while (idx < arg->length && arg->content[idx])
 	{
 		if (!del && (arg->content[idx] == '\'' || arg->content[idx] == '"'))
 		{
