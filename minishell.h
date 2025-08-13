@@ -109,6 +109,7 @@ bool						is_builtin(t_string *name);
 bool						exec_builtin(char **args, t_shell_data *shell_data);
 void						builtin_echo(char **args, t_shell_data *shell_data);
 void						builtin_env(t_shell_data *shell_data);
+void						builtin_exit(char **args, t_shell_data *shell_data);
 void						builtin_export(char **args,
 								t_shell_data *shell_data);
 void						builtin_unset(char **args,

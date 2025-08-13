@@ -29,19 +29,19 @@ static bool	parse_args(char **args)
 
 void	builtin_pwd(char **args, t_shell_data *shell_data)
 {
-	char	*pwd;
+	char	*cwd;
 
 	if (!parse_args(args))
 	{
 		shell_data->status = 2;
 		return ;
 	}
-	pwd = getcwd(NULL, 0);
-	if (!pwd)
+	cwd = getcwd(NULL, 0);
+	if (!cwd)
 	{
 		shell_data->status = 1;
 		return ;
 	}
-	printf("%s\n", pwd);
+	printf("%s\n", cwd);
 	shell_data->status = 0;
 }

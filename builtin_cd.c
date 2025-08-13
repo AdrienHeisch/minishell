@@ -18,7 +18,7 @@
 void	builtin_cd(char **args, t_shell_data *shell_data)
 {
 	char	*path;
-	char	*pwd;
+	char	*cwd;
 
 	if (args[1] && args[2])
 	{
@@ -35,12 +35,12 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 		shell_data->status = 1;
 		return ;
 	}
-	pwd = getcwd(NULL, 0);
-	if (!pwd)
+	cwd = getcwd(NULL, 0);
+	if (!cwd)
 	{
 		shell_data->status = 1;
 		return ;
 	}
-	ft_setenv(&shell_data->envp, "PWD", pwd, true);
+	ft_setenv(&shell_data->envp, "PWD", cwd, true);
 	shell_data->status = 0;
 }

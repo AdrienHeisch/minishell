@@ -28,6 +28,8 @@ bool	exec_builtin(char **args, t_shell_data *shell_data)
 		builtin_echo(args, shell_data);
 	else if (ft_strncmp("env", cmd, len) == 0)
 		builtin_env(shell_data);
+	else if (ft_strncmp("exit", cmd, len) == 0)
+		builtin_exit(args, shell_data);
 	else if (ft_strncmp("export", cmd, len) == 0)
 		builtin_export(args, shell_data);
 	else if (ft_strncmp("pwd", cmd, len) == 0)

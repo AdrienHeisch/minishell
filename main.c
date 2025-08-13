@@ -15,12 +15,14 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static char **dup_env(char **envp)
 {
 	char	**dup;
 	size_t	len;
 	size_t	idx;
+	char	*cwd;
 
 	len = 0;
 	while (envp[len])
@@ -33,6 +35,9 @@ static char **dup_env(char **envp)
 		idx++;
 	}
 	dup[len] = 0;
+	cwd = getcwd(NULL, 0);
+	if (cwd)
+		ft_setenv(&dup, "PWD", cwd, true);
 	return (dup);
 }
 
