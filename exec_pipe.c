@@ -23,8 +23,14 @@ static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd,
 		exit(-1);
 	if (dup2(out_fd, STDOUT_FILENO) == -1)
 		exit(-1);
-	// close(in_fd);
-	exec_cmd(cmd, shell_data);
+	if (cmd.args->content
+		&& is_builtin(&((t_arg_data *)cmd.args->content)->string))
+	{
+		exec_builtin(make_arg_list(cmd, shell_data), shell_data);
+		exit(shell_data->status);
+	}
+	else
+		exec_cmd(cmd, shell_data);
 }
 
 static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
@@ -53,8 +59,7 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 	*prev_fd = next_fd[0];
 }
 
-void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd,
-		int outfile)
+int	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
 {
 	pid_t	pid;
 
@@ -63,21 +68,23 @@ void	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd,
 		exit(-1);
 	if (pid == 0)
 		run_child(cmd, shell_data, prev_fd, outfile);
-	if (prev_fd > 0)
-		close(prev_fd);
+	return (pid);
 }
 
-static int	wait_all(void)
+static int	wait_all(int last_pid)
 {
 	int	status_location;
+	int	exit_code;
 
 	status_location = -1;
+	waitpid(last_pid, &status_location, 0);
+	if (WIFEXITED(status_location))
+		exit_code = WEXITSTATUS(status_location);
+	else
+		exit_code = -1;
 	while (waitpid(0, &status_location, 0) > 0)
 		;
-	if (WIFEXITED(status_location))
-		return (WEXITSTATUS(status_location));
-	else
-		return (-1);
+	return (exit_code);
 }
 
 static void	build_cmd_list(t_list **cmds, t_pipe pipe)
@@ -96,6 +103,7 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 	t_list	*cmd;
 	int		prev_fd;
 	int		next_fd[2];
+	int		exit_code;
 
 	cmds = NULL;
 	build_cmd_list(&cmds, pipe);
@@ -108,8 +116,10 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 		child_and_pipe(*((t_cmd *)cmd->content), shell_data, &prev_fd, next_fd);
 		cmd = cmd->next;
 	}
-	child_last(*((t_cmd *)cmd->content), shell_data, prev_fd,
-		((t_cmd *)cmd->content)->fd_out);
+	exit_code = wait_all(child_last(*((t_cmd *)cmd->content), shell_data,
+				prev_fd, ((t_cmd *)cmd->content)->fd_out));
+	if (prev_fd > 0)
+		close(prev_fd);
 	ft_lstclear(&cmds, no_op);
-	return (wait_all());
+	return (exit_code);
 }
