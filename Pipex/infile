@@ -1,9 +1,0 @@
-command_assemble.c
-commands.c
-free.c
-includes
-infile
-Makefile
-outfile
-pipex
-pipex.c
