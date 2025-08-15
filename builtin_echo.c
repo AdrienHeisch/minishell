@@ -32,7 +32,7 @@ static bool	parse_options(char *arg, int *flags)
 	return (true);
 }
 
-void	builtin_echo(char **args, t_shell_data *shell_data)
+void	builtin_echo(char **args, t_shell_data *shell_data, int	fd_out)
 {
 	int		flags;
 	size_t	idx;
@@ -47,11 +47,11 @@ void	builtin_echo(char **args, t_shell_data *shell_data)
 	}
 	while (args[idx])
 	{
-		ft_putstr_fd(args[idx++], 1);
+		ft_putstr_fd(args[idx++], fd_out);
 		if (args[idx])
-			ft_putstr_fd(" ", 1);
+			ft_putstr_fd(" ", fd_out);
 	}
 	if (!(flags & 1))
-		ft_putstr_fd("\n", 1);
+		ft_putstr_fd("\n", fd_out);
 	shell_data->status = 0;
 }

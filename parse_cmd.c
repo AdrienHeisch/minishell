@@ -15,9 +15,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static bool	is_arg(t_token_type type)
+static bool	is_cmd(t_token_type type)
 {
-	return (type == TK_ARG);
+	return (type == TK_ARG || type == TK_REDIR);
 }
 
 t_expr	*parse_cmd(t_list **tokens)
@@ -38,19 +38,25 @@ t_expr	*parse_cmd(t_list **tokens)
 	ft_string_destroy(&expr->data.cmd.file_in);
 	expr->data.cmd.file_out.content = NULL;
 	ft_string_destroy(&expr->data.cmd.file_out);
-	while (*tokens && is_arg(((t_token *)(*tokens)->content)->type))
+	while (*tokens && is_cmd(((t_token *)(*tokens)->content)->type))
 	{
 		token = ft_lstpop_front(tokens);
-		// TODO build list of redirections
-		// if (( (t_token *)token->content )->type == TK_REDIR_IN)
-		// {
-		// 	// expr->data.cmd.file_in
-		// 	continue ;
-		// }
+		if (((t_token *)token->content)->type == TK_REDIR)
+		{
+			ft_lstdelone(token, (void (*)(void *))free_token);
+			token = ft_lstpop_front(tokens);
+			if (!token || ((t_token *)token->content)->type != TK_ARG)
+				return (free_expr(expr), NULL);
+			ft_string_move(&((t_token *)token->content)->data.arg.string,
+				&expr->data.cmd.file_out);
+			ft_lstdelone(token, (void (*)(void *))free_token);
+			continue ;
+		}
 		arg_data = malloc(sizeof(t_arg_data));
 		if (!arg_data)
 			exit(MS_ALLOC);
-		ft_string_move(&((t_token *)token->content)->data.arg.string, &arg_data->string);
+		ft_string_move(&((t_token *)token->content)->data.arg.string,
+			&arg_data->string);
 		arg = ft_lstnew(arg_data);
 		ft_lstadd_back(&expr->data.cmd.args, arg);
 		ft_lstdelone(token, (void (*)(void *))free_token);

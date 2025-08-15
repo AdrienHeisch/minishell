@@ -77,15 +77,17 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		(*idx)++;
 	}
 	// TODO redir fd
-	else if (c == '<')
-	{
-		token.type = TK_REDIR_IN;
-		token.data.redir.fd = 0;
-		(*idx)++;
-	}
+	// else if (c == '<')
+	// {
+	// 	token.type = TK_REDIR;
+	// 	token.data.redir.type = REDIR_OUT;
+	// 	token.data.redir.fd = 0;
+	// 	(*idx)++;
+	// }
 	else if (c == '>')
 	{
-		token.type = TK_REDIR_OUT;
+		token.type = TK_REDIR;
+		token.data.redir.type = REDIR_OUT;
 		token.data.redir.fd = 1;
 		(*idx)++;
 	}
@@ -119,7 +121,7 @@ t_list	*lex(t_string *str)
 			return (ft_lstclear(&tokens, (void (*)(void *))free_token), NULL);
 		new_list = ft_lstnew(token);
 		if (!new_list)
-			break ; // TODO ????
+			exit(MS_ALLOC);
 		ft_lstadd_back(&tokens, new_list);
 	}
 	return (tokens);

@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <unistd.h>
 
@@ -27,7 +28,7 @@ static bool	parse_args(char **args)
 	return (true);
 }
 
-void	builtin_pwd(char **args, t_shell_data *shell_data)
+void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 {
 	char	*cwd;
 
@@ -42,6 +43,7 @@ void	builtin_pwd(char **args, t_shell_data *shell_data)
 		shell_data->status = 1;
 		return ;
 	}
-	printf("%s\n", cwd);
+	ft_putstr_fd(cwd, fd_out);
+	ft_putstr_fd("\n", fd_out);
 	shell_data->status = 0;
 }

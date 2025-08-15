@@ -30,5 +30,6 @@ t_list	*parse(t_string *str)
 			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
 		ft_lstadd_back(&exprs, ft_lstnew(expr));
 	}
+	// ft_lstiter(exprs, (void (*)(void *))print_expr);
 	return (exprs);
 }

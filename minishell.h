@@ -22,6 +22,7 @@ enum						e_error
 	MS_SUCCESS,
 	MS_USAGE,
 	MS_ALLOC,
+	MS_UNREACHABLE,
 };
 
 typedef struct s_shell_data
@@ -35,9 +36,13 @@ typedef enum s_token_type
 	TK_INVALID,
 	TK_ARG,
 	TK_PIPE,
-	TK_REDIR_IN,
-	TK_REDIR_OUT,
+	TK_REDIR,
 }							t_token_type;
+
+typedef enum s_redir_type
+{
+	REDIR_OUT,
+}							t_redir_type;
 
 typedef struct s_token
 {
@@ -50,7 +55,9 @@ typedef struct s_token
 		} arg;
 		struct				s_redir_data
 		{
+			t_redir_type	type;
 			int				fd;
+			t_string		file_name;
 		} redir;
 	} data;
 }							t_token;
@@ -72,7 +79,7 @@ typedef struct s_expr
 		struct				s_cmd
 		{
 			t_list			*args;
-			// t_list			*redirs_in; // TODO list of redirections
+			t_list *redirs_in; // TODO list of redirections
 			int				fd_in;
 			int				fd_out;
 			t_string		file_in;
@@ -106,16 +113,18 @@ int							child_last(t_cmd cmd, t_shell_data *shell_data,
 								int prev_fd, int outfile);
 
 bool						is_builtin(t_string *name);
-bool						exec_builtin(char **args, t_shell_data *shell_data);
-void						builtin_echo(char **args, t_shell_data *shell_data);
-void						builtin_env(t_shell_data *shell_data);
+bool						exec_builtin(t_cmd cmd, t_shell_data *shell_data);
+void						builtin_cd(char **args, t_shell_data *shell_data);
+void						builtin_echo(char **args, t_shell_data *shell_data,
+								int fd_out);
+void						builtin_env(t_shell_data *shell_data, int fd_out);
 void						builtin_exit(char **args, t_shell_data *shell_data);
 void						builtin_export(char **args,
-								t_shell_data *shell_data);
+								t_shell_data *shell_data, int fd_out);
 void						builtin_unset(char **args,
 								t_shell_data *shell_data);
-void						builtin_pwd(char **args, t_shell_data *shell_data);
-void						builtin_cd(char **args, t_shell_data *shell_data);
+void						builtin_pwd(char **args, t_shell_data *shell_data,
+								int fd_out);
 
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);

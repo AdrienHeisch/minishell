@@ -10,16 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <stddef.h>
 #include <stdlib.h>
 
-void	builtin_env(t_shell_data *shell_data)
+void	builtin_env(t_shell_data *shell_data, int fd_out)
 {
 	size_t	idx;
 
 	idx = 0;
 	while (shell_data->envp[idx])
-		printf("%s\n", shell_data->envp[idx++]);
+	{
+		ft_putstr_fd(shell_data->envp[idx++], fd_out);
+		ft_putstr_fd("\n", fd_out);
+	}
 	shell_data->status = 0;
 }

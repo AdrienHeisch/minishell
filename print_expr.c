@@ -12,6 +12,7 @@
 
 #include "minishell.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void	print_expr(t_expr *expr)
 {
@@ -26,6 +27,8 @@ void	print_expr(t_expr *expr)
 			printf("%s ", ft_string_get(lst->content));
 			lst = lst->next;
 		}
+		if (expr->data.cmd.file_out.content)
+			printf("> %s ", expr->data.cmd.file_out.content);
 	}
 	else if (expr->type == EX_PIPE)
 	{
@@ -34,5 +37,7 @@ void	print_expr(t_expr *expr)
 		print_expr(expr->data.pipe.right);
 		printf("PIPE_END");
 	}
+	else
+		exit(MS_UNREACHABLE);
 	printf("\n");
 }

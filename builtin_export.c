@@ -15,7 +15,7 @@
 
 #define EXPORT_PREFIX "declare -x"
 
-void	builtin_export(char **args, t_shell_data *shell_data)
+void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 {
 	size_t	idx;
 	char	**split;
@@ -24,7 +24,12 @@ void	builtin_export(char **args, t_shell_data *shell_data)
 	{
 		idx = 0;
 		while (shell_data->envp[idx])
-			printf("%s %s\n", EXPORT_PREFIX, shell_data->envp[idx++]);
+		{
+			ft_putstr_fd(EXPORT_PREFIX, fd_out);
+			ft_putstr_fd(" ", fd_out);
+			ft_putstr_fd(shell_data->envp[idx++], fd_out);
+			ft_putstr_fd("\n", fd_out);
+		}
 		shell_data->status = 0;
 		return ;
 	}

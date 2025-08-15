@@ -26,7 +26,7 @@ static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd,
 	if (cmd.args->content
 		&& is_builtin(&((t_arg_data *)cmd.args->content)->string))
 	{
-		exec_builtin(make_arg_list(cmd, shell_data), shell_data);
+		exec_builtin(cmd, shell_data);
 		exit(shell_data->status);
 	}
 	else
