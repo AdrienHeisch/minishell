@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static bool	is_fully_numeric(const char *s)
 {
@@ -65,7 +66,8 @@ void	builtin_exit(char **args, t_shell_data *shell_data)
 {
 	long	exit_code;
 
-	ft_putstr_fd("exit\n", 2);
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+		ft_putstr_fd("exit\n", 2);
 	exit_code = 0;
 	if (args[1])
 	{
