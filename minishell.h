@@ -79,7 +79,6 @@ typedef struct s_expr
 		struct				s_cmd
 		{
 			t_list			*args;
-			t_list *redirs_in; // TODO list of redirections
 			int				fd_in;
 			int				fd_out;
 			t_string		file_in;
@@ -109,8 +108,7 @@ t_expr						*parse_redir_in(t_list **tokens, t_list **exprs);
 void						exec(t_expr *expr, t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
-int							child_last(t_cmd cmd, t_shell_data *shell_data,
-								int prev_fd, int outfile);
+int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 
 bool						is_builtin(t_string *name);
 bool						exec_builtin(t_cmd cmd, t_shell_data *shell_data);
@@ -129,6 +127,9 @@ void						builtin_pwd(char **args, t_shell_data *shell_data,
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
+
+void						resolve_redirections(t_cmd *cmd);
+void						close_redirections(t_cmd *cmd);
 
 void						no_op(void *p);
 void						lstclear_string(void *str);

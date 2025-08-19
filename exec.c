@@ -16,15 +16,32 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static void	resolve_redirections(t_cmd *cmd)
+void	resolve_redirections(t_cmd *cmd)
 {
+	if (cmd->file_in.content)
+	{
+		cmd->fd_in = open(cmd->file_in.content, O_RDONLY);
+		if (cmd->fd_in == -1)
+			exit(42);
+	}
+	else
+		cmd->fd_in = STDIN_FILENO;
 	if (cmd->file_out.content)
-		cmd->fd_out = open(cmd->file_out.content, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	{
+		cmd->fd_out = open(cmd->file_out.content, O_WRONLY | O_CREAT,
+				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		if (cmd->fd_in == -1)
+			exit(42);
+	}
+	else
+		cmd->fd_out = STDOUT_FILENO;
 }
 
-static void	close_redirections(t_cmd *cmd)
+void	close_redirections(t_cmd *cmd)
 {
-	if (cmd->file_out.content)
+	if (cmd->fd_in != STDIN_FILENO)
+		close(cmd->fd_in);
+	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
 }
 
@@ -37,7 +54,6 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 	if (expr->type == EX_CMD)
 	{
 		resolve_redirections(&expr->data.cmd);
-		// TODO merge is_builtin exec_builtin
 		if (expr->data.cmd.args->content
 			&& is_builtin(&((t_arg_data *)expr->data.cmd.args->content)->string))
 		{
@@ -45,8 +61,8 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 		}
 		else
 		{
-			waitpid(child_last(expr->data.cmd, shell_data, expr->data.cmd.fd_in,
-					expr->data.cmd.fd_out), &status_location, 0);
+			waitpid(fork_exec_cmd(expr->data.cmd, shell_data), &status_location,
+				0);
 			if (WIFEXITED(status_location))
 				shell_data->status = WEXITSTATUS(status_location);
 			else

@@ -16,13 +16,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd,
-		int out_fd)
+static void	run_child(t_cmd cmd, t_shell_data *shell_data)
 {
-	if (dup2(in_fd, STDIN_FILENO) == -1)
-		exit(-1);
-	if (dup2(out_fd, STDOUT_FILENO) == -1)
-		exit(-1);
+	// printf("in: %d, out: %d\n", in_fd, out_fd);
 	if (cmd.args->content
 		&& is_builtin(&((t_arg_data *)cmd.args->content)->string))
 	{
@@ -30,7 +26,13 @@ static void	run_child(t_cmd cmd, t_shell_data *shell_data, int in_fd,
 		exit(shell_data->status);
 	}
 	else
+	{
+		if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
+			exit(-1);
+		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
+			exit(-1);
 		exec_cmd(cmd, shell_data);
+	}
 }
 
 static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
@@ -51,7 +53,9 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 	if (pid == 0)
 	{
 		close(next_fd[0]);
-		run_child(cmd, shell_data, *prev_fd, next_fd[1]);
+		cmd.fd_in = *prev_fd;
+		cmd.fd_out = next_fd[1];
+		run_child(cmd, shell_data);
 	}
 	close(next_fd[1]);
 	if (*prev_fd > 0)
@@ -59,7 +63,7 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 	*prev_fd = next_fd[0];
 }
 
-int	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
+int	fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
 	pid_t	pid;
 
@@ -67,7 +71,7 @@ int	child_last(t_cmd cmd, t_shell_data *shell_data, int prev_fd, int outfile)
 	if (pid == -1)
 		exit(-1);
 	if (pid == 0)
-		run_child(cmd, shell_data, prev_fd, outfile);
+		run_child(cmd, shell_data);
 	return (pid);
 }
 
@@ -109,15 +113,17 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 	build_cmd_list(&cmds, pipe);
 	if (!cmds)
 		exit(-1);
-	prev_fd = ((t_cmd *)cmds->content)->fd_in;
 	cmd = cmds;
+	resolve_redirections(cmd->content);
+	prev_fd = ((t_cmd *)cmd->content)->fd_in;
 	while (cmd->next != NULL)
 	{
 		child_and_pipe(*((t_cmd *)cmd->content), shell_data, &prev_fd, next_fd);
 		cmd = cmd->next;
+		resolve_redirections(cmd->content);
 	}
-	exit_code = wait_all(child_last(*((t_cmd *)cmd->content), shell_data,
-				prev_fd, ((t_cmd *)cmd->content)->fd_out));
+	((t_cmd *)cmd->content)->fd_in = prev_fd;
+	exit_code = wait_all(fork_exec_cmd(*((t_cmd *)cmd->content), shell_data));
 	if (prev_fd > 0)
 		close(prev_fd);
 	ft_lstclear(&cmds, no_op);

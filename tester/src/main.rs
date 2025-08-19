@@ -15,12 +15,13 @@ struct Test {
 }
 
 fn fix_tests(path: PathBuf) -> io::Result<()> {
-    let mut string = std::fs::read_to_string(&path)?;
-    string = string
+    let string = std::fs::read_to_string(&path)?
         .replace("(touche entrée)", "")
         .replace("[que des espaces]", "           ")
         .replace("[que des tabulations]", "\t\t\t\t\t\t\t\t")
-        .replace("$UID", "$SHELL");
+        .replace("$UID", "$SHELL")
+        .replace(" [$TERM],", " \"[$TERM]\",")
+        .replace("sleep 3", "sleep 1");
     std::fs::write(&path, string)?;
     Ok(())
 }
