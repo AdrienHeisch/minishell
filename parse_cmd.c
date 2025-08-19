@@ -43,11 +43,7 @@ t_expr	*parse_cmd(t_list **tokens)
 		token = ft_lstpop_front(tokens);
 		if (((t_token *)token->content)->type == TK_REDIR)
 		{
-			ft_lstdelone(token, (void (*)(void *))free_token);
-			token = ft_lstpop_front(tokens);
-			if (!token || ((t_token *)token->content)->type != TK_ARG)
-				return (free_expr(expr), NULL);
-			ft_string_move(&((t_token *)token->content)->data.arg.string,
+			ft_string_move(&((t_token *)token->content)->data.redir.file_name,
 				&expr->data.cmd.file_out);
 			ft_lstdelone(token, (void (*)(void *))free_token);
 			continue ;

@@ -24,9 +24,10 @@ void	print_token(t_token *token)
 	{
 		printf("REDIR: ");
 		if (token->data.redir.type == REDIR_OUT)
-			printf("OUT\n");
+			printf("> ");
 		else
 			exit(MS_UNREACHABLE);
+		printf("%s\n", token->data.redir.file_name.content);
 	}
 	else
 		exit(MS_UNREACHABLE);

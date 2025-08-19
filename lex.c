@@ -90,6 +90,13 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		token.data.redir.type = REDIR_OUT;
 		token.data.redir.fd = 1;
 		(*idx)++;
+		while (str->content[*idx] == ' ')
+			(*idx)++;
+		if (!is_arg(str->content[*idx]))
+			token.type = TK_INVALID;
+		token.data.redir.file_name = parse_arg(str, idx);
+		if (!token.data.redir.file_name.content)
+			token.type = TK_INVALID;
 	}
 	else
 		return (NULL);
