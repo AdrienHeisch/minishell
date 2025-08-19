@@ -187,7 +187,7 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 		free_args_list(args);
 		exit(127);
 	}
-	if (access(path, X_OK) == -1)
+	if (access(path, F_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);
 	if (!path)
 	{
