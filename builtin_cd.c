@@ -18,8 +18,15 @@
 void	builtin_cd(char **args, t_shell_data *shell_data)
 {
 	char	*path;
+	char	*old_cwd;
 	char	*cwd;
 
+	old_cwd = getcwd(NULL, 0);
+	if (!old_cwd)
+	{
+		shell_data->status = 1;
+		return ;
+	}
 	if (args[1] && args[2])
 	{
 		ft_putstr_fd("cd: too many arguments\n", 2);
@@ -41,6 +48,7 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 		shell_data->status = 1;
 		return ;
 	}
+	ft_setenv(&shell_data->envp, "OLDPWD", old_cwd, true);
 	ft_setenv(&shell_data->envp, "PWD", cwd, true);
 	shell_data->status = 0;
 }

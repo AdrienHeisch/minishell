@@ -66,15 +66,24 @@ int	main(int argc, char **argv, char **envp)
 {
 	t_string		str;
 	t_shell_data	data;
+	char			**tab;
+	size_t			idx;
 
 	data.envp = dup_env(envp);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
 	{
-		str = ft_string_new();
-		ft_string_cat(&str, argv[2]);
-		parse_and_exec(&str, &data);
-		return (ft_string_destroy(&str), data.status);
+		tab = ft_split(argv[2], '\n');
+		idx = 0;
+		while (tab[idx])
+		{
+			str = ft_string_new();
+			ft_string_cat(&str, tab[idx]);
+			parse_and_exec(&str, &data);
+			ft_string_destroy(&str);
+			idx++;
+		}
+		return (data.status);
 	}
 	if (argc > 1)
 		return (MS_USAGE);

@@ -59,7 +59,8 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
                     }
                     line
                 })
-                .collect();
+                .collect::<Vec<_>>()
+                .join("\n");
             if !is_valid {
                 println!("INVALID TEST :");
                 println!("{commands}");
