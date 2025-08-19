@@ -46,26 +46,34 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
         }
         let commands = if let Some(commands) = record.get(1) {
             let mut is_valid = true;
-            if commands.contains("Ctlr-") || commands.contains("env") || commands.contains("export") || commands.contains("unset")
+            if commands.contains("Ctlr-")
+                || commands.contains("env")
+                || commands.contains("export")
+                || commands.contains("unset")
                 || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
             {
                 continue;
             }
-            let commands = commands
-                .lines()
-                .filter_map(|line| {
-                    let line = line.strip_prefix("$> ");
-                    if line.is_none() {
-                        is_valid = false;
-                    }
-                    line
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
+            let mut lines = Vec::new();
+            for line in commands.lines() {
+                let stripped = line.strip_prefix("$> ");
+                match stripped {
+                    Some(line) => lines.push(line.to_owned()),
+                    None => match lines.last_mut() {
+                        Some(prev) => prev.push_str(line),
+                        None => {
+                            is_valid = false;
+                            break;
+                        }
+                    },
+                }
+            }
+            let commands = lines.join("\n");
             if !is_valid {
-                println!("INVALID TEST :");
-                println!("{commands}");
-                println!();
+                println!("INVALID TEST : {id}");
+                if !commands.is_empty() {
+                    println!("{commands}");
+                }
                 continue;
             }
             commands
@@ -118,7 +126,7 @@ fn exec_test(test: &Test) -> bool {
         }
     }
     let bash_stdout = String::from_utf8(bash.stdout).unwrap();
-    let minishell_stdout = String::from_utf8(minishell.stdout).unwrap();
+    let minishell_stdout = String::from_utf8_lossy(&minishell.stdout);
     if bash_stdout != minishell_stdout {
         println!("######## FAILED ########");
         println!("Expected output:");
@@ -133,19 +141,22 @@ fn exec_test(test: &Test) -> bool {
 }
 
 fn main() -> io::Result<()> {
+    let args = std::env::args().collect::<Vec<_>>();
+    let start_at = args.get(1).map(|arg| arg.parse().unwrap_or(0)).unwrap_or(0);
     let path = std::env::current_dir()?;
     fix_tests(TESTS_PATH.into())?;
-    std::fs::remove_dir_all("./tmp").ok();
-    for test in parse_tests(TESTS_PATH.into())?.iter() {
-        std::fs::create_dir("./tmp")?;
-        std::env::set_current_dir("./tmp")?;
+    std::fs::remove_dir_all(path.join("tmp")).ok();
+    for test in parse_tests(TESTS_PATH.into())?
+        .iter()
+        .skip_while(|test| test.id < start_at)
+    {
+        std::fs::create_dir(path.join("tmp"))?;
+        std::env::set_current_dir(path.join("tmp"))?;
         if !exec_test(test) {
             break;
         }
         std::env::set_current_dir(&path)?;
-        std::fs::remove_dir_all("./tmp")?;
+        std::fs::remove_dir_all(path.join("tmp"))?;
     }
-    std::env::set_current_dir(&path)?;
-    std::fs::remove_dir_all("./tmp")?;
     Ok(())
 }
