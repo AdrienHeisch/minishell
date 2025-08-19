@@ -76,14 +76,20 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		token.type = TK_PIPE;
 		(*idx)++;
 	}
-	// TODO redir fd
-	// else if (c == '<')
-	// {
-	// 	token.type = TK_REDIR;
-	// 	token.data.redir.type = REDIR_OUT;
-	// 	token.data.redir.fd = 0;
-	// 	(*idx)++;
-	// }
+	else if (c == '<')
+	{
+		token.type = TK_REDIR;
+		token.data.redir.type = REDIR_IN;
+		token.data.redir.fd = 0;
+		(*idx)++;
+		while (str->content[*idx] == ' ')
+			(*idx)++;
+		if (!is_arg(str->content[*idx]))
+			token.type = TK_INVALID;
+		token.data.redir.file_name = parse_arg(str, idx);
+		if (!token.data.redir.file_name.content)
+			token.type = TK_INVALID;
+	}
 	else if (c == '>')
 	{
 		token.type = TK_REDIR;

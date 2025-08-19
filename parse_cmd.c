@@ -43,8 +43,14 @@ t_expr	*parse_cmd(t_list **tokens)
 		token = ft_lstpop_front(tokens);
 		if (((t_token *)token->content)->type == TK_REDIR)
 		{
-			ft_string_move(&((t_token *)token->content)->data.redir.file_name,
-				&expr->data.cmd.file_out);
+			if (((t_token *)token->content)->data.redir.type == REDIR_IN)
+				ft_string_move(&((t_token *)token->content)->data.redir.file_name,
+					&expr->data.cmd.file_in);
+			else if (((t_token *)token->content)->data.redir.type == REDIR_OUT)
+				ft_string_move(&((t_token *)token->content)->data.redir.file_name,
+					&expr->data.cmd.file_out);
+			else
+				exit(MS_UNREACHABLE);
 			ft_lstdelone(token, (void (*)(void *))free_token);
 			continue ;
 		}

@@ -41,6 +41,7 @@ typedef enum s_token_type
 
 typedef enum s_redir_type
 {
+	REDIR_IN,
 	REDIR_OUT,
 }							t_redir_type;
 
