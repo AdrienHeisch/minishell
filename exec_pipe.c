@@ -18,7 +18,7 @@
 
 static void	run_child(t_cmd cmd, t_shell_data *shell_data)
 {
-	// printf("in: %d, out: %d\n", in_fd, out_fd);
+	// printf("in: %d, out: %d\n", cmd.fd_in, cmd.fd_out);
 	if (cmd.args->content
 		&& is_builtin(&((t_arg_data *)cmd.args->content)->string))
 	{
@@ -53,8 +53,10 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 	if (pid == 0)
 	{
 		close(next_fd[0]);
-		cmd.fd_in = *prev_fd;
-		cmd.fd_out = next_fd[1];
+		if (cmd.fd_in == STDIN_FILENO)
+			cmd.fd_in = *prev_fd;
+		if (cmd.fd_out == STDOUT_FILENO)
+			cmd.fd_out = next_fd[1];
 		run_child(cmd, shell_data);
 	}
 	close(next_fd[1]);
@@ -122,7 +124,8 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 		cmd = cmd->next;
 		resolve_redirections(cmd->content);
 	}
-	((t_cmd *)cmd->content)->fd_in = prev_fd;
+	if (((t_cmd *)cmd->content)->fd_in == STDIN_FILENO)
+		((t_cmd *)cmd->content)->fd_in = prev_fd;
 	exit_code = wait_all(fork_exec_cmd(*((t_cmd *)cmd->content), shell_data));
 	if (prev_fd > 0)
 		close(prev_fd);
