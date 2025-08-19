@@ -116,13 +116,16 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 	if (!cmds)
 		exit(-1);
 	cmd = cmds;
-	resolve_redirections(cmd->content);
+	if (resolve_redirections(cmd->content))
+		return (1);
 	prev_fd = ((t_cmd *)cmd->content)->fd_in;
 	while (cmd->next != NULL)
 	{
 		child_and_pipe(*((t_cmd *)cmd->content), shell_data, &prev_fd, next_fd);
 		cmd = cmd->next;
-		resolve_redirections(cmd->content);
+		// FIXME should kill forked processes ?
+		if (resolve_redirections(cmd->content))
+			return (1);
 	}
 	if (((t_cmd *)cmd->content)->fd_in == STDIN_FILENO)
 		((t_cmd *)cmd->content)->fd_in = prev_fd;

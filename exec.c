@@ -16,7 +16,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void	resolve_redirections(t_cmd *cmd)
+int	resolve_redirections(t_cmd *cmd)
 {
 	int	oflag;
 
@@ -26,7 +26,7 @@ void	resolve_redirections(t_cmd *cmd)
 		if (cmd->fd_in == -1)
 		{
 			perror("open");
-			exit(42);
+			return (1);
 		}
 	}
 	else
@@ -41,11 +41,12 @@ void	resolve_redirections(t_cmd *cmd)
 		if (cmd->fd_in == -1)
 		{
 			perror("open");
-			exit(42);
+			return (1);
 		}
 	}
 	else
 		cmd->fd_out = STDOUT_FILENO;
+	return (0);
 }
 
 void	close_redirections(t_cmd *cmd)
@@ -64,7 +65,11 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 		return ;
 	if (expr->type == EX_CMD)
 	{
-		resolve_redirections(&expr->data.cmd);
+		if (resolve_redirections(&expr->data.cmd))
+		{
+			shell_data->status = 1;
+			return ;
+		}
 		if (expr->data.cmd.args->content
 			&& is_builtin(&((t_arg_data *)expr->data.cmd.args->content)->string))
 		{

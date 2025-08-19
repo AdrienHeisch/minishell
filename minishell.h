@@ -131,7 +131,7 @@ char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
 
-void						resolve_redirections(t_cmd *cmd);
+int							resolve_redirections(t_cmd *cmd);
 void						close_redirections(t_cmd *cmd);
 
 void						no_op(void *p);
