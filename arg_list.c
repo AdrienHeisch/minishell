@@ -21,7 +21,6 @@ static void	expand_var(t_string *var, t_shell_data *shell_data)
 
 	ft_string_move(var, &var_name);
 	*var = ft_string_new();
-	ft_string_term(&var_name);
 	value = ft_getenv(shell_data->envp, var_name.content);
 	if (!value)
 		value = "";
@@ -134,7 +133,6 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 		expand_arg(&((t_arg_data *)cmd.args->content)->string, shell_data);
 		if (((t_arg_data *)cmd.args->content)->string.content)
 		{
-			ft_string_term(&((t_arg_data *)cmd.args->content)->string);
 			args[idx] = ((t_string *)cmd.args->content)->content;
 			idx++;
 		}

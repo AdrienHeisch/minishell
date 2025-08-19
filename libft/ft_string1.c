@@ -32,20 +32,19 @@ t_string	*ft_string_ncat(t_string *str, const char *cat, size_t n)
 	old_len = str->length;
 	str->length += n;
 	old_cap = str->capacity;
-	while (str->capacity < str->length)
+	while (str->capacity < str->length + 1)
 		str->capacity *= 2;
 	if (str->capacity > old_cap)
 	{
 		new_content = (char *)malloc(sizeof(char) * str->capacity);
 		if (!new_content)
-			return (NULL);
+			return (str->length = old_len, NULL);
 		ft_memcpy(new_content, str->content, old_len);
 		ft_bzero(new_content + old_len, str->capacity - old_len);
 		free(str->content);
 		str->content = new_content;
 	}
-	while (n--)
-		*(str->content + old_len++) = *cat++;
+	ft_memcpy(str->content + old_len, cat, n);
 	return (str);
 }
 

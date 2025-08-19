@@ -99,7 +99,6 @@ t_string			ft_string_destroy(t_string *str);
 void				*ft_string_delete(t_string **str);
 char				*ft_string_into(t_string *str);
 char				*ft_string_get(t_string *str);
-void				ft_string_term(t_string *str);
 void				ft_string_set(t_string *str, const char *content);
 t_string			*ft_string_ncat(t_string *str, const char *cat, size_t n);
 t_string			*ft_string_cat(t_string *str, const char *cat);

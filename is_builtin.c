@@ -19,7 +19,6 @@ bool	is_builtin(t_string *name)
 			"unset", 0};
 	size_t				idx;
 
-	ft_string_term(name);
 	idx = 0;
 	while (list[idx])
 	{
