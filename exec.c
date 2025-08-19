@@ -18,6 +18,8 @@
 
 void	resolve_redirections(t_cmd *cmd)
 {
+	int	oflag;
+
 	if (cmd->file_in.content)
 	{
 		cmd->fd_in = open(cmd->file_in.content, O_RDONLY);
@@ -28,7 +30,10 @@ void	resolve_redirections(t_cmd *cmd)
 		cmd->fd_in = STDIN_FILENO;
 	if (cmd->file_out.content)
 	{
-		cmd->fd_out = open(cmd->file_out.content, O_WRONLY | O_CREAT,
+		oflag = O_WRONLY | O_CREAT;
+		if (cmd->append_output)
+			oflag |= O_APPEND;
+		cmd->fd_out = open(cmd->file_out.content, oflag,
 				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if (cmd->fd_in == -1)
 			exit(42);

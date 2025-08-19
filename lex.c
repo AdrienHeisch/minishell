@@ -96,6 +96,11 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		token.data.redir.type = REDIR_OUT;
 		token.data.redir.fd = 1;
 		(*idx)++;
+		if (str->content[*idx] == '>')
+		{
+			token.data.redir.type = REDIR_APPEND;
+			(*idx)++;
+		}
 		while (str->content[*idx] == ' ')
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))

@@ -43,6 +43,7 @@ typedef enum s_redir_type
 {
 	REDIR_IN,
 	REDIR_OUT,
+	REDIR_APPEND,
 }							t_redir_type;
 
 typedef struct s_token
@@ -84,6 +85,7 @@ typedef struct s_expr
 			int				fd_out;
 			t_string		file_in;
 			t_string		file_out;
+			bool			append_output;
 		} cmd;
 		struct				s_pipe
 		{
