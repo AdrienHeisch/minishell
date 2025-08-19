@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,6 +21,8 @@ static bool	is_arg(char c)
 	static const char	list[] = {' ', '\t', '\n', '|', '<', '>', 0};
 	size_t				i;
 
+	if (!ft_isprint(c))
+		return (false);
 	i = 0;
 	while (list[i])
 	{
@@ -69,7 +72,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		token.type = TK_ARG;
 		token.data.arg.string = parse_arg(str, idx);
 		if (!token.data.arg.string.content)
-			token.type = TK_INVALID;
+			return (errno = 1, NULL);
 	}
 	else if (c == '|')
 	{
@@ -85,10 +88,10 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		while (str->content[*idx] == ' ')
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
-			token.type = TK_INVALID;
+			return (errno = 1, NULL);
 		token.data.redir.file_name = parse_arg(str, idx);
 		if (!token.data.redir.file_name.content)
-			token.type = TK_INVALID;
+			return (errno = 1, NULL);
 	}
 	else if (c == '>')
 	{
@@ -104,10 +107,10 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		while (str->content[*idx] == ' ')
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
-			token.type = TK_INVALID;
+			return (errno = 1, NULL);
 		token.data.redir.file_name = parse_arg(str, idx);
 		if (!token.data.redir.file_name.content)
-			token.type = TK_INVALID;
+			return (errno = 1, NULL);
 	}
 	else
 		return (NULL);
@@ -132,11 +135,12 @@ t_list	*lex(t_string *str)
 			idx++;
 			continue ;
 		}
+		errno = 0;
 		token = get_token(str, &idx);
+		if (errno)
+			return (ft_lstclear(&tokens, (void (*)(void *))free_token), NULL);
 		if (!token)
 			break ;
-		if (token->type == TK_INVALID)
-			return (ft_lstclear(&tokens, (void (*)(void *))free_token), NULL);
 		new_list = ft_lstnew(token);
 		if (!new_list)
 			exit(MS_ALLOC);

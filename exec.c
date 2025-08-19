@@ -24,7 +24,10 @@ void	resolve_redirections(t_cmd *cmd)
 	{
 		cmd->fd_in = open(cmd->file_in.content, O_RDONLY);
 		if (cmd->fd_in == -1)
+		{
+			perror("open");
 			exit(42);
+		}
 	}
 	else
 		cmd->fd_in = STDIN_FILENO;
@@ -36,7 +39,10 @@ void	resolve_redirections(t_cmd *cmd)
 		cmd->fd_out = open(cmd->file_out.content, oflag,
 				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if (cmd->fd_in == -1)
+		{
+			perror("open");
 			exit(42);
+		}
 	}
 	else
 		cmd->fd_out = STDOUT_FILENO;

@@ -21,7 +21,7 @@ t_expr	*parse_expr(t_list **tokens, t_list **exprs)
 		return (NULL);
 	if (token->type == TK_PIPE)
 		return (parse_pipe(tokens, exprs));
-	else if (token->type == TK_ARG)
+	else if (token->type == TK_ARG || token->type == TK_REDIR)
 		return (parse_cmd(tokens));
 	else
 		return (NULL);
