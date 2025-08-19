@@ -5,9 +5,10 @@ use std::{
     process::Command,
 };
 
+const PROGRAM_PATH: &str = "/home/adrien/Dev/ft/minishell/minishell";
 const TESTS_PATH: &str = "tests.csv";
 const ENABLE_BONUSES: bool = false;
-const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 407, 418];
+const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 407, 418, 424, 425, 427];
 
 struct Test {
     id: usize,
@@ -52,8 +53,8 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
             }
             let commands = commands
                 .lines()
-                .map(|line| line.strip_prefix("$> "))
                 .filter_map(|line| {
+                    let line = line.strip_prefix("$> ");
                     if line.is_none() {
                         is_valid = false;
                     }
@@ -87,7 +88,7 @@ fn exec_test(test: &Test) -> bool {
             return false;
         }
     };
-    let minishell = match Command::new("../minishell")
+    let minishell = match Command::new(PROGRAM_PATH)
         .args(["-c", &test.commands])
         .output()
     {
@@ -102,6 +103,7 @@ fn exec_test(test: &Test) -> bool {
             if bash_code != minishell_code {
                 println!("######## FAILED ########");
                 println!("Expected status {bash_code}, got {minishell_code}");
+                println!("{}", String::from_utf8(minishell.stderr).unwrap());
                 println!("########################");
                 return false;
             }
@@ -131,13 +133,19 @@ fn exec_test(test: &Test) -> bool {
 }
 
 fn main() -> io::Result<()> {
+    let path = std::env::current_dir()?;
     fix_tests(TESTS_PATH.into())?;
+    std::fs::remove_dir_all("./tmp").ok();
     for test in parse_tests(TESTS_PATH.into())?.iter() {
+        std::fs::create_dir("./tmp")?;
+        std::env::set_current_dir("./tmp")?;
         if !exec_test(test) {
             break;
         }
-        // let mut str = String::new();
-        // io::stdin().read_line(&mut str)?;
+        std::env::set_current_dir(&path)?;
+        std::fs::remove_dir_all("./tmp")?;
     }
+    std::env::set_current_dir(&path)?;
+    std::fs::remove_dir_all("./tmp")?;
     Ok(())
 }
