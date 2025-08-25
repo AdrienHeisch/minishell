@@ -96,5 +96,5 @@ int	main(int argc, char **argv, char **envp)
 		parse_and_exec(&str, &data);
 	}
 	ft_string_destroy(&str);
-	return (MS_SUCCESS);
+	return (data.status);
 }
