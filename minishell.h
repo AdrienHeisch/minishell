@@ -75,6 +75,13 @@ typedef enum s_expr_type
 	EX_PIPE,
 }							t_expr_type;
 
+typedef enum e_output_mode
+{
+	OUTM_UNSET,
+	OUTM_WRITE,
+	OUTM_APPEND,
+}							t_output_mode;
+
 typedef struct s_expr
 {
 	t_expr_type				type;
@@ -87,7 +94,7 @@ typedef struct s_expr
 			int				fd_out;
 			t_string		file_in;
 			t_string		file_out;
-			bool			append_output;
+			t_output_mode	output_mode;
 		} cmd;
 		struct				s_pipe
 		{

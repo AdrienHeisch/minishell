@@ -38,7 +38,7 @@ t_expr	*parse_cmd(t_list **tokens)
 	ft_string_destroy(&expr->data.cmd.file_in);
 	expr->data.cmd.file_out.content = NULL;
 	ft_string_destroy(&expr->data.cmd.file_out);
-	expr->data.cmd.append_output = false;
+	expr->data.cmd.output_mode = OUTM_UNSET;
 	while (*tokens && is_cmd(((t_token *)(*tokens)->content)->type))
 	{
 		token = ft_lstpop_front(tokens);
@@ -47,14 +47,23 @@ t_expr	*parse_cmd(t_list **tokens)
 			if (((t_token *)token->content)->data.redir.type == REDIR_IN)
 				ft_string_move(&((t_token *)token->content)->data.redir.file_name,
 					&expr->data.cmd.file_in);
-			else if (((t_token *)token->content)->data.redir.type == REDIR_OUT
-				|| ((t_token *)token->content)->data.redir.type == REDIR_APPEND)
+			else if (((t_token *)token->content)->data.redir.type == REDIR_OUT)
+			{
 				ft_string_move(&((t_token *)token->content)->data.redir.file_name,
 					&expr->data.cmd.file_out);
+				expr->data.cmd.output_mode = OUTM_WRITE;
+			}
+			else if (((t_token *)token->content)->data.redir.type == REDIR_APPEND)
+			{
+				if (expr->data.cmd.output_mode != OUTM_WRITE)
+				{
+					ft_string_move(&((t_token *)token->content)->data.redir.file_name,
+						&expr->data.cmd.file_out);
+					expr->data.cmd.output_mode = OUTM_APPEND;
+				}
+			}
 			else
 				exit(MS_UNREACHABLE);
-			if (((t_token *)token->content)->data.redir.type == REDIR_APPEND)
-				expr->data.cmd.append_output = true;
 			ft_lstdelone(token, (void (*)(void *))free_token);
 			continue ;
 		}
@@ -67,5 +76,7 @@ t_expr	*parse_cmd(t_list **tokens)
 		ft_lstadd_back(&expr->data.cmd.args, arg);
 		ft_lstdelone(token, (void (*)(void *))free_token);
 	}
+	if (expr->data.cmd.output_mode == OUTM_UNSET)
+		expr->data.cmd.output_mode = OUTM_WRITE;
 	return (expr);
 }

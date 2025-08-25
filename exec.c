@@ -34,7 +34,7 @@ int	resolve_redirections(t_cmd *cmd)
 	if (cmd->file_out.content)
 	{
 		oflag = O_WRONLY | O_CREAT;
-		if (cmd->append_output)
+		if (cmd->output_mode == OUTM_APPEND)
 			oflag |= O_APPEND;
 		cmd->fd_out = open(cmd->file_out.content, oflag,
 				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);

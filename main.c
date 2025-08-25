@@ -44,6 +44,30 @@ static char **dup_env(char **envp)
 	return (dup);
 }
 
+static char *make_prompt(char **envp)
+{
+	t_string	prompt;
+	char		*s;
+
+	prompt = ft_string_new();
+	s = ft_getenv(envp, "USER");
+	if (!s)
+		return (ft_string_destroy(&prompt), "$ ");
+	ft_string_cat(&prompt, s);
+	ft_string_cat(&prompt, "@");
+	s = ft_getenv(envp, "HOSTNAME");
+	if (!s)
+		return (ft_string_destroy(&prompt), "$ ");
+	ft_string_cat(&prompt, s);
+	ft_string_cat(&prompt, ":");
+	s = ft_getenv(envp, "PWD");
+	if (!s)
+		return (ft_string_destroy(&prompt), "$ ");
+	ft_string_cat(&prompt, s);
+	ft_string_cat(&prompt, "$ ");
+	return (prompt.content);
+}
+
 static void	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*exprs;
@@ -64,6 +88,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	add_history(str->content);
 }
 
+#include <fcntl.h>
 int	main(int argc, char **argv, char **envp)
 {
 	t_string		str;
@@ -71,6 +96,7 @@ int	main(int argc, char **argv, char **envp)
 	char			**tab;
 	size_t			idx;
 	struct termios	tio;
+	char			*prompt;
 
 	received_signal = 0;
 	init_signals();
@@ -97,7 +123,8 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		ft_string_destroy(&str);
-		str = ft_string_from(readline("> "));
+		prompt = make_prompt(data.envp);
+		str = ft_string_from(readline(prompt));
 		if (received_signal > 0)
 		{
 			data.status = 128 + received_signal;
