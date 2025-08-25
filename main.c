@@ -92,7 +92,7 @@ int	main(int argc, char **argv, char **envp)
 		ft_string_destroy(&str);
 		str = ft_string_from(readline("> "));
 		if (!str.content)
-			return (MS_ALLOC);
+			break ;
 		parse_and_exec(&str, &data);
 	}
 	ft_string_destroy(&str);
