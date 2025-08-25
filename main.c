@@ -15,6 +15,7 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdlib.h>
+#include <termios.h>
 #include <unistd.h>
 
 int	received_signal;
@@ -69,7 +70,9 @@ int	main(int argc, char **argv, char **envp)
 	t_shell_data	data;
 	char			**tab;
 	size_t			idx;
+	struct termios	tio;
 
+	received_signal = 0;
 	init_signals();
 	data.envp = dup_env(envp);
 	data.status = 0;
@@ -89,6 +92,7 @@ int	main(int argc, char **argv, char **envp)
 	}
 	if (argc > 1)
 		return (MS_USAGE);
+	tio = set_terminal_attributes();
 	str.content = NULL;
 	while (1)
 	{
@@ -102,7 +106,9 @@ int	main(int argc, char **argv, char **envp)
 		if (!str.content)
 			break ;
 		parse_and_exec(&str, &data);
+		received_signal = 0;
 	}
 	ft_string_destroy(&str);
+	restore_terminal_attributes(&tio);
 	return (data.status);
 }

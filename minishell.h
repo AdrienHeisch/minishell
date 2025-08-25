@@ -102,6 +102,9 @@ typedef struct s_pipe		t_pipe;
 
 void						init_signals(void);
 
+struct termios				set_terminal_attributes(void);
+void						restore_terminal_attributes(struct termios *original_tio);
+
 void						print_token(t_token *token);
 void						free_token(t_token *token);
 void						print_expr(t_expr *expr);

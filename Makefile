@@ -27,6 +27,7 @@ SRCS = \
 	print_expr.c \
 	print_token.c \
 	signals.c \
+	termios.c \
 	utils.c \
 
 #	CONFIG

@@ -10,18 +10,36 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <readline/readline.h>
 #include <signal.h>
+#include <unistd.h>
 
-static void	handle_signal(int sig)
+static void	handle_sigint(int sig)
 {
+	t_string	str;
+
 	received_signal = sig;
-	printf("\n");
 	if (rl_readline_state & RL_STATE_READCMD)
+	{
+		str = ft_string_new();
+		ft_string_cat(&str, rl_line_buffer);
+		ft_string_cat(&str, "^C");
+		rl_replace_line(str.content, 0);
+		rl_redisplay();
 		rl_on_new_line();
-	rl_replace_line("", 0);
-	rl_redisplay();
+		printf("\n");
+		rl_replace_line("", 0);
+		rl_redisplay();
+	}
+}
+
+static void	handle_sigquit(int sig)
+{
+	(void)sig;
+	if (rl_readline_state & RL_STATE_READCMD)
+		rl_redisplay();
 }
 
 void	init_signals(void)
@@ -30,6 +48,8 @@ void	init_signals(void)
 
 	sigemptyset(&sig.sa_mask);
 	sig.sa_flags = 0;
-	sig.sa_handler = handle_signal;
+	sig.sa_handler = handle_sigint;
 	sigaction(SIGINT, &sig, NULL);
+	sig.sa_handler = handle_sigquit;
+	sigaction(SIGQUIT, &sig, NULL);
 }
