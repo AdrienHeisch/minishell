@@ -26,6 +26,7 @@ SRCS = \
 	parse_pipe.c \
 	print_expr.c \
 	print_token.c \
+	signals.c \
 	utils.c \
 
 #	CONFIG

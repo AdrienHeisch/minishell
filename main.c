@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+int	received_signal;
+
 static char **dup_env(char **envp)
 {
 	char	**dup;
@@ -68,6 +70,7 @@ int	main(int argc, char **argv, char **envp)
 	char			**tab;
 	size_t			idx;
 
+	init_signals();
 	data.envp = dup_env(envp);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
@@ -91,6 +94,11 @@ int	main(int argc, char **argv, char **envp)
 	{
 		ft_string_destroy(&str);
 		str = ft_string_from(readline("> "));
+		if (received_signal > 0)
+		{
+			data.status = 128 + received_signal;
+			received_signal = 0;
+		}
 		if (!str.content)
 			break ;
 		parse_and_exec(&str, &data);

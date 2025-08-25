@@ -17,6 +17,8 @@
 # include <stdbool.h>
 # include <stdio.h>
 
+extern int					received_signal;
+
 enum						e_error
 {
 	MS_SUCCESS,
@@ -97,6 +99,8 @@ typedef struct s_expr
 
 typedef struct s_cmd		t_cmd;
 typedef struct s_pipe		t_pipe;
+
+void						init_signals(void);
 
 void						print_token(t_token *token);
 void						free_token(t_token *token);
