@@ -1,12 +1,12 @@
 use std::{
     fs::File,
     io::{self},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::Command,
 };
 
 const PROGRAM_PATH: &str = "/home/adrien/Dev/ft/minishell/minishell";
-const TESTS_PATH: &str = "tests.csv";
+const TESTS_PATH: &str = "/home/adrien/Dev/ft/minishell/tester/tests.csv";
 const ENABLE_BONUSES: bool = false;
 const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 407, 418, 424, 425, 427];
 
@@ -15,30 +15,33 @@ struct Test {
     commands: String,
 }
 
-fn fix_tests(path: PathBuf) -> io::Result<()> {
-    let string = std::fs::read_to_string(&path)?
+fn fix_tests(path: &Path) -> io::Result<()> {
+    let string = std::fs::read_to_string(path)?
         .replace("(touche entrée)", "")
         .replace("[que des espaces]", "           ")
         .replace("[que des tabulations]", "\t\t\t\t\t\t\t\t")
         .replace("$UID", "$SHELL")
         .replace(" [$TERM],", " \"[$TERM]\",")
         .replace("sleep 3", "sleep 1");
-    std::fs::write(&path, string)?;
+    std::fs::write(path, string)?;
     Ok(())
 }
 
-fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
+fn parse_tests(path: &Path) -> io::Result<Vec<Test>> {
     let file = File::open(path)?;
+    let mut ignored_tests = 0;
     let mut reader = csv::Reader::from_reader(file);
     let mut tests = vec![];
     for (id, result) in reader.records().skip(24).enumerate() {
         if BLACKLIST.contains(&id) {
+            ignored_tests += 1;
             continue;
         }
         let record = result?;
         if !ENABLE_BONUSES {
             match record.get(2) {
                 Some(str) if !str.is_empty() => {
+                    ignored_tests += 1;
                     continue;
                 }
                 _ => (),
@@ -52,6 +55,7 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
                 || commands.contains("unset")
                 || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
             {
+                ignored_tests += 1;
                 continue;
             }
             let mut lines = Vec::new();
@@ -74,21 +78,45 @@ fn parse_tests(path: PathBuf) -> io::Result<Vec<Test>> {
                 if !commands.is_empty() {
                     println!("{commands}");
                 }
+                ignored_tests += 1;
                 continue;
             }
             commands
         } else {
+            ignored_tests += 1;
             continue;
         };
         tests.push(Test { id, commands });
     }
+    println!();
+    println!("!!!   {ignored_tests} IGNORED TESTS   !!!");
     Ok(tests)
+}
+
+fn clear_dir(dir: &Path) -> io::Result<()> {
+    if !dir.is_dir() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "path is not a directory",
+        ));
+    }
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() && !path.symlink_metadata()?.file_type().is_symlink() {
+            std::fs::remove_dir_all(&path)?;
+        } else {
+            std::fs::remove_file(&path)?;
+        }
+    }
+    Ok(())
 }
 
 fn exec_test(test: &Test) -> bool {
     println!();
     println!("##### TEST {:>7} #####", test.id);
     println!("{}", test.commands);
+    clear_dir(&std::env::current_dir().unwrap()).unwrap();
     let bash = match Command::new("bash").args(["-c", &test.commands]).output() {
         Ok(minishell) => minishell,
         Err(_) => {
@@ -96,6 +124,7 @@ fn exec_test(test: &Test) -> bool {
             return false;
         }
     };
+    clear_dir(&std::env::current_dir().unwrap()).unwrap();
     let minishell = match Command::new(PROGRAM_PATH)
         .args(["-c", &test.commands])
         .output()
@@ -144,19 +173,18 @@ fn main() -> io::Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
     let start_at = args.get(1).map(|arg| arg.parse().unwrap_or(0)).unwrap_or(0);
     let path = std::env::current_dir()?;
-    fix_tests(TESTS_PATH.into())?;
-    std::fs::remove_dir_all(path.join("tmp")).ok();
-    for test in parse_tests(TESTS_PATH.into())?
+    let tests_path: PathBuf = TESTS_PATH.into();
+    fix_tests(&tests_path)?;
+    std::fs::create_dir(path.join("tmp")).ok();
+    std::env::set_current_dir(path.join("tmp"))?;
+    for test in parse_tests(&tests_path)?
         .iter()
         .skip_while(|test| test.id < start_at)
     {
-        std::fs::create_dir(path.join("tmp"))?;
-        std::env::set_current_dir(path.join("tmp"))?;
         if !exec_test(test) {
-            break;
+            return Ok(());
         }
-        std::env::set_current_dir(&path)?;
-        std::fs::remove_dir_all(path.join("tmp"))?;
     }
+    std::fs::remove_dir_all(path.join("tmp"))?;
     Ok(())
 }
