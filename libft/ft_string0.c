@@ -29,6 +29,7 @@ t_string	ft_string_new(void)
 		return (str);
 	}
 	str.capacity = FT_STRING_NEW_CAPACITY;
+	ft_bzero(str.content, str.capacity);
 	return (str);
 }
 

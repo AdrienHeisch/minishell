@@ -12,25 +12,10 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-static char	*get_env_var(char **envp, char *name)
-{
-	int	i;
-
-	i = 0;
-	while (envp[i])
-	{
-		if (!ft_strncmp(envp[i], name, ft_strlen(name)))
-		{
-			return (envp[i] + ft_strlen(name) + 1);
-		}
-		i++;
-	}
-	return (NULL);
-}
 
 static int	count_paths(const char *s)
 {
@@ -65,7 +50,8 @@ static char	*copy_dir(const char *start, int len)
 	dir[i] = '\0';
 	return (dir);
 }
-void	free_tab(char ***tab)
+
+static void	free_tab(char ***tab)
 {
 	int	i;
 
@@ -146,8 +132,8 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	char	*path;
 	int		i;
 
-	path = get_env_var(envp, "PATH=");
-	if (!path)
+	path = ft_getenv(envp, "PATH");
+	if (!path || !*path)
 		return (NULL);
 	dirs = split_path(path);
 	if (!dirs)
@@ -169,83 +155,60 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	return (NULL);
 }
 
-static void	expand_var(t_string *var, t_shell_data *shell_data)
+static void	cmd_error(char *path, char *err)
 {
-	t_string	var_name;
-
-	if (var->length == 1 && var->content[0] == '?')
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(path, 2);
+	ft_putstr_fd(": ", 2);
+	if (err)
 	{
-		var->length = 0;
-		ft_string_cat(var, ft_itoa(shell_data->status));
-		return ;
+		ft_putstr_fd(err, 2);
+		ft_putstr_fd("\n", 2);
 	}
-	ft_string_move(var, &var_name);
-	ft_string_cat(&var_name, "=");
-	*var = ft_string_new();
-	ft_string_cat(var, get_env_var(shell_data->envp, var_name.content));
-	ft_string_destroy(&var_name);
-}
-
-static void	expand_dq(t_string *dq, t_shell_data *shell_data)
-{
-	size_t		idx;
-	size_t		len;
-	t_string	exp;
-	t_string	var;
-
-	exp = ft_string_new();
-	idx = 0;
-	while (idx < dq->length)
-	{
-		if (dq->content[idx] == '$')
-		{
-			idx++;
-			len = 0;
-			// TODO any whitespace
-			while (idx < dq->length && dq->content[idx + len] != ' ')
-				len++;
-			var = ft_string_new();
-			ft_string_ncat(&var, &dq->content[idx], len);
-			expand_var(&var, shell_data);
-			ft_string_ncat(&exp, var.content, var.length);
-			ft_string_destroy(&var);
-			idx += len;
-		}
-		else
-		{
-			ft_string_ncat(&exp, &dq->content[idx], 1);
-			idx++;
-		}
-	}
-	ft_string_destroy(dq);
-	*dq = exp;
+	else
+		perror("");
 }
 
 void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
-	size_t	idx;
 	char	*path;
+	DIR		*dir;
 
-	args = malloc(sizeof(char *) * (ft_lstsize(cmd.args) + 1));
-	idx = 0;
-	while (cmd.args && cmd.args->content)
-	{
-		if (((t_arg_data *)cmd.args->content)->expand)
-			expand_var(&((t_arg_data *)cmd.args->content)->string, shell_data);
-		if (((t_arg_data *)cmd.args->content)->is_dq)
-			expand_dq(&((t_arg_data *)cmd.args->content)->string, shell_data);
-		ft_string_term(&((t_arg_data *)cmd.args->content)->string);
-		args[idx] = ((t_string *)cmd.args->content)->content;
-		idx++;
-		cmd.args = cmd.args->next;
-	}
-	args[idx] = NULL;
+	args = make_arg_list(cmd, shell_data);
 	path = args[0];
-	if (access(path, X_OK) == -1)
+	if (!path) 
+	{
+		free_args_list(args);
+		exit(0);
+	}
+	if (ft_strlen(path) == 0)
+	{
+		free_args_list(args);
+		exit(127);
+	}
+	if (access(path, F_OK) == -1)
 		path = find_cmd_path(path, shell_data->envp);
+	if (!path)
+	{
+		cmd_error(args[0], "command not found...");
+		free_args_list(args);
+		exit(127);
+	}
+	dir = opendir(path);
+	if (dir != NULL)
+	{
+		closedir(dir);
+		cmd_error(path, "Is a directory");
+		free_args_list(args);
+		exit(126);
+	}
 	if (execve(path, args, shell_data->envp) == -1)
-		ft_putstr_fd("Command not found\n", 2);
-	free(args);
-	exit(42);
+	{
+		cmd_error(path, NULL);
+		free_args_list(args);
+		exit(126);
+	}
+	free_args_list(args);
+	exit(0);
 }

@@ -10,15 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 static bool	is_arg(char c)
 {
-	char	list[] = {' ', '\t', '\n', '"', '\'', '$', '|', 0};
-	size_t	i;
+	static const char	list[] = {' ', '\t', '\n', '|', '<', '>', 0};
+	size_t				i;
 
+	if (!ft_isprint(c))
+		return (false);
 	i = 0;
 	while (list[i])
 	{
@@ -29,87 +33,87 @@ static bool	is_arg(char c)
 	return (true);
 }
 
+static t_string	parse_arg(t_string *str, size_t *idx)
+{
+	t_string	arg;
+	char		del;
+
+	arg = ft_string_new();
+	del = '\0';
+	while (*idx < str->length)
+	{
+		if (!del)
+		{
+			if (!is_arg(str->content[*idx]))
+				break ;
+			if (str->content[*idx] == '\'' || str->content[*idx] == '"')
+				del = str->content[*idx];
+		}
+		else if (del == str->content[*idx])
+			del = '\0';
+		ft_string_ncat(&arg, &str->content[*idx], 1);
+		(*idx)++;
+	}
+	// STRICTLY NOT INTERPRETING UNCLOSED QUOTES RATHER THAN RAISING AN ERROR
+	// if (del)
+	// 	ft_string_destroy(&arg);
+	return (arg);
+}
+
 static t_token	*get_token(t_string *str, size_t *idx)
 {
 	t_token	token;
 	t_token	*cell;
-	size_t	len;
 	char	c;
 
-	len = 0;
 	c = str->content[*idx];
 	if (is_arg(c))
 	{
-		while (*idx + len < str->length && is_arg(str->content[*idx + len]))
-			len++;
 		token.type = TK_ARG;
-		token.data.arg.expand = false;
-		token.data.arg.is_dq = false;
-		token.data.arg.string = ft_string_new();
-		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
-	}
-	else if (c == '$')
-	{
-		(*idx)++;
-		while (*idx + len < str->length && is_arg(str->content[*idx + len]))
-			len++;
-		token.type = TK_ARG;
-		token.data.arg.expand = true;
-		token.data.arg.is_dq = false;
-		token.data.arg.string = ft_string_new();
-		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
-	}
-	else if (c == '\'')
-	{
-		(*idx)++;
-		while (*idx + len < str->length && str->content[*idx + len] != '\'')
-			len++;
-		if (!str->content[*idx + len])
-			exit(42);
-		token.type = TK_ARG;
-		token.data.arg.expand = false;
-		token.data.arg.is_dq = false;
-		token.data.arg.string = ft_string_new();
-		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
-		len++;
-	}
-	else if (c == '"')
-	{
-		(*idx)++;
-		while (*idx + len < str->length && str->content[*idx + len] != '"')
-			len++;
-		if (!str->content[*idx + len])
-			exit(42);
-		token.type = TK_ARG;
-		token.data.arg.expand = false;
-		token.data.arg.is_dq = true;
-		token.data.arg.string = ft_string_new();
-		ft_string_ncat(&token.data.arg.string, &str->content[*idx], len);
-		len++;
+		token.data.arg.string = parse_arg(str, idx);
+		if (!token.data.arg.string.content)
+			return (errno = 1, NULL);
 	}
 	else if (c == '|')
 	{
 		token.type = TK_PIPE;
-		len = 1;
+		(*idx)++;
 	}
-	// TODO redir fd
 	else if (c == '<')
 	{
-		token.type = TK_REDIR_IN;
+		token.type = TK_REDIR;
+		token.data.redir.type = REDIR_IN;
 		token.data.redir.fd = 0;
-		len = 1;
+		(*idx)++;
+		while (str->content[*idx] == ' ')
+			(*idx)++;
+		if (!is_arg(str->content[*idx]))
+			return (errno = 1, NULL);
+		token.data.redir.file_name = parse_arg(str, idx);
+		if (!token.data.redir.file_name.content)
+			return (errno = 1, NULL);
 	}
 	else if (c == '>')
 	{
-		token.type = TK_REDIR_OUT;
+		token.type = TK_REDIR;
+		token.data.redir.type = REDIR_OUT;
 		token.data.redir.fd = 1;
-		len = 1;
+		(*idx)++;
+		if (str->content[*idx] == '>')
+		{
+			token.data.redir.type = REDIR_APPEND;
+			(*idx)++;
+		}
+		while (str->content[*idx] == ' ')
+			(*idx)++;
+		if (!is_arg(str->content[*idx]))
+			return (errno = 1, NULL);
+		token.data.redir.file_name = parse_arg(str, idx);
+		if (!token.data.redir.file_name.content)
+			return (errno = 1, NULL);
 	}
 	else
-	{
 		return (NULL);
-	}
-	*idx += len;
 	cell = malloc(sizeof(t_token));
 	*cell = token;
 	return (cell);
@@ -131,12 +135,15 @@ t_list	*lex(t_string *str)
 			idx++;
 			continue ;
 		}
+		errno = 0;
 		token = get_token(str, &idx);
+		if (errno)
+			return (ft_lstclear(&tokens, (void (*)(void *))free_token), NULL);
 		if (!token)
 			break ;
 		new_list = ft_lstnew(token);
 		if (!new_list)
-			break ; // TODO ????
+			exit(MS_ALLOC);
 		ft_lstadd_back(&tokens, new_list);
 	}
 	return (tokens);

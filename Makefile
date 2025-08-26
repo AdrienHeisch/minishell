@@ -3,18 +3,31 @@
 NAME = minishell
 
 SRCS = \
+	arg_list.c \
+	builtin_cd.c \
+	builtin_echo.c \
+	builtin_env.c \
+	builtin_exit.c \
+	builtin_export.c \
+	builtin_pwd.c \
+	builtin_unset.c \
 	exec.c \
+	exec_builtin.c \
 	exec_cmd.c \
 	exec_pipe.c \
 	free_expr.c \
 	free_token.c \
+	is_builtin.c \
 	lex.c \
 	main.c \
-	parse.c \
 	parse_cmd.c \
+	parse.c \
+	parse_expr.c \
 	parse_pipe.c \
 	print_expr.c \
 	print_token.c \
+	signals.c \
+	termios.c \
 	utils.c \
 
 #	CONFIG

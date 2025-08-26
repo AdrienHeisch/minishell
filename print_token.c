@@ -12,17 +12,27 @@
 
 #include "minishell.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void	print_token(t_token *token)
 {
 	if (token->type == TK_ARG)
-	{
-		if (token->data.arg.expand)
-			printf("$ ");
-		if (token->data.arg.is_dq)
-			printf("DQ ");
 		printf("ARG: |%s|\n", ft_string_get(&token->data.arg.string));
-	}
 	else if (token->type == TK_PIPE)
 		printf("PIPE\n");
+	else if (token->type == TK_REDIR)
+	{
+		printf("REDIR: ");
+		if (token->data.redir.type == REDIR_IN)
+			printf("< ");
+		else if (token->data.redir.type == REDIR_OUT)
+			printf("> ");
+		else if (token->data.redir.type == REDIR_APPEND)
+			printf(">> ");
+		else
+			exit(MS_UNREACHABLE);
+		printf("%s\n", token->data.redir.file_name.content);
+	}
+	else
+		exit(MS_UNREACHABLE);
 }
