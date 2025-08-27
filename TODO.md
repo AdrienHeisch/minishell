@@ -1,3 +1,6 @@
 # TODO
 
-- heredoc
+- heredoc: quotes
+- && / ||
+- ()
+- wildcards

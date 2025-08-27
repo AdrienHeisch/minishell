@@ -29,6 +29,7 @@ SRCS = \
 	signals.c \
 	termios.c \
 	utils.c \
+	gnl_delim.c
 
 #	CONFIG
 

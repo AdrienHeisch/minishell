@@ -85,6 +85,11 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		token.data.redir.type = REDIR_IN;
 		token.data.redir.fd = 0;
 		(*idx)++;
+		if (str->content[*idx] == '<')
+		{
+			token.data.redir.type = REDIR_HEREDOC;
+			(*idx)++;
+		}
 		while (str->content[*idx] == ' ')
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))

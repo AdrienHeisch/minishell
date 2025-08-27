@@ -6,7 +6,7 @@
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 16:00:59 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/04 16:00:59 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/08/27 14:58:03 by galauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ typedef enum s_token_type
 typedef enum s_redir_type
 {
 	REDIR_IN,
+	REDIR_HEREDOC,
 	REDIR_OUT,
 	REDIR_APPEND,
 }							t_redir_type;
@@ -75,13 +76,6 @@ typedef enum s_expr_type
 	EX_PIPE,
 }							t_expr_type;
 
-typedef enum e_output_mode
-{
-	OUTM_UNSET,
-	OUTM_WRITE,
-	OUTM_APPEND,
-}							t_output_mode;
-
 typedef struct s_expr
 {
 	t_expr_type				type;
@@ -92,9 +86,7 @@ typedef struct s_expr
 			t_list			*args;
 			int				fd_in;
 			int				fd_out;
-			t_string		file_in;
-			t_string		file_out;
-			t_output_mode	output_mode;
+			t_list			*redirs;
 		} cmd;
 		struct				s_pipe
 		{
@@ -155,5 +147,6 @@ char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 void						ft_unsetenv(char ***envp, const char *name);
+t_string					gnl_delim(int fd, char *delim);
 
 #endif // !MINISHELL_H

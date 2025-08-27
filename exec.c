@@ -6,7 +6,7 @@
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 14:07:14 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/06 14:07:14 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/08/27 16:23:37 by galauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,36 +16,64 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+
+
 int	resolve_redirections(t_cmd *cmd)
 {
 	int	oflag;
+	t_list	*redir_list;
+	t_redir_data *redir;
+	t_string		heredoc;
 
-	if (cmd->file_in.content)
+	redir_list = cmd->redirs;
+	while (redir_list)
 	{
-		cmd->fd_in = open(cmd->file_in.content, O_RDONLY);
-		if (cmd->fd_in == -1)
+		redir = redir_list->content;
+		if (redir->type == REDIR_IN || redir->type == REDIR_HEREDOC)
 		{
-			perror("open");
-			return (1);
+			if (cmd->fd_in != 0)
+				close(cmd->fd_in);
+			if (redir->type == REDIR_HEREDOC)
+			{
+				cmd->fd_in = open("/tmp/heredoc", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
+				heredoc = gnl_delim(0, redir->file_name.content);
+				write(cmd->fd_in, heredoc.content, heredoc.length + 1);
+				close(cmd->fd_in);
+				cmd->fd_in = open("/tmp/heredoc", O_RDONLY);
+			}
+			else
+			{
+				cmd->fd_in = open(redir->file_name.content, O_RDONLY);
+				if (cmd->fd_in == -1)
+				{
+					perror("open");
+					return (1); // TODO return or continue ?
+				}
+			}
 		}
-	}
-	else
-		cmd->fd_in = STDIN_FILENO;
-	if (cmd->file_out.content)
-	{
-		oflag = O_WRONLY | O_CREAT;
-		if (cmd->output_mode == OUTM_APPEND)
-			oflag |= O_APPEND;
-		cmd->fd_out = open(cmd->file_out.content, oflag,
-				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-		if (cmd->fd_in == -1)
+		else
+			cmd->fd_in = STDIN_FILENO;
+		if (redir->type == REDIR_OUT || redir->type == REDIR_APPEND)
 		{
-			perror("open");
-			return (1);
+			oflag = O_WRONLY | O_CREAT;
+			if (redir->type == REDIR_APPEND)
+				oflag |= O_APPEND;
+			else
+				oflag |= O_TRUNC;
+			if (cmd->fd_out != 1 && cmd->fd_out != 1)
+				close(cmd->fd_out);
+			cmd->fd_out = open(redir->file_name.content, oflag,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			if (cmd->fd_in == -1)
+			{
+				perror("open");
+				return (1); // TODO return or continue ?
+			}
 		}
+		else
+			cmd->fd_out = STDOUT_FILENO;
+		redir_list = redir_list->next;
 	}
-	else
-		cmd->fd_out = STDOUT_FILENO;
 	return (0);
 }
 
@@ -70,7 +98,7 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 			shell_data->status = 1;
 			return ;
 		}
-		if (expr->data.cmd.args->content
+		if (expr->data.cmd.args && expr->data.cmd.args->content
 			&& is_builtin(&((t_arg_data *)expr->data.cmd.args->content)->string))
 		{
 			exec_builtin(expr->data.cmd, shell_data);
@@ -82,7 +110,7 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 			if (WIFEXITED(status_location))
 				shell_data->status = WEXITSTATUS(status_location);
 			else
-				exit(-1);
+				shell_data->status = 0;
 		}
 		close_redirections(&expr->data.cmd);
 	}
