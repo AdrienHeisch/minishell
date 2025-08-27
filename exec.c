@@ -6,7 +6,7 @@
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 14:07:14 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/06 14:07:14 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/08/27 16:23:37 by galauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,15 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+
+
 int	resolve_redirections(t_cmd *cmd)
 {
 	int	oflag;
 	t_list	*redir_list;
 	t_redir_data *redir;
+	t_string		heredoc;
+	char	eof = (char)0;
 
 	redir_list = cmd->redirs;
 	while (redir_list)
@@ -32,8 +36,12 @@ int	resolve_redirections(t_cmd *cmd)
 				close(cmd->fd_in);
 			if (redir->type == REDIR_HEREDOC)
 			{
-				cmd->fd_in = 0;
-				; // ????
+				cmd->fd_in = open("/tmp/heredoc", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
+				heredoc = gnl_delim(0, redir->file_name.content);
+				write(cmd->fd_in, heredoc.content, heredoc.length);
+				write(cmd->fd_in, &eof, 1);
+				close(cmd->fd_in);
+				cmd->fd_in = open("/tmp/heredoc", O_RDONLY);
 			}
 			else
 			{
