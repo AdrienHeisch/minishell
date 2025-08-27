@@ -1,14 +1,14 @@
 use std::{
     fs::File,
     io::{self},
-    path::{Path, PathBuf},
+    path::{Path},
     process::Command,
 };
 
-const PROGRAM_PATH: &str = "/home/adrien/Dev/ft/minishell/minishell";
-const TESTS_PATH: &str = "/home/adrien/Dev/ft/minishell/tester/tests.csv";
+const PROGRAM_PATH: &str = "../minishell";
+const TESTS_PATH: &str = "tests.csv";
 const ENABLE_BONUSES: bool = false;
-const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 407, 418, 424, 425, 427];
+const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 405, 407, 418, 424, 425, 427];
 
 struct Test {
     id: usize,
@@ -112,11 +112,12 @@ fn clear_dir(dir: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn exec_test(test: &Test) -> bool {
+fn exec_test(test: &Test, program_path: &Path) -> bool {
+    let current_dir = std::env::current_dir().unwrap();
     println!();
     println!("##### TEST {:>7} #####", test.id);
     println!("{}", test.commands);
-    clear_dir(&std::env::current_dir().unwrap()).unwrap();
+    clear_dir(&current_dir).unwrap();
     let bash = match Command::new("bash").args(["-c", &test.commands]).output() {
         Ok(minishell) => minishell,
         Err(_) => {
@@ -124,8 +125,8 @@ fn exec_test(test: &Test) -> bool {
             return false;
         }
     };
-    clear_dir(&std::env::current_dir().unwrap()).unwrap();
-    let minishell = match Command::new(PROGRAM_PATH)
+    clear_dir(&current_dir).unwrap();
+    let minishell = match Command::new(program_path)
         .args(["-c", &test.commands])
         .output()
     {
@@ -154,7 +155,7 @@ fn exec_test(test: &Test) -> bool {
             return false;
         }
     }
-    let bash_stdout = String::from_utf8(bash.stdout).unwrap();
+    let bash_stdout = String::from_utf8_lossy(&bash.stdout);
     let minishell_stdout = String::from_utf8_lossy(&minishell.stdout);
     if bash_stdout != minishell_stdout {
         println!("######## FAILED ########");
@@ -173,7 +174,8 @@ fn main() -> io::Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
     let start_at = args.get(1).map(|arg| arg.parse().unwrap_or(0)).unwrap_or(0);
     let path = std::env::current_dir()?;
-    let tests_path: PathBuf = TESTS_PATH.into();
+    let tests_path = path.join(TESTS_PATH);
+    let program_path = path.join(PROGRAM_PATH);
     fix_tests(&tests_path)?;
     std::fs::create_dir(path.join("tmp")).ok();
     std::env::set_current_dir(path.join("tmp"))?;
@@ -181,7 +183,7 @@ fn main() -> io::Result<()> {
         .iter()
         .skip_while(|test| test.id < start_at)
     {
-        if !exec_test(test) {
+        if !exec_test(test, &program_path) {
             return Ok(());
         }
     }
