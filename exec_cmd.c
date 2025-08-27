@@ -184,6 +184,7 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	}
 	if (ft_strlen(path) == 0)
 	{
+		cmd_error(path, "command not found");
 		free_args_list(args);
 		exit(127);
 	}
@@ -191,7 +192,7 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 		path = find_cmd_path(path, shell_data->envp);
 	if (!path)
 	{
-		cmd_error(args[0], "command not found...");
+		cmd_error(args[0], "command not found");
 		free_args_list(args);
 		exit(127);
 	}
