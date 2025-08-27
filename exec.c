@@ -84,7 +84,7 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 			shell_data->status = 1;
 			return ;
 		}
-		if (expr->data.cmd.args->content
+		if (expr->data.cmd.args && expr->data.cmd.args->content
 			&& is_builtin(&((t_arg_data *)expr->data.cmd.args->content)->string))
 		{
 			exec_builtin(expr->data.cmd, shell_data);
@@ -96,7 +96,7 @@ void	exec(t_expr *expr, t_shell_data *shell_data)
 			if (WIFEXITED(status_location))
 				shell_data->status = WEXITSTATUS(status_location);
 			else
-				exit(-1);
+				shell_data->status = 0;
 		}
 		close_redirections(&expr->data.cmd);
 	}
