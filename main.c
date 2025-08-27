@@ -68,6 +68,7 @@ static char *make_prompt(char **envp)
 	return (prompt.content);
 }
 
+#include <fcntl.h>
 static void	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*exprs;
@@ -88,7 +89,6 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	add_history(str->content);
 }
 
-#include <fcntl.h>
 int	main(int argc, char **argv, char **envp)
 {
 	t_string		str;
