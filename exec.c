@@ -19,35 +19,47 @@
 int	resolve_redirections(t_cmd *cmd)
 {
 	int	oflag;
+	t_list	*redir_list;
+	t_redir_data *redir;
 
-	if (cmd->file_in.content)
+	redir_list = cmd->redirs;
+	while (redir_list)
 	{
-		cmd->fd_in = open(cmd->file_in.content, O_RDONLY);
-		if (cmd->fd_in == -1)
+		redir = redir_list->content;
+		if (redir->type == REDIR_IN)
 		{
-			perror("open");
-			return (1);
+			if (cmd->fd_in != 0)
+				close(cmd->fd_in);
+			cmd->fd_in = open(redir->file_name.content, O_RDONLY);
+			if (cmd->fd_in == -1)
+			{
+				perror("open");
+				return (1); // TODO return or break ?
+			}
 		}
-	}
-	else
-		cmd->fd_in = STDIN_FILENO;
-	if (cmd->file_out.content)
-	{
-		oflag = O_WRONLY | O_CREAT;
-		if (cmd->output_mode == OUTM_APPEND)
-			oflag |= O_APPEND;
 		else
-			oflag |= O_TRUNC;
-		cmd->fd_out = open(cmd->file_out.content, oflag,
-				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-		if (cmd->fd_in == -1)
+			cmd->fd_in = STDIN_FILENO;
+		if (redir->type == REDIR_OUT || redir->type == REDIR_APPEND)
 		{
-			perror("open");
-			return (1);
+			oflag = O_WRONLY | O_CREAT;
+			if (redir->type == REDIR_APPEND)
+				oflag |= O_APPEND;
+			else
+				oflag |= O_TRUNC;
+			if (cmd->fd_out != 1 && cmd->fd_out != 1)
+				close(cmd->fd_out);
+			cmd->fd_out = open(redir->file_name.content, oflag,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			if (cmd->fd_in == -1)
+			{
+				perror("open");
+				return (1); // TODO return or break ?
+			}
 		}
+		else
+			cmd->fd_out = STDOUT_FILENO;
+		redir_list = redir_list->next;
 	}
-	else
-		cmd->fd_out = STDOUT_FILENO;
 	return (0);
 }
 

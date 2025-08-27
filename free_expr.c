@@ -19,6 +19,8 @@ void	free_expr(t_expr *expr)
 	if (expr->type == EX_CMD)
 	{
 		ft_lstclear(&expr->data.cmd.args, lstclear_string);
+		// TODO free_redir
+		ft_lstclear(&expr->data.cmd.redirs, no_op);
 	}
 	else if (expr->type == EX_PIPE)
 	{

@@ -27,8 +27,8 @@ void	print_expr(t_expr *expr)
 			printf("%s ", ft_string_get(lst->content));
 			lst = lst->next;
 		}
-		if (expr->data.cmd.file_out.content)
-			printf("> %s ", expr->data.cmd.file_out.content);
+		// if (expr->data.cmd.file_out.content)
+		// 	printf("> %s ", expr->data.cmd.file_out.content);
 	}
 	else if (expr->type == EX_PIPE)
 	{

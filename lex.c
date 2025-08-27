@@ -87,6 +87,11 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		(*idx)++;
 		while (str->content[*idx] == ' ')
 			(*idx)++;
+		if (str->content[*idx] == '<')
+		{
+			token.data.redir.type = REDIR_HEREDOC;
+			(*idx)++;
+		}
 		if (!is_arg(str->content[*idx]))
 			return (errno = 1, NULL);
 		token.data.redir.file_name = parse_arg(str, idx);
