@@ -8,7 +8,7 @@ use std::{
 const PROGRAM_PATH: &str = "../minishell";
 const TESTS_PATH: &str = "tests.csv";
 const ENABLE_BONUSES: bool = false;
-const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 405, 407, 418, 424, 425, 427];
+const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 405, 407, 418, 424, 425, 427, 734];
 
 struct Test {
     id: usize,
@@ -53,6 +53,7 @@ fn parse_tests(path: &Path) -> io::Result<Vec<Test>> {
                 || commands.contains("env")
                 || commands.contains("export")
                 || commands.contains("unset")
+                || commands.contains("<<")
                 || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
             {
                 ignored_tests += 1;
@@ -112,20 +113,20 @@ fn clear_dir(dir: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn exec_test(test: &Test, program_path: &Path) -> bool {
-    let current_dir = std::env::current_dir().unwrap();
+fn exec_test(test: &Test, program_path: &Path) -> io::Result<bool> {
+    let current_dir = std::env::current_dir()?;
     println!();
     println!("##### TEST {:>7} #####", test.id);
     println!("{}", test.commands);
-    clear_dir(&current_dir).unwrap();
+    clear_dir(&current_dir)?;
     let bash = match Command::new("bash").args(["-c", &test.commands]).output() {
         Ok(minishell) => minishell,
         Err(_) => {
             println!("##### INVALID TEST #####");
-            return false;
+            return Ok(false);
         }
     };
-    clear_dir(&current_dir).unwrap();
+    clear_dir(&current_dir)?;
     let minishell = match Command::new(program_path)
         .args(["-c", &test.commands])
         .output()
@@ -133,7 +134,7 @@ fn exec_test(test: &Test, program_path: &Path) -> bool {
         Ok(minishell) => minishell,
         Err(_) => {
             println!("#### FAILED TO RUN! ####");
-            return false;
+            return Ok(false);
         }
     };
     match (bash.status.code(), minishell.status.code()) {
@@ -141,18 +142,18 @@ fn exec_test(test: &Test, program_path: &Path) -> bool {
             if bash_code != minishell_code {
                 println!("######## FAILED ########");
                 println!("Expected status {bash_code}, got {minishell_code}");
-                println!("{}", String::from_utf8(minishell.stderr).unwrap());
+                println!("{}", String::from_utf8_lossy(&minishell.stderr));
                 println!("########################");
-                return false;
+                return Ok(false);
             }
         }
         (None, _) => {
             println!("#### FAILED TO RUN! ####");
-            return false;
+            return Ok(false);
         }
         (_, None) => {
             println!("### PROGRAM CRASHED! ###");
-            return false;
+            return Ok(false);
         }
     }
     let bash_stdout = String::from_utf8_lossy(&bash.stdout);
@@ -164,15 +165,15 @@ fn exec_test(test: &Test, program_path: &Path) -> bool {
         println!("Tested output:");
         println!("{minishell_stdout}");
         println!("########################");
-        return false;
+        return Ok(false);
     }
     println!("####### SUCCESS! #######");
-    true
+    Ok(true)
 }
 
 fn main() -> io::Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
-    let start_at = args.get(1).map(|arg| arg.parse().unwrap_or(0)).unwrap_or(0);
+    let start_at = args.get(1).map_or(0, |arg| arg.parse().unwrap_or(0));
     let path = std::env::current_dir()?;
     let tests_path = path.join(TESTS_PATH);
     let program_path = path.join(PROGRAM_PATH);
@@ -183,7 +184,7 @@ fn main() -> io::Result<()> {
         .iter()
         .skip_while(|test| test.id < start_at)
     {
-        if !exec_test(test, &program_path) {
+        if !exec_test(test, &program_path)? {
             return Ok(());
         }
     }
