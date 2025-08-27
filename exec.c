@@ -26,15 +26,23 @@ int	resolve_redirections(t_cmd *cmd)
 	while (redir_list)
 	{
 		redir = redir_list->content;
-		if (redir->type == REDIR_IN)
+		if (redir->type == REDIR_IN || redir->type == REDIR_HEREDOC)
 		{
 			if (cmd->fd_in != 0)
 				close(cmd->fd_in);
-			cmd->fd_in = open(redir->file_name.content, O_RDONLY);
-			if (cmd->fd_in == -1)
+			if (redir->type == REDIR_HEREDOC)
 			{
-				perror("open");
-				return (1); // TODO return or break ?
+				cmd->fd_in = 0;
+				; // ????
+			}
+			else
+			{
+				cmd->fd_in = open(redir->file_name.content, O_RDONLY);
+				if (cmd->fd_in == -1)
+				{
+					perror("open");
+					return (1); // TODO return or continue ?
+				}
 			}
 		}
 		else
@@ -53,7 +61,7 @@ int	resolve_redirections(t_cmd *cmd)
 			if (cmd->fd_in == -1)
 			{
 				perror("open");
-				return (1); // TODO return or break ?
+				return (1); // TODO return or continue ?
 			}
 		}
 		else
