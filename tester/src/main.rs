@@ -53,7 +53,6 @@ fn parse_tests(path: &Path) -> io::Result<Vec<Test>> {
                 || commands.contains("env")
                 || commands.contains("export")
                 || commands.contains("unset")
-                || commands.contains("<<")
                 || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
             {
                 ignored_tests += 1;

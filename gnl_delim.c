@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include "libft.h"
 #include "minishell.h"
-#include <stdio.h>
 #include <unistd.h>
 
 t_string	gnl_delim(int fd, char *delim)
@@ -26,7 +25,7 @@ t_string	gnl_delim(int fd, char *delim)
 		return (ft_string_destroy(&ret), ret);
 	while (1)
 	{
-		write (1, "> ", 2);
+		write (2, "> ", 2);
 		line = ft_get_next_line(fd);
 		if (!line)
 			return (ft_string_destroy(&ret), ret);
