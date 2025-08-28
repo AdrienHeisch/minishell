@@ -24,6 +24,13 @@ static t_operator	get_op(t_token_type token)
 	exit(MS_UNREACHABLE);
 }
 
+static int	get_precedence(t_operator op)
+{
+	if (op == OP_PIPE)
+		return (1);
+	return (0);
+}
+
 t_expr	*parse_binop(t_list **tokens, t_expr *prev)
 {
 	t_expr	*expr;
@@ -39,10 +46,28 @@ t_expr	*parse_binop(t_list **tokens, t_expr *prev)
 	if (!prev)
 		return (free(expr), NULL);
 	expr->data.binop.left = prev;
-	expr->data.binop.right = parse_expr(tokens, prev);
-	if (!expr->data.binop.right || expr->data.binop.right->type != EX_CMD
-		|| !expr->data.binop.right->data.cmd.args)
-		// TODO test with expr lists on either side
-		return (free(expr->data.binop.right), free(expr), NULL);
+	if (expr->data.binop.op == OP_PIPE)
+	{
+		expr->data.binop.right = parse_expr(tokens, prev);
+		if (!expr->data.binop.right || expr->data.binop.right->type != EX_CMD
+			|| !expr->data.binop.right->data.cmd.args)
+			return (free(expr->data.binop.right), free(expr), NULL);
+	}
+	else
+	{
+		expr->data.binop.right = parse(tokens);
+		if (!expr->data.binop.right)
+			return (free(expr), NULL);
+		if (expr->data.binop.right->type == EX_BINOP
+			&& get_precedence(expr->data.binop.right->data.binop.op) <= get_precedence(expr->data.binop.op))
+		{
+			t_expr *old = expr;
+			t_expr *new = old->data.binop.right;
+			t_expr *tmp = expr->data.binop.right->data.binop.left;
+			old->data.binop.right = tmp;
+			new->data.binop.left = old;
+			expr = new;
+		}
+	}
 	return (expr);
 }
