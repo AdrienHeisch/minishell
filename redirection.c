@@ -16,9 +16,9 @@
 
 int	resolve_redirections(t_cmd *cmd)
 {
-	int	oflag;
-	t_list	*redir_list;
-	t_redir_data *redir;
+	int				oflag;
+	t_list			*redir_list;
+	t_redir_data	*redir;
 	t_string		heredoc;
 
 	redir_list = cmd->redirs;
@@ -31,7 +31,8 @@ int	resolve_redirections(t_cmd *cmd)
 				close(cmd->fd_in);
 			if (redir->type == REDIR_HEREDOC)
 			{
-				cmd->fd_in = open("/tmp/heredoc", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
+				cmd->fd_in = open("/tmp/heredoc", O_CREAT | O_WRONLY | O_TRUNC,
+						S_IRUSR | S_IWUSR);
 				heredoc = prompt_heredoc(0, redir->file_name.content);
 				write(cmd->fd_in, heredoc.content, heredoc.length + 1);
 				close(cmd->fd_in);
@@ -80,4 +81,3 @@ void	close_redirections(t_cmd *cmd)
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
 }
-

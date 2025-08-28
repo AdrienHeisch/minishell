@@ -177,7 +177,7 @@ void	run_cmd(t_cmd cmd, t_shell_data *shell_data)
 
 	args = make_arg_list(cmd, shell_data);
 	path = args[0];
-	if (!path) 
+	if (!path)
 	{
 		free_args_list(args);
 		exit(0);

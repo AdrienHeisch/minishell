@@ -18,7 +18,8 @@
 
 static bool	is_arg(char c)
 {
-	static const char	list[] = {' ', '\t', '\n', '|', '&', '<', '>', ';', '(', ')', 0};
+	static const char	list[] = {' ', '\t', '\n', '|', '&', '<', '>', ';', '(',
+			')', 0};
 	size_t				i;
 
 	if (!ft_isprint(c))

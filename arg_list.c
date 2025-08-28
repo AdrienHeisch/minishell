@@ -150,4 +150,3 @@ void	free_args_list(char **args)
 		free(args[idx++]);
 	free(args);
 }
-

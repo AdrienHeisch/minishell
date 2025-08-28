@@ -56,6 +56,7 @@ static void	print_expr_rec(t_expr *expr)
 		exit(MS_UNREACHABLE);
 	printf(")");
 }
+
 void	print_expr(t_expr *expr)
 {
 	print_expr_rec(expr);

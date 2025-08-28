@@ -29,7 +29,8 @@ t_expr	*parse_pipe(t_list **tokens, t_expr *prev)
 	expr->data.pipe.left = prev;
 	expr->data.pipe.right = parse_expr(tokens, prev);
 	if (!expr->data.pipe.right || expr->data.pipe.right->type != EX_CMD
-		|| !expr->data.pipe.right->data.cmd.args) // TODO test with expr lists on either side
+		|| !expr->data.pipe.right->data.cmd.args)
+		// TODO test with expr lists on either side
 		return (free(expr->data.pipe.right), free(expr), NULL);
 	return (expr);
 }

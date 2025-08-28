@@ -18,9 +18,9 @@
 #include <termios.h>
 #include <unistd.h>
 
-int	received_signal;
+int			received_signal;
 
-static char **dup_env(char **envp)
+static char	**dup_env(char **envp)
 {
 	char	**dup;
 	size_t	len;
@@ -44,7 +44,7 @@ static char **dup_env(char **envp)
 	return (dup);
 }
 
-static char *make_prompt(char **envp)
+static char	*make_prompt(char **envp)
 {
 	t_string	prompt;
 	char		*s;
@@ -68,7 +68,6 @@ static char *make_prompt(char **envp)
 	return (prompt.content);
 }
 
-#include <fcntl.h>
 static void	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*tokens;

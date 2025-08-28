@@ -34,7 +34,7 @@ static bool	parse_options(char *arg, int *flags)
 	return (true);
 }
 
-void	builtin_echo(char **args, t_shell_data *shell_data, int	fd_out)
+void	builtin_echo(char **args, t_shell_data *shell_data, int fd_out)
 {
 	int		flags;
 	size_t	idx;
