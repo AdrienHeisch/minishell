@@ -36,7 +36,7 @@ int	resolve_redirections(t_cmd *cmd)
 			if (redir->type == REDIR_HEREDOC)
 			{
 				cmd->fd_in = open("/tmp/heredoc", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
-				heredoc = gnl_delim(0, redir->file_name.content);
+				heredoc = prompt_heredoc(0, redir->file_name.content);
 				write(cmd->fd_in, heredoc.content, heredoc.length + 1);
 				close(cmd->fd_in);
 				cmd->fd_in = open("/tmp/heredoc", O_RDONLY);

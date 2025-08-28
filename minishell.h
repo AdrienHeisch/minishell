@@ -162,6 +162,6 @@ char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 void						ft_unsetenv(char ***envp, const char *name);
-t_string					gnl_delim(int fd, char *delim);
+t_string					prompt_heredoc(int fd, char *delim);
 
 #endif // !MINISHELL_H

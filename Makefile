@@ -18,7 +18,6 @@ SRCS = \
 	exec_pipe.c \
 	free_expr.c \
 	free_token.c \
-	gnl_delim.c \
 	is_builtin.c \
 	lex.c \
 	main.c \

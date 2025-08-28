@@ -14,6 +14,7 @@
 #include "minishell.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 void	no_op(void *p)
 {
@@ -159,4 +160,25 @@ void	ft_unsetenv(char ***envp, const char *name)
 	free(name_suffix);
 	free(old);
 	*envp = new;
+}
+
+t_string	prompt_heredoc(int fd, char *delim)
+{
+	t_string	ret;
+	char		*line;
+
+	ret = ft_string_new();
+	if (!delim)
+		return (ft_string_destroy(&ret), ret);
+	while (1)
+	{
+		write(2, "> ", 2);
+		line = ft_get_next_line(fd);
+		if (!line)
+			return (ft_string_destroy(&ret), ret);
+		if (!ft_strncmp(line, delim, ft_strlen(line) - 1))
+			return (free(line), ret);
+		ft_string_cat(&ret, line);
+		free(line);
+	}
 }
