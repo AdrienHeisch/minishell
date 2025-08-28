@@ -123,7 +123,6 @@ t_expr						*parse(t_list **tokens);
 t_expr						*parse_expr(t_list **tokens, t_expr *prev);
 t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_binop(t_list **tokens, t_expr *prev);
-t_expr						*parse_redir_in(t_list **tokens, t_expr *prev);
 void						exec_binop(t_binop binop, t_shell_data *shell_data);
 void						exec_expr(t_expr *expr, t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
