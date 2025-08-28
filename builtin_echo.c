@@ -13,6 +13,8 @@
 #include "libft.h"
 #include "minishell.h"
 
+#define FLAG_N 1
+
 static bool	parse_options(char *arg, int *flags)
 {
 	int		new_flags;
@@ -23,7 +25,7 @@ static bool	parse_options(char *arg, int *flags)
 	while (arg[idx])
 	{
 		if (arg[idx] == 'n')
-			new_flags |= 1;
+			new_flags |= FLAG_N;
 		else
 			return (false);
 		idx++;
@@ -51,7 +53,7 @@ void	builtin_echo(char **args, t_shell_data *shell_data, int	fd_out)
 		if (args[idx])
 			ft_putstr_fd(" ", fd_out);
 	}
-	if (!(flags & 1))
+	if (!(flags & FLAG_N))
 		ft_putstr_fd("\n", fd_out);
 	shell_data->status = 0;
 }
