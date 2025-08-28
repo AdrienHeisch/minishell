@@ -14,8 +14,8 @@
 
 void	exec_expr_list(t_expr_list list, t_shell_data *shell_data)
 {
-	exec(list.left, shell_data);
+	exec_expr(list.left, shell_data);
 	if ((list.is_or && shell_data->status != 0) || (!list.is_or
 			&& shell_data->status == 0))
-		exec(list.right, shell_data);
+		exec_expr(list.right, shell_data);
 }

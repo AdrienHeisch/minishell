@@ -84,7 +84,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 		data->status = 2;
 		return ;
 	}
-	exec(((t_expr *)exprs->content), data);
+	exec_expr(((t_expr *)exprs->content), data);
 	ft_lstclear(&exprs, (void (*)(void *))free_expr);
 	add_history(str->content);
 }

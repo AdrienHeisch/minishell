@@ -11,7 +11,8 @@ SRCS = \
 	builtin_export.c \
 	builtin_pwd.c \
 	builtin_unset.c \
-	exec.c \
+	exec_expr.c \
+	exec_cmd.c \
 	exec_expr_list.c \
 	exec_builtin.c \
 	exec_pipe.c \
