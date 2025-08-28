@@ -119,13 +119,12 @@ void						free_token(t_token *token);
 void						print_expr(t_expr *expr);
 void						free_expr(t_expr *expr);
 t_list						*lex(t_string *str);
-t_list						*parse(t_string *str);
+t_expr						*parse(t_list **tokens);
 t_expr						*parse_expr(t_list **tokens, t_expr *prev);
 t_expr						*parse_expr_list(t_list **tokens, t_expr *prev);
 t_expr						*parse_cmd(t_list **tokens);
 t_expr						*parse_pipe(t_list **tokens, t_expr *prev);
 t_expr						*parse_redir_in(t_list **tokens, t_expr *prev);
-t_expr						*parse_tokens(t_list **tokens);
 void						exec_expr(t_expr *expr, t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 void						exec_expr_list(t_expr_list list,

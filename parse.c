@@ -14,7 +14,7 @@
 #include "minishell.h"
 #include <stdlib.h>
 
-t_expr	*parse_tokens(t_list **tokens)
+t_expr	*parse(t_list **tokens)
 {
 	t_expr	*expr;
 	t_expr	*new;
@@ -30,18 +30,4 @@ t_expr	*parse_tokens(t_list **tokens)
 	}
 	// print_expr(expr);
 	return (expr);
-}
-
-t_list	*parse(t_string *str)
-{
-	t_list	*tokens;
-	t_expr	*expr;
-
-	tokens = lex(str);
-	// ft_lstiter(tokens, (void (*)(void *))print_token);
-	expr = parse_tokens(&tokens);
-	if (expr)
-		return (ft_lstnew(expr));
-	else
-		return (NULL);
 }

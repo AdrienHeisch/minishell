@@ -71,21 +71,24 @@ static char *make_prompt(char **envp)
 #include <fcntl.h>
 static void	parse_and_exec(t_string *str, t_shell_data *data)
 {
-	t_list	*exprs;
+	t_list	*tokens;
+	t_expr	*expr;
 
 	if (is_whitespace(str))
 	{
 		data->status = 0;
 		return ;
 	}
-	exprs = parse(str);
-	if (!exprs)
+	tokens = lex(str);
+	// ft_lstiter(tokens, (void (*)(void *))print_token);
+	expr = parse(&tokens);
+	if (!expr)
 	{
 		data->status = 2;
 		return ;
 	}
-	exec_expr(((t_expr *)exprs->content), data);
-	ft_lstclear(&exprs, (void (*)(void *))free_expr);
+	exec_expr(expr, data);
+	free_expr(expr);
 	add_history(str->content);
 }
 

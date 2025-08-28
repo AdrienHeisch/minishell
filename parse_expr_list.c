@@ -28,7 +28,7 @@ t_expr	*parse_expr_list(t_list **tokens, t_expr *prev)
 	if (!prev)
 		return (free(expr), NULL);
 	expr->data.expr_list.left = prev;
-	expr->data.expr_list.right = parse_tokens(tokens);
+	expr->data.expr_list.right = parse(tokens);
 	if (!expr->data.expr_list.right)
 		return (free(expr), NULL);
 	// if (!expr->data.expr_list.right || expr->data.pipe.right->type != EX_CMD
