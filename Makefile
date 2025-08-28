@@ -28,6 +28,7 @@ SRCS = \
 	parse_pipe.c \
 	print_expr.c \
 	print_token.c \
+	redirection.c \
 	signals.c \
 	termios.c \
 	utils.c \
