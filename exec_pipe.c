@@ -31,7 +31,7 @@ static void	run_child(t_cmd cmd, t_shell_data *shell_data)
 			exit(-1);
 		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
 			exit(-1);
-		exec_cmd(cmd, shell_data);
+		run_cmd(cmd, shell_data);
 	}
 }
 

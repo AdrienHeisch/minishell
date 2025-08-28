@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   exec_cmd.c                                         :+:      :+:    :+:   */
+/*   run_cmd.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 13:04:45 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/06 13:04:45 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/08/28 20:47:49 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,7 @@ static void	cmd_error(char *path, char *err)
 		perror("");
 }
 
-void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
+void	run_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
 	char	*path;

@@ -129,10 +129,10 @@ t_expr						*parse_tokens(t_list **tokens);
 void						exec(t_expr *expr, t_shell_data *shell_data);
 void						exec_expr_list(t_expr_list list,
 								t_shell_data *shell_data);
-void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 void						exec_one(t_cmd cmd, t_shell_data *shell_data);
 int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
 int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
+void						run_cmd(t_cmd cmd, t_shell_data *shell_data);
 
 bool						is_builtin(t_string *name);
 bool						exec_builtin(t_cmd cmd, t_shell_data *shell_data);
