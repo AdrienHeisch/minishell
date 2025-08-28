@@ -1,6 +1,5 @@
 # TODO
 
 - heredoc: quotes
-- && / ||
 - ()
 - wildcards
