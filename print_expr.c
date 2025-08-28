@@ -14,30 +14,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void	print_expr(t_expr *expr)
+static void	print_expr_rec(t_expr *expr)
 {
 	t_list	*lst;
 
+	if (!expr)
+	{
+		printf("(null)");
+		return ;
+	}
+	printf("(");
 	if (expr->type == EX_CMD)
 	{
-		printf("CMD: ");
 		lst = expr->data.cmd.args;
 		while (lst)
 		{
-			printf("%s ", ft_string_get(lst->content));
+			printf("%s", ft_string_get(lst->content));
 			lst = lst->next;
+			if (lst)
+				printf(" ");
 		}
 		// if (expr->data.cmd.file_out.content)
 		// 	printf("> %s ", expr->data.cmd.file_out.content);
 	}
 	else if (expr->type == EX_PIPE)
 	{
-		printf("PIPE_START\n");
-		print_expr(expr->data.pipe.left);
-		print_expr(expr->data.pipe.right);
-		printf("PIPE_END");
+		print_expr_rec(expr->data.pipe.left);
+		printf(" | ");
+		print_expr_rec(expr->data.pipe.right);
+	}
+	else if (expr->type == EX_LIST)
+	{
+		print_expr_rec(expr->data.pipe.left);
+		if (expr->data.expr_list.is_or)
+			printf(" || ");
+		else
+			printf(" && ");
+		print_expr_rec(expr->data.pipe.right);
 	}
 	else
 		exit(MS_UNREACHABLE);
+	printf(")");
+}
+void	print_expr(t_expr *expr)
+{
+	print_expr_rec(expr);
 	printf("\n");
 }

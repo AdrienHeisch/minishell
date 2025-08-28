@@ -12,15 +12,19 @@
 
 #include "minishell.h"
 
-t_expr	*parse_expr(t_list **tokens, t_list **exprs)
+t_expr	*parse_expr(t_list **tokens, t_expr *prev)
 {
 	t_token	*token;
 
+	if (!tokens || !*tokens)
+		return (NULL);
 	token = ((t_token *)(*tokens)->content);
 	if (!token)
 		return (NULL);
 	if (token->type == TK_PIPE)
-		return (parse_pipe(tokens, exprs));
+		return (parse_pipe(tokens, prev));
+	else if (token->type == TK_AND || token->type == TK_OR)
+		return (parse_expr_list(tokens, prev));
 	else if (token->type == TK_ARG || token->type == TK_REDIR)
 		return (parse_cmd(tokens));
 	else

@@ -12,24 +12,26 @@ SRCS = \
 	builtin_pwd.c \
 	builtin_unset.c \
 	exec.c \
+	exec_expr_list.c \
 	exec_builtin.c \
 	exec_cmd.c \
 	exec_pipe.c \
 	free_expr.c \
 	free_token.c \
+	gnl_delim.c \
 	is_builtin.c \
 	lex.c \
 	main.c \
 	parse_cmd.c \
 	parse.c \
 	parse_expr.c \
+	parse_expr_list.c \
 	parse_pipe.c \
 	print_expr.c \
 	print_token.c \
 	signals.c \
 	termios.c \
 	utils.c \
-	gnl_delim.c
 
 #	CONFIG
 

@@ -14,22 +14,34 @@
 #include "minishell.h"
 #include <stdlib.h>
 
+t_expr	*parse_tokens(t_list **tokens)
+{
+	t_expr	*expr;
+	t_expr	*new;
+
+	expr = NULL;
+	while (*tokens)
+	{
+		new = parse_expr(tokens, expr);
+		if (!new)
+			return (ft_lstclear(tokens, (void (*)(void *))free_token),
+				free_expr(expr), NULL);
+		expr = new;
+	}
+	// print_expr(expr);
+	return (expr);
+}
+
 t_list	*parse(t_string *str)
 {
 	t_list	*tokens;
-	t_list	*exprs;
 	t_expr	*expr;
 
 	tokens = lex(str);
 	// ft_lstiter(tokens, (void (*)(void *))print_token);
-	exprs = NULL;
-	while (tokens)
-	{
-		expr = parse_expr(&tokens, &exprs);
-		if (!expr)
-			return (ft_lstclear(&tokens, (void (*)(void *))free_token), ft_lstclear(&exprs, (void (*)(void *))free_expr), NULL);
-		ft_lstadd_back(&exprs, ft_lstnew(expr));
-	}
-	// ft_lstiter(exprs, (void (*)(void *))print_expr);
-	return (exprs);
+	expr = parse_tokens(&tokens);
+	if (expr)
+		return (ft_lstnew(expr));
+	else
+		return (NULL);
 }

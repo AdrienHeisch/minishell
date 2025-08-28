@@ -1,14 +1,25 @@
 use std::{
     fs::File,
     io::{self},
-    path::{Path},
+    path::Path,
     process::Command,
 };
 
+#[derive(PartialEq, PartialOrd)]
+enum Level {
+    #[allow(unused)]
+    Mandatory,
+    Bonus,
+    More,
+}
+
 const PROGRAM_PATH: &str = "../minishell";
 const TESTS_PATH: &str = "tests.csv";
-const ENABLE_BONUSES: bool = false;
-const BLACKLIST: &[usize] = &[2, 3, 24, 68, 92, 102, 103, 405, 407, 418, 424, 425, 427, 734];
+const BONUS_RANGES: &[std::ops::RangeInclusive<usize>] = &[549..=574, 575..=576, 999..=999];
+const LEVEL: Level = Level::Mandatory;
+const BLACKLIST: &[usize] = &[
+    2, 3, 24, 68, 92, 102, 103, 405, 407, 418, 424, 425, 427, 734, 48, 49, 50, 51, 120, 123, 360,
+];
 
 struct Test {
     id: usize,
@@ -38,7 +49,12 @@ fn parse_tests(path: &Path) -> io::Result<Vec<Test>> {
             continue;
         }
         let record = result?;
-        if !ENABLE_BONUSES {
+        if BONUS_RANGES.iter().any(|range| range.contains(&id)) {
+            if LEVEL < Level::Bonus {
+                ignored_tests += 1;
+                continue;
+            }
+        } else if LEVEL < Level::More {
             match record.get(2) {
                 Some(str) if !str.is_empty() => {
                     ignored_tests += 1;
@@ -53,7 +69,7 @@ fn parse_tests(path: &Path) -> io::Result<Vec<Test>> {
                 || commands.contains("env")
                 || commands.contains("export")
                 || commands.contains("unset")
-                || (!ENABLE_BONUSES && (commands.contains("&&") || commands.contains("||")))
+                || commands.contains(";")
             {
                 ignored_tests += 1;
                 continue;

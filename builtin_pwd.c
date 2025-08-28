@@ -22,7 +22,15 @@ static bool	parse_args(char **args)
 	while (args[idx])
 	{
 		if (args[idx][0] == '-')
-			return (false);
+		{
+			if (args[idx][1] == '-')
+			{
+				if (args[idx][2])
+					return (false);
+			}
+			else if (args[idx][1])
+				return (false);
+		}
 		idx++;
 	}
 	return (true);

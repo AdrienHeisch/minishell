@@ -18,7 +18,7 @@
 
 static bool	is_arg(char c)
 {
-	static const char	list[] = {' ', '\t', '\n', '|', '<', '>', 0};
+	static const char	list[] = {' ', '\t', '\n', '|', '&', '<', '>', ';', '(', ')', 0};
 	size_t				i;
 
 	if (!ft_isprint(c))
@@ -78,6 +78,22 @@ static t_token	*get_token(t_string *str, size_t *idx)
 	{
 		token.type = TK_PIPE;
 		(*idx)++;
+		if (str->content[*idx] == '|')
+		{
+			token.type = TK_OR;
+			(*idx)++;
+		}
+	}
+	else if (c == '&')
+	{
+		(*idx)++;
+		if (str->content[*idx] == '&')
+		{
+			token.type = TK_AND;
+			(*idx)++;
+		}
+		else
+			token.type = TK_INVALID;
 	}
 	else if (c == '<')
 	{

@@ -39,6 +39,8 @@ typedef enum s_token_type
 	TK_ARG,
 	TK_PIPE,
 	TK_REDIR,
+	TK_AND,
+	TK_OR,
 }							t_token_type;
 
 typedef enum s_redir_type
@@ -74,6 +76,7 @@ typedef enum s_expr_type
 {
 	EX_CMD,
 	EX_PIPE,
+	EX_LIST,
 }							t_expr_type;
 
 typedef struct s_expr
@@ -93,11 +96,18 @@ typedef struct s_expr
 			struct s_expr	*left;
 			struct s_expr	*right;
 		} pipe;
+		struct				s_expr_list
+		{
+			struct s_expr	*left;
+			struct s_expr	*right;
+			bool			is_or;
+		} expr_list;
 	} data;
 }							t_expr;
 
 typedef struct s_cmd		t_cmd;
 typedef struct s_pipe		t_pipe;
+typedef struct s_expr_list	t_expr_list;
 
 void						init_signals(void);
 
@@ -110,12 +120,17 @@ void						print_expr(t_expr *expr);
 void						free_expr(t_expr *expr);
 t_list						*lex(t_string *str);
 t_list						*parse(t_string *str);
-t_expr						*parse_expr(t_list **tokens, t_list **exprs);
+t_expr						*parse_expr(t_list **tokens, t_expr *prev);
+t_expr						*parse_expr_list(t_list **tokens, t_expr *prev);
 t_expr						*parse_cmd(t_list **tokens);
-t_expr						*parse_pipe(t_list **tokens, t_list **exprs);
-t_expr						*parse_redir_in(t_list **tokens, t_list **exprs);
+t_expr						*parse_pipe(t_list **tokens, t_expr *prev);
+t_expr						*parse_redir_in(t_list **tokens, t_expr *prev);
+t_expr						*parse_tokens(t_list **tokens);
 void						exec(t_expr *expr, t_shell_data *shell_data);
+void						exec_expr_list(t_expr_list list,
+								t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
+void						exec_one(t_cmd cmd, t_shell_data *shell_data);
 int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
 int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 
