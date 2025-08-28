@@ -12,8 +12,8 @@ SRCS = \
 	builtin_pwd.c \
 	builtin_unset.c \
 	exec_expr.c \
+	exec_binop.c \
 	exec_cmd.c \
-	exec_expr_list.c \
 	exec_builtin.c \
 	exec_pipe.c \
 	free_expr.c \
@@ -24,8 +24,7 @@ SRCS = \
 	parse_cmd.c \
 	parse.c \
 	parse_expr.c \
-	parse_expr_list.c \
-	parse_pipe.c \
+	parse_binop.c \
 	print_expr.c \
 	print_token.c \
 	redirection.c \

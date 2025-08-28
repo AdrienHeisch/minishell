@@ -6,7 +6,7 @@
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 14:07:07 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/06 14:07:07 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/08/28 21:19:48 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,17 +93,22 @@ static int	wait_all(int last_pid)
 	return (exit_code);
 }
 
-static void	build_cmd_list(t_list **cmds, t_pipe pipe)
+static void	build_cmd_list(t_list **cmds, t_binop pipe)
 {
-	if (pipe.left->type == EX_PIPE)
-		build_cmd_list(cmds, pipe.left->data.pipe);
+	if (pipe.left->type == EX_BINOP)
+	{
+		if (pipe.left->data.binop.op == OP_PIPE)
+			build_cmd_list(cmds, pipe.left->data.binop);
+		else
+			exit(42);
+	}
 	else if (pipe.left->type == EX_CMD)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.left->data.cmd));
 	if (pipe.right->type == EX_CMD)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.right->data.cmd));
 }
 
-int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
+void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 {
 	t_list	*cmds;
 	t_list	*cmd;
@@ -117,7 +122,10 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 		exit(-1);
 	cmd = cmds;
 	if (resolve_redirections(cmd->content))
-		return (1);
+	{
+		shell_data->status = 1;
+		return ;
+	}
 	prev_fd = ((t_cmd *)cmd->content)->fd_in;
 	while (cmd->next != NULL)
 	{
@@ -125,7 +133,10 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 		cmd = cmd->next;
 		// FIXME should kill forked processes ?
 		if (resolve_redirections(cmd->content))
-			return (1);
+		{
+			shell_data->status = 1;
+			return ;
+		}
 	}
 	if (((t_cmd *)cmd->content)->fd_in == STDIN_FILENO)
 		((t_cmd *)cmd->content)->fd_in = prev_fd;
@@ -133,5 +144,5 @@ int	exec_pipe(t_pipe pipe, t_shell_data *shell_data)
 	if (prev_fd > 0)
 		close(prev_fd);
 	ft_lstclear(&cmds, no_op);
-	return (exit_code);
+	shell_data->status = exit_code;
 }

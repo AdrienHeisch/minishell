@@ -37,20 +37,18 @@ static void	print_expr_rec(t_expr *expr)
 		// if (expr->data.cmd.file_out.content)
 		// 	printf("> %s ", expr->data.cmd.file_out.content);
 	}
-	else if (expr->type == EX_PIPE)
+	else if (expr->type == EX_BINOP)
 	{
-		print_expr_rec(expr->data.pipe.left);
-		printf(" | ");
-		print_expr_rec(expr->data.pipe.right);
-	}
-	else if (expr->type == EX_LIST)
-	{
-		print_expr_rec(expr->data.pipe.left);
-		if (expr->data.expr_list.is_or)
+		print_expr_rec(expr->data.binop.left);
+		if (expr->data.binop.op == OP_PIPE)
+			printf(" | ");
+		else if (expr->data.binop.op == OP_AND)
+			printf(" && ");
+		else if (expr->data.binop.op == OP_OR)
 			printf(" || ");
 		else
-			printf(" && ");
-		print_expr_rec(expr->data.pipe.right);
+			exit(MS_UNREACHABLE);
+		print_expr_rec(expr->data.binop.right);
 	}
 	else
 		exit(MS_UNREACHABLE);

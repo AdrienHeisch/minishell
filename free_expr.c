@@ -24,10 +24,10 @@ void	free_expr(t_expr *expr)
 		// TODO free_redir
 		ft_lstclear(&expr->data.cmd.redirs, no_op);
 	}
-	else if (expr->type == EX_PIPE)
+	else if (expr->type == EX_BINOP)
 	{
-		free_expr(expr->data.pipe.left);
-		free_expr(expr->data.pipe.right);
+		free_expr(expr->data.binop.left);
+		free_expr(expr->data.binop.right);
 	}
 	free(expr);
 }

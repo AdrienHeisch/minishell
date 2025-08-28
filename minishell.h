@@ -75,9 +75,15 @@ typedef struct s_redir_data	t_redir_data;
 typedef enum s_expr_type
 {
 	EX_CMD,
-	EX_PIPE,
-	EX_LIST,
+	EX_BINOP,
 }							t_expr_type;
+
+typedef enum e_operator
+{
+	OP_PIPE,
+	OP_AND,
+	OP_OR,
+}							t_operator;
 
 typedef struct s_expr
 {
@@ -91,23 +97,17 @@ typedef struct s_expr
 			int				fd_out;
 			t_list			*redirs;
 		} cmd;
-		struct				s_pipe
+		struct				s_binop
 		{
 			struct s_expr	*left;
 			struct s_expr	*right;
-		} pipe;
-		struct				s_expr_list
-		{
-			struct s_expr	*left;
-			struct s_expr	*right;
-			bool			is_or;
-		} expr_list;
+			t_operator		op;
+		} binop;
 	} data;
 }							t_expr;
 
 typedef struct s_cmd		t_cmd;
-typedef struct s_pipe		t_pipe;
-typedef struct s_expr_list	t_expr_list;
+typedef struct s_binop		t_binop;
 
 void						init_signals(void);
 
@@ -121,15 +121,13 @@ void						free_expr(t_expr *expr);
 t_list						*lex(t_string *str);
 t_expr						*parse(t_list **tokens);
 t_expr						*parse_expr(t_list **tokens, t_expr *prev);
-t_expr						*parse_expr_list(t_list **tokens, t_expr *prev);
 t_expr						*parse_cmd(t_list **tokens);
-t_expr						*parse_pipe(t_list **tokens, t_expr *prev);
+t_expr						*parse_binop(t_list **tokens, t_expr *prev);
 t_expr						*parse_redir_in(t_list **tokens, t_expr *prev);
+void						exec_binop(t_binop binop, t_shell_data *shell_data);
 void						exec_expr(t_expr *expr, t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
-void						exec_expr_list(t_expr_list list,
-								t_shell_data *shell_data);
-int							exec_pipe(t_pipe pipe, t_shell_data *shell_data);
+void						exec_pipe(t_binop pipe, t_shell_data *shell_data);
 int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 void						run_cmd(t_cmd cmd, t_shell_data *shell_data);
 

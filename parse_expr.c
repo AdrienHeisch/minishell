@@ -12,6 +12,11 @@
 
 #include "minishell.h"
 
+static bool	is_op(t_token_type token)
+{
+	return (token == TK_PIPE || token == TK_AND || token == TK_OR);
+}
+
 t_expr	*parse_expr(t_list **tokens, t_expr *prev)
 {
 	t_token	*token;
@@ -21,10 +26,8 @@ t_expr	*parse_expr(t_list **tokens, t_expr *prev)
 	token = ((t_token *)(*tokens)->content);
 	if (!token)
 		return (NULL);
-	if (token->type == TK_PIPE)
-		return (parse_pipe(tokens, prev));
-	else if (token->type == TK_AND || token->type == TK_OR)
-		return (parse_expr_list(tokens, prev));
+	if (is_op(token->type))
+		return (parse_binop(tokens, prev));
 	else if (token->type == TK_ARG || token->type == TK_REDIR)
 		return (parse_cmd(tokens));
 	else

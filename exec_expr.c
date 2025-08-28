@@ -19,10 +19,8 @@ void	exec_expr(t_expr *expr, t_shell_data *shell_data)
 		return ;
 	if (expr->type == EX_CMD)
 		exec_cmd(expr->data.cmd, shell_data);
-	else if (expr->type == EX_PIPE)
-		shell_data->status = exec_pipe(expr->data.pipe, shell_data);
-	else if (expr->type == EX_LIST)
-		exec_expr_list(expr->data.expr_list, shell_data);
+	else if (expr->type == EX_BINOP)
+		exec_binop(expr->data.binop, shell_data);
 	else
 		exit(MS_UNREACHABLE);
 }
