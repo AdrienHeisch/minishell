@@ -40,7 +40,7 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 	}
 }
 
-int	fork_exec_cmd(t_exec_info exec, t_shell_data *shell_data)
+int	fork_run_cmd(t_exec_info exec, t_shell_data *shell_data)
 {
 	pid_t	pid;
 
