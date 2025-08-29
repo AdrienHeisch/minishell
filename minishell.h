@@ -22,6 +22,8 @@ extern int					received_signal;
 enum						e_error
 {
 	MS_SUCCESS,
+	MS_COMMAND_FAILED,
+	MS_SYNTAX_ERROR,
 	MS_USAGE,
 	MS_ALLOC,
 	MS_UNREACHABLE,
@@ -121,6 +123,14 @@ typedef struct s_cmd		t_cmd;
 typedef struct s_binop		t_binop;
 typedef struct s_paren		t_paren;
 
+typedef struct s_exec_info
+{
+	char					**args;
+	int						fd_in;
+	int						fd_out;
+	int						error;
+}							t_exec_info;
+
 void						init_signals(void);
 
 struct termios				set_terminal_attributes(void);
@@ -142,11 +152,12 @@ void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 void						exec_parentheses(t_paren paren,
 								t_shell_data *shell_data);
 void						exec_pipe(t_binop pipe, t_shell_data *shell_data);
-int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
-void						run_cmd(t_cmd cmd, t_shell_data *shell_data);
+int							fork_exec_cmd(t_exec_info exec, t_shell_data *shell_data);
+void						run_cmd(t_exec_info cmd, t_shell_data *shell_data);
 
-bool						is_builtin(t_string *name);
-bool						exec_builtin(t_cmd cmd, t_shell_data *shell_data);
+bool						is_builtin(char *name);
+bool						exec_builtin(t_exec_info args,
+								t_shell_data *shell_data);
 void						builtin_cd(char **args, t_shell_data *shell_data);
 void						builtin_echo(char **args, t_shell_data *shell_data,
 								int fd_out);
@@ -163,9 +174,16 @@ char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
 
+t_exec_info					make_exec_info(t_cmd cmd, t_shell_data *shell_data);
+int							resolve_exec_path(char **cmd,
+								t_shell_data *shell_data);
+
 void						add_redirection(t_list *token, t_list **list);
 int							resolve_redirections(t_cmd *cmd);
 void						close_redirections(t_cmd *cmd);
+
+void						print_error(char *err);
+void						print_error_code(char *path, int code);
 
 void						no_op(void *p);
 void						lstclear_string(void *str);

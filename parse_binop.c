@@ -47,12 +47,12 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 		return (free(expr), NULL);
 	expr->data.binop.left = *prev;
 	*prev = NULL;
+	// TODO use operator precedence here (remove this condition)
 	if (expr->data.binop.op == OP_PIPE)
 	{
 		expr->data.binop.right = parse_expr(tokens, &expr->data.binop.left);
-		if (!expr->data.binop.right || expr->data.binop.right->type != EX_CMD
-			|| !expr->data.binop.right->data.cmd.args)
-			return (free(expr->data.binop.right), free(expr), NULL);
+		if (!expr->data.binop.right)
+			return (free(expr->data.binop.right), free(expr), ft_putstr_fd("unexpected token\n", 2), NULL);
 	}
 	else
 	{

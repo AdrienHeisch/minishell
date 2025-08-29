@@ -15,21 +15,26 @@
 
 void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 {
-	int	status_location;
+	int			status_location;
+	t_exec_info	exec;
 
 	if (resolve_redirections(&cmd))
 	{
 		shell_data->status = 1;
 		return ;
 	}
-	if (cmd.args && cmd.args->content
-		&& is_builtin(&((t_arg_data *)cmd.args->content)->string))
+	exec = make_exec_info(cmd, shell_data);
+	if (exec.error >= 0)
 	{
-		exec_builtin(cmd, shell_data);
+		shell_data->status = exec.error;
+		return ;
 	}
+	if (is_builtin(exec.args[0]))
+		exec_builtin(exec, shell_data);
 	else
 	{
-		waitpid(fork_exec_cmd(cmd, shell_data), &status_location, 0);
+		status_location = -1;
+		waitpid(fork_exec_cmd(exec, shell_data), &status_location, 0);
 		if (WIFEXITED(status_location))
 			shell_data->status = WEXITSTATUS(status_location);
 		else

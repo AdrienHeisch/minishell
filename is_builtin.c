@@ -13,16 +13,20 @@
 #include "libft.h"
 #include "minishell.h"
 
-bool	is_builtin(t_string *name)
+bool	is_builtin(char *name)
 {
 	static const char	*list[] = {"cd", "echo", "env", "exit", "export", "pwd",
 			"unset", 0};
+	size_t				len;
 	size_t				idx;
 
+	if (!name)
+		return (false);
+	len = ft_strlen(name);
 	idx = 0;
 	while (list[idx])
 	{
-		if (ft_strncmp(list[idx], name->content, name->length + 1) == 0)
+		if (ft_strncmp(list[idx], name, len + 1) == 0)
 			return (true);
 		idx++;
 	}

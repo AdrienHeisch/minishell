@@ -16,11 +16,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static void	run_child(t_cmd cmd, t_shell_data *shell_data)
+static void	run_child(t_exec_info cmd, t_shell_data *shell_data)
 {
-	// printf("in: %d, out: %d\n", cmd.fd_in, cmd.fd_out);
-	if (cmd.args->content
-		&& is_builtin(&((t_arg_data *)cmd.args->content)->string))
+	if (*cmd.args && is_builtin(*cmd.args))
 	{
 		exec_builtin(cmd, shell_data);
 		exit(shell_data->status);
@@ -38,8 +36,12 @@ static void	run_child(t_cmd cmd, t_shell_data *shell_data)
 static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 		int *next_fd)
 {
-	pid_t	pid;
+	pid_t		pid;
+	t_exec_info	exec;
 
+	exec = make_exec_info(cmd, shell_data);
+	if (exec.error >= 0)
+		return ;
 	if (pipe(next_fd) == -1)
 		exit(-1);
 	pid = fork();
@@ -53,11 +55,11 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 	if (pid == 0)
 	{
 		close(next_fd[0]);
-		if (cmd.fd_in == STDIN_FILENO)
-			cmd.fd_in = *prev_fd;
-		if (cmd.fd_out == STDOUT_FILENO)
-			cmd.fd_out = next_fd[1];
-		run_child(cmd, shell_data);
+		if (exec.fd_in == STDIN_FILENO)
+			exec.fd_in = *prev_fd;
+		if (exec.fd_out == STDOUT_FILENO)
+			exec.fd_out = next_fd[1];
+		run_child(exec, shell_data);
 	}
 	close(next_fd[1]);
 	if (*prev_fd > 0)
@@ -65,15 +67,15 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 	*prev_fd = next_fd[0];
 }
 
-int	fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data)
+int	fork_exec_cmd(t_exec_info exec, t_shell_data *shell_data)
 {
-	pid_t	pid;
+	pid_t		pid;
 
 	pid = fork();
 	if (pid == -1)
 		exit(-1);
 	if (pid == 0)
-		run_child(cmd, shell_data);
+		run_child(exec, shell_data);
 	return (pid);
 }
 
@@ -104,6 +106,8 @@ static void	build_cmd_list(t_list **cmds, t_binop pipe)
 	}
 	else if (pipe.left->type == EX_CMD)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.left->data.cmd));
+	else
+		exit(MS_UNREACHABLE);
 	if (pipe.right->type == EX_CMD)
 		ft_lstadd_back(cmds, ft_lstnew(&pipe.right->data.cmd));
 }
@@ -140,7 +144,13 @@ void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 	}
 	if (((t_cmd *)cmd->content)->fd_in == STDIN_FILENO)
 		((t_cmd *)cmd->content)->fd_in = prev_fd;
-	exit_code = wait_all(fork_exec_cmd(*((t_cmd *)cmd->content), shell_data));
+	t_exec_info exec = make_exec_info(*(t_cmd *)cmd->content, shell_data);
+	if (exec.error >= 0)
+	{
+		shell_data->status = exec.error;
+		return ;
+	}
+	exit_code = wait_all(fork_exec_cmd(exec, shell_data));
 	if (prev_fd > 0)
 		close(prev_fd);
 	ft_lstclear(&cmds, no_op);

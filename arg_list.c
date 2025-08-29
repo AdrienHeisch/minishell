@@ -133,7 +133,7 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 		expand_arg(&((t_arg_data *)cmd.args->content)->string, shell_data);
 		if (((t_arg_data *)cmd.args->content)->string.content)
 		{
-			args[idx] = ((t_string *)cmd.args->content)->content;
+			args[idx] = ft_strdup(((t_string *)cmd.args->content)->content);
 			idx++;
 		}
 		cmd.args = cmd.args->next;
