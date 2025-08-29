@@ -33,14 +33,6 @@ t_expr	*parse_expr(t_list **tokens, t_expr **prev)
 		return (parse_cmd(tokens));
 	else if (token->type == TK_PAROPEN)
 		return (parse_parentheses(tokens));
-	// else if (token->type == TK_REDIR)
-	// {
-	// 	if (!(*tokens)->next || !(*tokens)->next->content
-	// 		|| ((t_token *)(*tokens)->next->content)->type != TK_PAROPEN)
-	// 		return (parse_cmd(tokens));
-	// 	else
-	// 		return (parse_parentheses(tokens));
-	// }
 	else
 		return (NULL);
 }
