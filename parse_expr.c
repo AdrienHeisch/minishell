@@ -23,7 +23,8 @@ t_expr	*parse_expr(t_list **tokens, t_expr **prev)
 	t_token	*token;
 
 	if (!tokens || !*tokens)
-		return (NULL);
+		return (ft_putstr_fd("minishell: syntax error: unexpected end of file\n",
+				2), NULL);
 	token = (t_token *)(*tokens)->content;
 	if (!token)
 		return (NULL);
