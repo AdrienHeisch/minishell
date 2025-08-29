@@ -134,6 +134,16 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		if (!token.data.redir.file_name.content)
 			return (errno = 1, NULL);
 	}
+	else if (c == '(')
+	{
+		token.type = TK_PAROPEN;
+		(*idx)++;
+	}
+	else if (c == ')')
+	{
+		token.type = TK_PARCLOSE;
+		(*idx)++;
+	}
 	else
 		return (NULL);
 	cell = malloc(sizeof(t_token));

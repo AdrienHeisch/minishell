@@ -28,6 +28,8 @@ void	print_token(t_token *token)
 	{
 		if (token->data.redir.type == REDIR_IN)
 			printf("< ");
+		else if (token->data.redir.type == REDIR_HEREDOC)
+			printf("<< ");
 		else if (token->data.redir.type == REDIR_OUT)
 			printf("> ");
 		else if (token->data.redir.type == REDIR_APPEND)
@@ -36,6 +38,10 @@ void	print_token(t_token *token)
 			exit(MS_UNREACHABLE);
 		printf("%s\n", token->data.redir.file_name.content);
 	}
+	else if (token->type == TK_PAROPEN)
+		printf("(\n");
+	else if (token->type == TK_PARCLOSE)
+		printf(")\n");
 	else if (token->type == TK_INVALID)
 		printf("!!! INVALID !!!\n");
 	else

@@ -25,6 +25,7 @@ enum						e_error
 	MS_USAGE,
 	MS_ALLOC,
 	MS_UNREACHABLE,
+	MS_LOGIC_ERROR,
 };
 
 typedef struct s_shell_data
@@ -41,6 +42,8 @@ typedef enum s_token_type
 	TK_REDIR,
 	TK_AND,
 	TK_OR,
+	TK_PAROPEN,
+	TK_PARCLOSE,
 }							t_token_type;
 
 typedef enum s_redir_type
@@ -76,6 +79,7 @@ typedef enum s_expr_type
 {
 	EX_CMD,
 	EX_BINOP,
+	EX_PARENTHESES,
 }							t_expr_type;
 
 typedef enum e_operator
@@ -103,11 +107,19 @@ typedef struct s_expr
 			struct s_expr	*right;
 			t_operator		op;
 		} binop;
+		struct				s_paren
+		{
+			struct s_expr	*inner;
+			int				fd_in;
+			int				fd_out;
+			t_list			*redirs;
+		} paren;
 	} data;
 }							t_expr;
 
 typedef struct s_cmd		t_cmd;
 typedef struct s_binop		t_binop;
+typedef struct s_paren		t_paren;
 
 void						init_signals(void);
 
@@ -120,12 +132,15 @@ void						print_expr(t_expr *expr);
 void						free_expr(t_expr *expr);
 t_list						*lex(t_string *str);
 t_expr						*parse(t_list **tokens);
-t_expr						*parse_expr(t_list **tokens, t_expr *prev);
+t_expr						*parse_expr(t_list **tokens, t_expr **prev);
 t_expr						*parse_cmd(t_list **tokens);
-t_expr						*parse_binop(t_list **tokens, t_expr *prev);
+t_expr						*parse_binop(t_list **tokens, t_expr **prev);
+t_expr						*parse_parentheses(t_list **tokens);
 void						exec_binop(t_binop binop, t_shell_data *shell_data);
 void						exec_expr(t_expr *expr, t_shell_data *shell_data);
 void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
+void						exec_parentheses(t_paren paren,
+								t_shell_data *shell_data);
 void						exec_pipe(t_binop pipe, t_shell_data *shell_data);
 int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 void						run_cmd(t_cmd cmd, t_shell_data *shell_data);
@@ -148,6 +163,7 @@ char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
 
+void						add_redirection(t_list *token, t_list **list);
 int							resolve_redirections(t_cmd *cmd);
 void						close_redirections(t_cmd *cmd);
 

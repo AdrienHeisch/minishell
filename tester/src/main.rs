@@ -6,7 +6,7 @@ use exec::exec_test;
 use parse::parse_tests;
 use std::io::{self};
 
-const BONUS_RANGES: &[std::ops::RangeInclusive<usize>] = &[549..=574, 575..=576, 999..=999];
+const BONUS_RANGES: &[std::ops::RangeInclusive<usize>] = &[549..=574, 575..=612]; //, 737..=742];
 const BLACKLIST: &[usize] = &[
     2, 3, 24, 68, 92, 102, 103, 405, 407, 418, 424, 425, 427, 734, 48, 49, 50, 51, 120, 123, 360,
 ];

@@ -29,5 +29,7 @@ void	free_expr(t_expr *expr)
 		free_expr(expr->data.binop.left);
 		free_expr(expr->data.binop.right);
 	}
+	else if (expr->type == EX_PARENTHESES)
+		free_expr(expr->data.paren.inner);
 	free(expr);
 }

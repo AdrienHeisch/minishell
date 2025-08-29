@@ -31,7 +31,7 @@ static int	get_precedence(t_operator op)
 	return (0);
 }
 
-t_expr	*parse_binop(t_list **tokens, t_expr *prev)
+t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 {
 	t_expr	*expr;
 	t_list	*token;
@@ -43,12 +43,13 @@ t_expr	*parse_binop(t_list **tokens, t_expr *prev)
 	token = ft_lstpop_front(tokens);
 	expr->data.binop.op = get_op(((t_token *)token->content)->type);
 	ft_lstdelone(token, (void (*)(void *))free_token);
-	if (!prev)
+	if (!prev || !*prev)
 		return (free(expr), NULL);
-	expr->data.binop.left = prev;
+	expr->data.binop.left = *prev;
+	*prev = NULL;
 	if (expr->data.binop.op == OP_PIPE)
 	{
-		expr->data.binop.right = parse_expr(tokens, prev);
+		expr->data.binop.right = parse_expr(tokens, &expr->data.binop.left);
 		if (!expr->data.binop.right || expr->data.binop.right->type != EX_CMD
 			|| !expr->data.binop.right->data.cmd.args)
 			return (free(expr->data.binop.right), free(expr), NULL);

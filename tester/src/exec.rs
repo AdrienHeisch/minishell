@@ -1,9 +1,9 @@
+use crate::Test;
 use std::{
     io::{self},
     path::Path,
     process::Command,
 };
-use crate::Test;
 
 fn clear_dir(dir: &Path) -> io::Result<()> {
     if !dir.is_dir() {
@@ -75,6 +75,10 @@ pub fn exec_test(test: &Test, program_path: &Path) -> io::Result<bool> {
         println!("{bash_stdout}");
         println!("Tested output:");
         println!("{minishell_stdout}");
+        if !minishell.stderr.is_empty() {
+            println!("Error:");
+            println!("{}", String::from_utf8_lossy(&minishell.stderr));
+        }
         println!("########################");
         return Ok(false);
     }

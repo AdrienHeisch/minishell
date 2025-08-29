@@ -21,6 +21,8 @@ void	exec_expr(t_expr *expr, t_shell_data *shell_data)
 		exec_cmd(expr->data.cmd, shell_data);
 	else if (expr->type == EX_BINOP)
 		exec_binop(expr->data.binop, shell_data);
+	else if (expr->type == EX_PARENTHESES)
+		exec_parentheses(expr->data.paren, shell_data);
 	else
 		exit(MS_UNREACHABLE);
 }

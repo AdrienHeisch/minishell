@@ -22,10 +22,17 @@ t_expr	*parse(t_list **tokens)
 	expr = NULL;
 	while (*tokens)
 	{
-		new = parse_expr(tokens, expr);
+		if (((t_token *)(*tokens)->content)->type == TK_PARCLOSE)
+			break ;
+		new = parse_expr(tokens, &expr);
 		if (!new)
-			return (ft_lstclear(tokens, (void (*)(void *))free_token),
-				free_expr(expr), NULL);
+			return (free_expr(expr), NULL);
+		if (expr)
+		{
+			print_expr(expr);
+			print_expr(new);
+			exit(MS_LOGIC_ERROR);
+		}
 		expr = new;
 	}
 	// print_expr(expr);

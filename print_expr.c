@@ -14,6 +14,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static void print_redir(t_redir_data *redir)
+{
+	if (redir->type == REDIR_IN)
+		printf(" < ");
+	else if (redir->type == REDIR_HEREDOC)
+		printf(" << ");
+	else if (redir->type == REDIR_OUT)
+		printf(" > ");
+	else if (redir->type == REDIR_APPEND)
+		printf(" >> ");
+	else
+		exit(MS_UNREACHABLE);
+	printf("%s", redir->file_name.content);
+}
+
 static void	print_expr_rec(t_expr *expr)
 {
 	t_list	*lst;
@@ -23,7 +38,7 @@ static void	print_expr_rec(t_expr *expr)
 		printf("(null)");
 		return ;
 	}
-	printf("(");
+	printf("[");
 	if (expr->type == EX_CMD)
 	{
 		lst = expr->data.cmd.args;
@@ -34,8 +49,7 @@ static void	print_expr_rec(t_expr *expr)
 			if (lst)
 				printf(" ");
 		}
-		// if (expr->data.cmd.file_out.content)
-		// 	printf("> %s ", expr->data.cmd.file_out.content);
+		ft_lstiter(expr->data.cmd.redirs, (void (*)(void *))print_redir);
 	}
 	else if (expr->type == EX_BINOP)
 	{
@@ -50,9 +64,16 @@ static void	print_expr_rec(t_expr *expr)
 			exit(MS_UNREACHABLE);
 		print_expr_rec(expr->data.binop.right);
 	}
+	else if (expr->type == EX_PARENTHESES)
+	{
+		printf("(");
+		print_expr_rec(expr->data.paren.inner);
+		printf(")");
+		ft_lstiter(expr->data.paren.redirs, (void (*)(void *))print_redir);
+	}
 	else
 		exit(MS_UNREACHABLE);
-	printf(")");
+	printf("]");
 }
 
 void	print_expr(t_expr *expr)
