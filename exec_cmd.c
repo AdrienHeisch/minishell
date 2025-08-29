@@ -34,7 +34,7 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 	else
 	{
 		status_location = -1;
-		waitpid(fork_exec_cmd(exec, shell_data), &status_location, 0);
+		waitpid(fork_run_cmd(exec, shell_data), &status_location, 0);
 		if (WIFEXITED(status_location))
 			shell_data->status = WEXITSTATUS(status_location);
 		else

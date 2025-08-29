@@ -152,8 +152,8 @@ void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
 void						exec_parentheses(t_paren paren,
 								t_shell_data *shell_data);
 void						exec_pipe(t_binop pipe, t_shell_data *shell_data);
-int							fork_exec_cmd(t_exec_info exec, t_shell_data *shell_data);
 void						run_cmd(t_exec_info cmd, t_shell_data *shell_data);
+int							fork_run_cmd(t_exec_info exec, t_shell_data *shell_data);
 
 bool						is_builtin(char *name);
 bool						exec_builtin(t_exec_info args,

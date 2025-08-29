@@ -16,23 +16,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static void	run_child(t_exec_info cmd, t_shell_data *shell_data)
-{
-	if (*cmd.args && is_builtin(*cmd.args))
-	{
-		exec_builtin(cmd, shell_data);
-		exit(shell_data->status);
-	}
-	else
-	{
-		if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
-			exit(-1);
-		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
-			exit(-1);
-		run_cmd(cmd, shell_data);
-	}
-}
-
 static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 		int *next_fd)
 {
@@ -59,24 +42,12 @@ static void	child_and_pipe(t_cmd cmd, t_shell_data *shell_data, int *prev_fd,
 			exec.fd_in = *prev_fd;
 		if (exec.fd_out == STDOUT_FILENO)
 			exec.fd_out = next_fd[1];
-		run_child(exec, shell_data);
+		run_cmd(exec, shell_data);
 	}
 	close(next_fd[1]);
 	if (*prev_fd > 0)
 		close(*prev_fd);
 	*prev_fd = next_fd[0];
-}
-
-int	fork_exec_cmd(t_exec_info exec, t_shell_data *shell_data)
-{
-	pid_t		pid;
-
-	pid = fork();
-	if (pid == -1)
-		exit(-1);
-	if (pid == 0)
-		run_child(exec, shell_data);
-	return (pid);
 }
 
 static int	wait_all(int last_pid)
@@ -150,7 +121,7 @@ void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 		shell_data->status = exec.error;
 		return ;
 	}
-	exit_code = wait_all(fork_exec_cmd(exec, shell_data));
+	exit_code = wait_all(fork_run_cmd(exec, shell_data));
 	if (prev_fd > 0)
 		close(prev_fd);
 	ft_lstclear(&cmds, no_op);
