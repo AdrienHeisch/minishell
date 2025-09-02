@@ -1,3 +1,0 @@
-# FIXME.md
-
-- (echo) | (cat)

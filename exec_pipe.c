@@ -86,7 +86,6 @@ static void	child_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 
 	if (pipe(next_fd) == -1)
 		exit(-1);
-	// printf("c&p\n");
 	pid = fork();
 	if (pid == -1)
 	{
@@ -97,7 +96,6 @@ static void	child_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 	}
 	if (pid == 0)
 	{
-		// printf("child\n");
 		close(next_fd[0]);
 		if (expr->fd_in == STDIN_FILENO)
 			expr->fd_in = *prev_fd;
@@ -106,7 +104,6 @@ static void	child_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 		run_child(expr, shell_data);
 		exit(MS_UNREACHABLE);
 	}
-	// printf("parent\n");
 	close(next_fd[1]);
 	if (*prev_fd > 0)
 		close(*prev_fd);
