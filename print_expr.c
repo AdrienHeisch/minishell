@@ -49,7 +49,6 @@ static void	print_expr_rec(t_expr *expr)
 			if (lst)
 				printf(" ");
 		}
-		ft_lstiter(expr->data.cmd.redirs, (void (*)(void *))print_redir);
 	}
 	else if (expr->type == EX_BINOP)
 	{
@@ -69,10 +68,10 @@ static void	print_expr_rec(t_expr *expr)
 		printf("(");
 		print_expr_rec(expr->data.paren.inner);
 		printf(")");
-		ft_lstiter(expr->data.paren.redirs, (void (*)(void *))print_redir);
 	}
 	else
 		exit(MS_UNREACHABLE);
+	ft_lstiter(expr->redirs, (void (*)(void *))print_redir);
 	printf("]");
 }
 

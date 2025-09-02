@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-t_exec_info	make_exec_info(t_cmd cmd, t_shell_data *shell_data)
+t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell_data)
 {
 	t_exec_info	exec;
 	char		*path;
@@ -29,8 +29,8 @@ t_exec_info	make_exec_info(t_cmd cmd, t_shell_data *shell_data)
 		exec.error = resolve_exec_path(exec.args, shell_data);
 	if (exec.error >= 0)
 		print_error_code(path, exec.error);
-	exec.fd_in = cmd.fd_in;
-	exec.fd_out = cmd.fd_out;
+	exec.fd_in = fd_in;
+	exec.fd_out = fd_out;
 	return (exec);
 }
 

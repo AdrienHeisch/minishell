@@ -22,7 +22,6 @@ void	free_expr(t_expr *expr)
 	{
 		ft_lstclear(&expr->data.cmd.args, lstclear_string);
 		// TODO free_redir
-		ft_lstclear(&expr->data.cmd.redirs, no_op);
 	}
 	else if (expr->type == EX_BINOP)
 	{
@@ -31,5 +30,6 @@ void	free_expr(t_expr *expr)
 	}
 	else if (expr->type == EX_PARENTHESES)
 		free_expr(expr->data.paren.inner);
+	ft_lstclear(&expr->redirs, no_op);
 	free(expr);
 }

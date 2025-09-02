@@ -13,23 +13,25 @@
 #include "minishell.h"
 #include <sys/wait.h>
 
-void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
+void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 {
 	int			status_location;
 	t_exec_info	exec;
+	t_cmd		cmd;
 
-	if (resolve_redirections(&cmd))
+	if (resolve_redirections(expr))
 	{
 		shell_data->status = 1;
 		return ;
 	}
-	exec = make_exec_info(cmd, shell_data);
+	cmd = expr->data.cmd;
+	exec = make_exec_info(cmd, expr->fd_in, expr->fd_out, shell_data);
 	if (exec.error >= 0)
 	{
 		shell_data->status = exec.error;
 		return ;
 	}
-	if (is_builtin(exec.args[0]))
+	if (is_builtin(exec.args[0])) // DESIGN also checked in run_cmd
 		exec_builtin(exec, shell_data);
 	else
 	{
@@ -40,5 +42,5 @@ void	exec_cmd(t_cmd cmd, t_shell_data *shell_data)
 		else
 			shell_data->status = 0;
 	}
-	close_redirections(&cmd);
+	close_redirections(expr);
 }

@@ -21,10 +21,7 @@ struct termios	set_terminal_attributes(void)
 
 	tcgetattr(STDIN_FILENO, &original_tio);
 	new_tio = original_tio;
-	// new_tio.c_lflag &= ~ECHO;
 	new_tio.c_lflag &= ~ECHOCTL;
-	// new_tio.c_lflag &= ~ISIG;
-	// new_tio.c_lflag &= ~ICANON;
 	tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
 	return (original_tio);
 }

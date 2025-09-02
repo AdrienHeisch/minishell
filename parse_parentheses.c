@@ -24,13 +24,13 @@ t_expr	*parse_parentheses(t_list **tokens)
 	if (!expr)
 		exit(42);
 	expr->type = EX_PARENTHESES;
-	expr->data.paren.fd_in = STDIN_FILENO;
-	expr->data.paren.fd_out = STDOUT_FILENO;
-	expr->data.paren.redirs = NULL;
+	expr->fd_in = STDIN_FILENO;
+	expr->fd_out = STDOUT_FILENO;
+	expr->redirs = NULL;
 	token = ft_lstpop_front(tokens);
 	while (((t_token *)token->content)->type == TK_REDIR)
 	{
-		add_redirection(token, &expr->data.paren.redirs);
+		add_redirection(token, &expr->redirs);
 		ft_lstdelone(token, (void (*)(void *))free_token);
 		token = ft_lstpop_front(tokens);
 	}
@@ -45,7 +45,7 @@ t_expr	*parse_parentheses(t_list **tokens)
 	while (*tokens && ((t_token *)(*tokens)->content)->type == TK_REDIR)
 	{
 		token = ft_lstpop_front(tokens);
-		add_redirection(token, &expr->data.paren.redirs);
+		add_redirection(token, &expr->redirs);
 		ft_lstdelone(token, (void (*)(void *))free_token);
 	}
 	return (expr);

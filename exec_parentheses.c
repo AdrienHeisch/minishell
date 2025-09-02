@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void	exec_parentheses(t_paren paren, t_shell_data *shell_data)
+void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 {
 	int	pid;
 	int	status_location;
@@ -25,13 +25,13 @@ void	exec_parentheses(t_paren paren, t_shell_data *shell_data)
 		exit(42);
 	if (pid == 0)
 	{
-		if (resolve_redirections((t_cmd *)&paren)) // FIXME LE BIG HACK
+		if (resolve_redirections(paren))
 			exit(1);
-		if (dup2(paren.fd_in, STDIN_FILENO) == -1)
+		if (dup2(paren->fd_in, STDIN_FILENO) == -1)
 			exit(-1);
-		if (dup2(paren.fd_out, STDOUT_FILENO) == -1)
+		if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
 			exit(-1);
-		exec_expr(paren.inner, shell_data);
+		exec_expr(paren->data.paren.inner, shell_data);
 		exit(shell_data->status);
 	}
 	waitpid(pid, &status_location, 0);

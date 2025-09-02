@@ -99,9 +99,6 @@ typedef struct s_expr
 		struct				s_cmd
 		{
 			t_list			*args;
-			int				fd_in;
-			int				fd_out;
-			t_list			*redirs;
 		} cmd;
 		struct				s_binop
 		{
@@ -112,11 +109,11 @@ typedef struct s_expr
 		struct				s_paren
 		{
 			struct s_expr	*inner;
-			int				fd_in;
-			int				fd_out;
-			t_list			*redirs;
 		} paren;
 	} data;
+	int						fd_in;
+	int						fd_out;
+	t_list					*redirs;
 }							t_expr;
 
 typedef struct s_cmd		t_cmd;
@@ -148,12 +145,13 @@ t_expr						*parse_binop(t_list **tokens, t_expr **prev);
 t_expr						*parse_parentheses(t_list **tokens);
 void						exec_binop(t_binop binop, t_shell_data *shell_data);
 void						exec_expr(t_expr *expr, t_shell_data *shell_data);
-void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
-void						exec_parentheses(t_paren paren,
+void						exec_cmd(t_expr *expr, t_shell_data *shell_data);
+void						exec_parentheses(t_expr *expr,
 								t_shell_data *shell_data);
 void						exec_pipe(t_binop pipe, t_shell_data *shell_data);
 void						run_cmd(t_exec_info cmd, t_shell_data *shell_data);
-int							fork_run_cmd(t_exec_info exec, t_shell_data *shell_data);
+int							fork_run_cmd(t_exec_info exec,
+								t_shell_data *shell_data);
 
 bool						is_builtin(char *name);
 bool						exec_builtin(t_exec_info args,
@@ -174,13 +172,13 @@ char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
 
-t_exec_info					make_exec_info(t_cmd cmd, t_shell_data *shell_data);
+t_exec_info					make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell_data);
 int							resolve_exec_path(char **cmd,
 								t_shell_data *shell_data);
 
 void						add_redirection(t_list *token, t_list **list);
-int							resolve_redirections(t_cmd *cmd);
-void						close_redirections(t_cmd *cmd);
+int							resolve_redirections(t_expr *expr);
+void						close_redirections(t_expr *expr);
 
 void						print_error(char *err);
 void						print_error_code(char *path, int code);
