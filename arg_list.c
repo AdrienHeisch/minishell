@@ -125,18 +125,20 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
 	size_t	idx;
+	t_list	*arg_list;
 
 	args = ft_calloc((ft_lstsize(cmd.args) + 1), sizeof(char *));
 	idx = 0;
-	while (cmd.args && cmd.args->content)
+	arg_list = cmd.args;
+	while (arg_list && arg_list->content)
 	{
-		expand_arg(&((t_arg_data *)cmd.args->content)->string, shell_data);
-		if (((t_arg_data *)cmd.args->content)->string.content)
+		expand_arg(&((t_arg_data *)arg_list->content)->string, shell_data);
+		if (((t_arg_data *)arg_list->content)->string.content)
 		{
-			args[idx] = ft_strdup(((t_string *)cmd.args->content)->content);
+			args[idx] = ft_strdup(((t_string *)arg_list->content)->content);
 			idx++;
 		}
-		cmd.args = cmd.args->next;
+		arg_list = arg_list->next;
 	}
 	return (args);
 }

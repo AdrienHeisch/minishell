@@ -18,7 +18,7 @@
 
 void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 {
-	if (*cmd.args && is_builtin(*cmd.args))
+	if (is_builtin(*cmd.args))
 	{
 		exec_builtin(cmd, shell_data);
 		exit(shell_data->status);

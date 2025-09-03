@@ -23,7 +23,7 @@ t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell
 	if (!path)
 		path = "";
 	exec.args = make_arg_list(cmd, shell_data);
-	if (is_builtin(path))
+	if (is_builtin(exec.args[0]))
 		exec.error = -1;
 	else
 		exec.error = resolve_exec_path(exec.args, shell_data);
