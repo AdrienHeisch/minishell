@@ -96,6 +96,8 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 	size_t	len;
 	size_t	idx;
 
+	if (!value)
+		ft_unsetenv(envp, name);
 	if (!ft_getenv(*envp, name))
 	{
 		add_to_env(envp, name, value);
