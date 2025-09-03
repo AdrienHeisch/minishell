@@ -121,6 +121,7 @@ int	main(int argc, char **argv, char **envp)
 	if (argc > 1)
 		return (MS_USAGE);
 	tio = set_terminal_attributes();
+	rl_outstream = stderr;
 	str.content = NULL;
 	while (1)
 	{
