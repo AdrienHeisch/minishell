@@ -22,11 +22,6 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	char	*cwd;
 
 	old_cwd = getcwd(NULL, 0);
-	if (!old_cwd)
-	{
-		shell_data->status = 1;
-		return ;
-	}
 	if (args[1] && args[2])
 	{
 		ft_putstr_fd("cd: too many arguments\n", 2);
@@ -36,7 +31,7 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	path = args[1];
 	if (!path)
 		path = ft_getenv(shell_data->envp, "HOME");
-	if (chdir(path) < 0)
+	if (chdir(path) != 0)
 	{
 		perror("cd");
 		shell_data->status = 1;
@@ -44,11 +39,14 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	}
 	cwd = getcwd(NULL, 0);
 	if (!cwd)
-	{
-		shell_data->status = 1;
-		return ;
-	}
-	ft_setenv(&shell_data->envp, "OLDPWD", old_cwd, true);
-	ft_setenv(&shell_data->envp, "PWD", cwd, true);
+		perror("cd: error retrieving current directory: getcwd");
+	if (old_cwd)
+		ft_setenv(&shell_data->envp, "OLDPWD", old_cwd, true);
+	else
+		ft_setenv(&shell_data->envp, "OLDPWD", ft_getenv(shell_data->envp, "PWD"), true);
+	if (cwd)
+		ft_setenv(&shell_data->envp, "PWD", cwd, true);
+	else
+		ft_setenv(&shell_data->envp, "PWD", ft_strjoin(ft_getenv(shell_data->envp, "PWD"), path), true);
 	shell_data->status = 0;
 }
