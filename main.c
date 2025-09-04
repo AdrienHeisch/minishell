@@ -41,6 +41,11 @@ static char	**dup_env(char **envp)
 	cwd = getcwd(NULL, 0);
 	if (cwd)
 		ft_setenv(&dup, "PWD", cwd, true);
+	char *shlvl = ft_getenv(dup, "SHLVL");
+	if (!shlvl)
+		ft_setenv(&dup, "SHLVL", "0", true);
+	else
+		ft_setenv(&dup, "SHLVL", ft_itoa(ft_atoi(ft_getenv(dup, "SHLVL")) + 1), true);
 	return (dup);
 }
 
@@ -103,6 +108,8 @@ int	main(int argc, char **argv, char **envp)
 	received_signal = 0;
 	init_signals();
 	data.envp = dup_env(envp);
+	if (argc >= 1)
+		ft_setenv(&data.envp, "_", argv[0], true);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
 	{

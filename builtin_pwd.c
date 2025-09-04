@@ -15,33 +15,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static bool	parse_args(char **args)
-{
-	size_t	idx;
-
-	idx = 1;
-	while (args[idx])
-	{
-		if (args[idx][0] == '-')
-		{
-			if (args[idx][1] == '-')
-			{
-				if (args[idx][2])
-					return (false);
-			}
-			else if (args[idx][1])
-				return (false);
-		}
-		idx++;
-	}
-	return (true);
-}
-
 void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 {
 	char	*cwd;
+	int		flags;
+	size_t	idx;
 
-	if (!parse_args(args))
+	idx = 1;
+	if (find_options(&flags, args, &idx, ""))
 	{
 		shell_data->status = 2;
 		return ;

@@ -14,7 +14,16 @@
 
 void	builtin_unset(char **args, t_shell_data *shell_data)
 {
-	if (args[1])
-		ft_unsetenv(&shell_data->envp, args[1]);
+	int		flags;
+	size_t	idx;
+
+	idx = 1;
+	if (find_options(&flags, args, &idx, ""))
+	{
+		shell_data->status = 2;
+		return ;
+	}
+	if (args[idx])
+		ft_unsetenv(&shell_data->envp, args[idx]);
 	shell_data->status = 0;
 }

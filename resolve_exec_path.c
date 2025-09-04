@@ -85,6 +85,8 @@ static char	**split_path(const char *s)
 		{
 			if (i - start == 0 && ++i)
 				continue ;
+			if (!s[i + 1])
+				i++;
 			dirs[j] = copy_dir(&s[start], i - start);
 			if (!dirs[j++])
 				return (free_tab(&dirs), NULL);

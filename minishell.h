@@ -172,7 +172,8 @@ char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
 
-t_exec_info					make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell_data);
+t_exec_info					make_exec_info(t_cmd cmd, int fd_in, int fd_out,
+								t_shell_data *shell_data);
 int							resolve_exec_path(char **cmd,
 								t_shell_data *shell_data);
 
@@ -191,5 +192,7 @@ void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 void						ft_unsetenv(char ***envp, const char *name);
 t_string					prompt_heredoc(int fd, char *delim);
+int							find_options(int *flags, char **args, size_t *idx,
+								char *options);
 
 #endif // !MINISHELL_H
