@@ -164,23 +164,21 @@ void	ft_unsetenv(char ***envp, const char *name)
 	*envp = new;
 }
 
-t_string	prompt_heredoc(int fd, char *delim)
+void	prompt_heredoc(int fd, int out, char *delim)
 {
-	t_string	ret;
 	char		*line;
 
-	ret = ft_string_new();
 	if (!delim)
-		return (ft_string_destroy(&ret), ret);
+		return ;
 	while (1)
 	{
-		write(2, "> ", 2);
+		ft_putstr_fd("> ", STDERR_FILENO);
 		line = ft_get_next_line(fd);
 		if (!line)
-			return (ft_string_destroy(&ret), ret);
+			return ; // TODO error handling
 		if (!ft_strncmp(line, delim, ft_strlen(line) - 1))
-			return (free(line), ret);
-		ft_string_cat(&ret, line);
+			return ;
+		ft_putstr_fd(line, out);
 		free(line);
 	}
 }

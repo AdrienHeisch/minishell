@@ -19,7 +19,7 @@ int	resolve_redirections(t_expr *expr)
 	int				oflag;
 	t_list			*redir_list;
 	t_redir_data	*redir;
-	t_string		heredoc;
+	int				pipe_fds[2];
 
 	redir_list = expr->redirs;
 	while (redir_list)
@@ -31,12 +31,15 @@ int	resolve_redirections(t_expr *expr)
 				close(expr->fd_in);
 			if (redir->type == REDIR_HEREDOC)
 			{
-				expr->fd_in = open("/tmp/heredoc", O_CREAT | O_WRONLY | O_TRUNC,
-						S_IRUSR | S_IWUSR);
-				heredoc = prompt_heredoc(0, redir->file_name.content);
-				write(expr->fd_in, heredoc.content, heredoc.length + 1);
-				close(expr->fd_in);
-				expr->fd_in = open("/tmp/heredoc", O_RDONLY);
+				if (pipe(pipe_fds) == -1)
+				{
+					perror("pipe");
+					return (1); // TODO return or continue ?
+				}
+				prompt_heredoc(STDIN_FILENO, pipe_fds[1],
+					redir->file_name.content);
+				close(pipe_fds[1]);
+				expr->fd_in = pipe_fds[0];
 			}
 			else
 			{
