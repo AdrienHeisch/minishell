@@ -10,32 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-// static char	**make_child_env(t_shell_data *shell_data)
-// {
-// 	char	**env;
-// 	size_t	idx;
-// 	char	*value;
-//
-// 	env = ft_calloc(1, sizeof(char *));
-// 	if (!env)
-// 		exit(MS_ALLOC);
-// 	idx = 0;
-// 	while (shell_data->exported[idx])
-// 	{
-// 		value = ft_getenv(shell_data->envp, shell_data->exported[idx]);
-// 		if (value)
-// 			ft_setenv(&env, shell_data->exported[idx], value, true);
-// 		idx++;
-// 	}
-// 	return (env);
-// }
 
 void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 {
