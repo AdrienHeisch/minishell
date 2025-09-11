@@ -33,6 +33,7 @@ enum						e_error
 typedef struct s_shell_data
 {
 	char					**envp;
+	char					**exported;
 	int						status;
 }							t_shell_data;
 
@@ -167,7 +168,9 @@ void						builtin_unset(char **args,
 								t_shell_data *shell_data);
 void						builtin_pwd(char **args, t_shell_data *shell_data,
 								int fd_out);
+void						export_var(char ***exported, const char *name);
 
+void						expand_arg(t_string *arg, t_shell_data *shell_data);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
@@ -178,7 +181,7 @@ int							resolve_exec_path(char **cmd,
 								t_shell_data *shell_data);
 
 void						add_redirection(t_list *token, t_list **list);
-int							resolve_redirections(t_expr *expr);
+int							resolve_redirections(t_expr *expr, t_shell_data *shell_data);
 void						close_redirections(t_expr *expr);
 
 void						print_error(char *err);
@@ -187,6 +190,7 @@ void						print_error_code(char *path, int code);
 void						no_op(void *p);
 void						lstclear_string(void *str);
 bool						is_whitespace(t_string *str);
+bool						is_str_all(char *s, int f(int));
 char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);

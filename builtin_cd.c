@@ -30,8 +30,16 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	old_cwd = getcwd(NULL, 0);
 	path = args[1];
 	if (!path)
+	{
 		path = ft_getenv(shell_data->envp, "HOME");
-	if (chdir(path) != 0)
+		if (!path)
+		{
+			print_error("cd: HOME not set");
+			shell_data->status = 1;
+			return ;
+		}
+	}
+	if (*path && chdir(path) != 0)
 	{
 		perror("cd");
 		shell_data->status = 1;

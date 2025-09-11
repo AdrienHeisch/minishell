@@ -21,7 +21,7 @@ void	builtin_echo(char **args, t_shell_data *shell_data, int fd_out)
 
 	options = "n";
 	idx = 1;
-	find_options(&flags, args, &idx, options);
+	find_options(&flags, args, &idx, options); // TODO error handling
 	while (args[idx])
 	{
 		ft_putstr_fd(args[idx++], fd_out);

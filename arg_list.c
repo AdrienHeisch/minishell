@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static void	expand_var(t_string *var, t_shell_data *shell_data)
+static void	expand_var(t_string *var, t_shell_data *shell_data, char del)
 {
 	t_string	var_name;
 	char		*value;
@@ -24,7 +24,15 @@ static void	expand_var(t_string *var, t_shell_data *shell_data)
 	value = ft_getenv(shell_data->envp, var_name.content);
 	if (!value)
 		value = "";
+	if (del != '"')
+	{
+		value = ft_strtrim(value, " \t\n");
+		if (!value)
+			exit(MS_ALLOC);
+	}
 	ft_string_cat(var, value);
+	if (del != '"')
+		free(value);
 	ft_string_destroy(&var_name);
 }
 
@@ -38,7 +46,7 @@ static bool	is_var_name_char(char c)
 	return (ft_isalnum(c) || c == '_');
 }
 
-static void	expand_arg(t_string *arg, t_shell_data *shell_data)
+void	expand_arg(t_string *arg, t_shell_data *shell_data)
 {
 	size_t		idx;
 	size_t		len;
@@ -96,7 +104,7 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 					&& is_var_name_char(arg->content[idx + len]))
 					len++;
 				ft_string_ncat(&var, &arg->content[idx], len);
-				expand_var(&var, shell_data);
+				expand_var(&var, shell_data, del);
 				ft_string_ncat(&exp, var.content, var.length);
 				if (var.length == 0)
 					has_empty_var = true;

@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-int	resolve_redirections(t_expr *expr)
+int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 {
 	int				oflag;
 	t_list			*redir_list;
@@ -25,6 +25,13 @@ int	resolve_redirections(t_expr *expr)
 	while (redir_list)
 	{
 		redir = redir_list->content;
+		expand_arg(&redir->file_name, shell_data);
+		if (redir->file_name.length == 0 || ft_strchr(redir->file_name.content, ' '))
+		{
+			print_error("ambiguous redirection");
+			redir_list = redir_list->next;
+			continue ;
+		}
 		if (redir->type == REDIR_IN || redir->type == REDIR_HEREDOC)
 		{
 			if (expr->fd_in != 0)

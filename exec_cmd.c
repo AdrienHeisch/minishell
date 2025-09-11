@@ -19,7 +19,7 @@ void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 	t_exec_info	exec;
 	t_cmd		cmd;
 
-	if (resolve_redirections(expr))
+	if (resolve_redirections(expr, shell_data))
 	{
 		shell_data->status = 1;
 		return ;

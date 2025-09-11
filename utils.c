@@ -26,6 +26,17 @@ void	lstclear_string(void *str)
 	ft_string_delete((t_string **)&str);
 }
 
+bool	is_str_all(char *s, int f(int))
+{
+	while (*s)
+	{
+		if (!f(*s))
+			return (false);
+		s++;
+	}
+	return (true);
+}
+
 bool	is_whitespace(t_string *str)
 {
 	size_t	idx;
@@ -217,6 +228,8 @@ int	find_options(int *flags, char **args, size_t *idx, char *options)
 	while (args[*idx] && args[*idx][0] == '-')
 	{
 		if (args[*idx][1] == '-')
+			return (-1);
+		if (!options)
 			return (-1);
 		if (!parse_options(args[*idx], flags, options))
 			return (-1);

@@ -141,7 +141,7 @@ void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 	if (!pipeline)
 		exit(MS_LOGIC_ERROR);
 	el = pipeline;
-	if (resolve_redirections(el->content))
+	if (resolve_redirections(el->content, shell_data))
 	{
 		shell_data->status = 1;
 		return ;
@@ -152,7 +152,7 @@ void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 		child_and_pipe(((t_expr *)el->content), shell_data, &prev_fd, next_fd);
 		el = el->next;
 		// FIXME should kill forked processes ?
-		if (resolve_redirections(el->content))
+		if (resolve_redirections(el->content, shell_data))
 		{
 			shell_data->status = 1;
 			return ;

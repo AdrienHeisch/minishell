@@ -25,7 +25,7 @@ void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 		exit(42);
 	if (pid == 0)
 	{
-		if (resolve_redirections(paren))
+		if (resolve_redirections(paren, shell_data))
 			exit(1);
 		if (dup2(paren->fd_in, STDIN_FILENO) == -1)
 			exit(-1);
