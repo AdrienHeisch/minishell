@@ -76,10 +76,10 @@ static char	**split_path(const char *s)
 	dirs = malloc(sizeof(char *) * (count_paths(s) + 1));
 	if (!dirs)
 		return (NULL);
-	i = -1;
+	i = 0;
 	j = 0;
 	start = 0;
-	while (s[++i])
+	while (s[i++])
 	{
 		if (s[i] == ':' || s[i + 1] == '\0')
 		{

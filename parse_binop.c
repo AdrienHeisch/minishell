@@ -40,6 +40,7 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 	if (!expr)
 		exit(MS_ALLOC);
 	expr->type = EX_BINOP;
+	expr->redirs = NULL;
 	token = ft_lstpop_front(tokens);
 	expr->data.binop.op = get_op(((t_token *)token->content)->type);
 	ft_lstdelone(token, (void (*)(void *))free_token);
