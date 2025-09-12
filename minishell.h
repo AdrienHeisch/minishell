@@ -170,7 +170,8 @@ void						builtin_pwd(char **args, t_shell_data *shell_data,
 								int fd_out);
 void						export_var(char ***exported, const char *name);
 
-t_list						*expand_arg(t_string *arg, t_shell_data *shell_data);
+t_list						*expand_arg(t_string *arg,
+								t_shell_data *shell_data);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
@@ -181,7 +182,8 @@ int							resolve_exec_path(char **cmd,
 								t_shell_data *shell_data);
 
 void						add_redirection(t_list *token, t_list **list);
-int							resolve_redirections(t_expr *expr, t_shell_data *shell_data);
+int							resolve_redirections(t_expr *expr,
+								t_shell_data *shell_data);
 void						close_redirections(t_expr *expr);
 
 void						print_error(char *err);
@@ -198,5 +200,8 @@ void						ft_unsetenv(char ***envp, const char *name);
 void						prompt_heredoc(int fd, int out, char *delim);
 int							find_options(int *flags, char **args, size_t *idx,
 								char *options);
+void						lstadd_back_string(t_list **list, t_string str);
+
+t_list						*expand_wildcards(char *pattern);
 
 #endif // !MINISHELL_H

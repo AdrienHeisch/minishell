@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -47,22 +48,6 @@ static bool	is_var_name_char(char c)
 	return (ft_isalnum(c) || c == '_');
 }
 
-static void	add_string(t_list **list, t_string str)
-{
-	t_string	*cell;
-	t_list		*new;
-
-	// printf("add: |%s|\n", str.content);
-	cell = (t_string *)malloc(sizeof(t_string));
-	if (!cell)
-		exit(MS_ALLOC);
-	*cell = str;
-	new = ft_lstnew(cell);
-	if (!new)
-		exit(MS_ALLOC);
-	ft_lstadd_back(list, new);
-}
-
 static void	split_var(t_string *var, t_string *exp, t_list **out)
 {
 	char	*var_from;
@@ -80,10 +65,48 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 			break ;
 		}
 		ft_string_ncat(exp, var_from, var_to - var_from);
-		add_string(out, *exp);
+		lstadd_back_string(out, *exp);
 		*exp = ft_string_new();
 		var_from = var_to;
 	}
+}
+
+static char	*get_wildcard_pattern(char *s, size_t *len)
+{
+	bool		is_pattern;
+	char		del;
+	t_string	pattern;
+	size_t		idx;
+
+	is_pattern = false;
+	pattern = ft_string_new();
+	del = '\0';
+	idx = 0;
+	while (s[idx])
+	{
+		if (!del)
+		{
+			if (s[idx] == ' ')
+				break ;
+			if (s[idx] == '\'' || s[idx] == '"')
+			{
+				del = s[idx];
+				idx++;
+				continue ;
+			}
+		}
+		if (s[idx] != del)
+			ft_string_ncat(&pattern, &s[idx], 1);
+		else if (del)
+			del = '\0';
+		if (s[idx] == '*')
+			is_pattern = true;
+		idx++;
+	}
+	*len = idx;
+	if (is_pattern)
+		return (pattern.content);
+	return (NULL);
 }
 
 t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
@@ -95,6 +118,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 	char		del;
 	bool		has_empty_var;
 	t_list		*out;
+	t_list		*wildcard;
+	char		*pattern;
 
 	out = NULL;
 	exp = ft_string_new();
@@ -165,12 +190,36 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 				continue ;
 			}
 		}
+		size_t len_;
+		pattern = get_wildcard_pattern(&arg->content[idx], &len_);
+		if (pattern && del == '\0')
+		{
+			idx += len_;
+			wildcard = expand_wildcards(pattern);
+			if (!wildcard)
+				ft_string_cat(&exp, pattern);
+			else
+			{
+				if (exp.length > 0)
+				{
+					lstadd_back_string(&out, exp);
+					exp = ft_string_new();
+				}
+				while (wildcard)
+					ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
+			}
+			continue ;
+		}
 		ft_string_ncat(&exp, &arg->content[idx], 1);
 		idx++;
 	}
-	add_string(&out, exp);
-	if (exp.length == 0 && has_empty_var)
-		return (ft_lstclear(&out, lstclear_string), NULL);
+	if (exp.length > 0)
+		lstadd_back_string(&out, exp);
+	if (ft_lstsize(out) == 0 && !has_empty_var)
+	{
+		t_string empty = ft_string_new();
+		lstadd_back_string(&out, empty);
+	}
 	return (out);
 }
 

@@ -237,3 +237,18 @@ int	find_options(int *flags, char **args, size_t *idx, char *options)
 	}
 	return (0);
 }
+
+void	lstadd_back_string(t_list **list, t_string str)
+{
+	t_string	*cell;
+	t_list		*new;
+
+	cell = (t_string *)malloc(sizeof(t_string));
+	if (!cell)
+		exit(MS_ALLOC);
+	*cell = str;
+	new = ft_lstnew(cell);
+	if (!new)
+		exit(MS_ALLOC);
+	ft_lstadd_back(list, new);
+}

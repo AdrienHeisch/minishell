@@ -11,21 +11,22 @@
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <unistd.h>
+#include "minishell.h"
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dirent.h>
-#include <errno.h>
+#include <unistd.h>
 
-int	is_correct_pattern(char *name, char *pattern)
+static int	is_correct_pattern(char *name, char *pattern)
 {
 	int		n_idx;
 	int		p_idx;
-	char	target_char;
+	int		len;
+	char	*target;
+	char	*found;
 
 	p_idx = 0;
-		n_idx = 0;
-	target_char = '\0';
+	n_idx = 0;
 	while (pattern[p_idx])
 	{
 		while (name[n_idx] == pattern[p_idx])
@@ -39,15 +40,15 @@ int	is_correct_pattern(char *name, char *pattern)
 			return (0);
 		if (pattern[p_idx] == '*')
 		{
-			int len = 0;
+			len = 0;
 			while (pattern[p_idx + 1 + len] && pattern[p_idx + 1 + len] != '*')
 				len++;
-			char *target = ft_substr(pattern, p_idx + 1, len);
+			target = ft_substr(pattern, p_idx + 1, len);
 			if (!target)
 				exit(42);
 			if (*target)
 			{
-				char *found = ft_strnstr(name + n_idx, target, ft_strlen(name) + 1);
+				found = ft_strnstr(name + n_idx, target, ft_strlen(name) + 1);
 				free(target);
 				if (!found)
 					return (0);
@@ -62,14 +63,17 @@ int	is_correct_pattern(char *name, char *pattern)
 	return (1);
 }
 
-t_string	get_dir_content(char *pattern)
+t_list	*expand_wildcards(char *pattern)
 {
 	DIR				*dir;
 	struct dirent	*ent;
-	t_string		ret;
+	t_list			*ret;
+	t_string		name;
 
-	ret = ft_string_new();
+	ret = NULL;
 	dir = opendir(getcwd(NULL, 0));
+	ent = readdir(dir);
+	ent = readdir(dir);
 	if (dir != NULL)
 	{
 		while (1)
@@ -79,44 +83,18 @@ t_string	get_dir_content(char *pattern)
 				break ;
 			if (is_correct_pattern(ent->d_name, pattern))
 			{
-				ft_string_cat(&ret, ent->d_name);
-				ft_string_cat(&ret, " ");
+				name = ft_string_new();
+				ft_string_cat(&name, ent->d_name);
+				lstadd_back_string(&ret, name);
 			}
 		}
 		closedir(dir);
 	}
 	else
 	{
- 		perror ("");
-		ft_string_destroy(&ret);
-  		return (ret);
+		perror("");
+		ft_lstclear(&ret, free);
+		return (ret);
 	}
 	return (ret);
-}
-
-t_string	expand_wildcards(char *expr)
-{
-	int			i;
-	char		*copy;
-	t_string	dir;
-
-	i = -1;
-	copy = NULL;
-	dir = get_dir_content(expr);
-	if (!dir.content)
-	{
-		printf("ForkYou: Error: wildcards's expansion failed !\n");
-		return (dir);
-	}
-	return (dir);
-}
-
-int main(int ac, char **av)
-{
-	t_string	tmp;
-
-	(void)ac;
-	tmp = expand_wildcards(av[1]);
-	printf("str: |%s|       expanded: |%s|\n", av[1], tmp.content);
-	return (0);
 }

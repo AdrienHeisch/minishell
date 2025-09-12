@@ -37,6 +37,7 @@ SRCS = \
 	signals.c \
 	termios.c \
 	utils.c \
+	wildcards.c \
 
 #	CONFIG
 
