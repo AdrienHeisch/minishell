@@ -170,7 +170,7 @@ void						builtin_pwd(char **args, t_shell_data *shell_data,
 								int fd_out);
 void						export_var(char ***exported, const char *name);
 
-void						expand_arg(t_string *arg, t_shell_data *shell_data);
+t_list						*expand_arg(t_string *arg, t_shell_data *shell_data);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);

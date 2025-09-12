@@ -10,9 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <fcntl.h>
 #include <unistd.h>
+
+static int	expand_redir(t_string *file_name, t_shell_data *shell_data)
+{
+	t_list	*lst;
+
+	lst = expand_arg(file_name, shell_data);
+	if (ft_lstsize(lst) > 1)
+		return (1);
+	if (!lst || !lst->content)
+		return (1);
+	ft_string_destroy(file_name);
+	*file_name = *(t_string *)lst->content;
+	return (0);
+}
 
 int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 {
@@ -25,12 +40,11 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 	while (redir_list)
 	{
 		redir = redir_list->content;
-		expand_arg(&redir->file_name, shell_data);
-		if (redir->file_name.length == 0 || ft_strchr(redir->file_name.content, ' '))
+		if (expand_redir(&redir->file_name, shell_data))
 		{
 			print_error("ambiguous redirection");
 			redir_list = redir_list->next;
-			continue ;
+			return (1);
 		}
 		if (redir->type == REDIR_IN || redir->type == REDIR_HEREDOC)
 		{

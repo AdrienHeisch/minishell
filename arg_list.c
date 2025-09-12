@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,7 +47,46 @@ static bool	is_var_name_char(char c)
 	return (ft_isalnum(c) || c == '_');
 }
 
-void	expand_arg(t_string *arg, t_shell_data *shell_data)
+static void	add_string(t_list **list, t_string str)
+{
+	t_string	*cell;
+	t_list		*new;
+
+	// printf("add: |%s|\n", str.content);
+	cell = (t_string *)malloc(sizeof(t_string));
+	if (!cell)
+		exit(MS_ALLOC);
+	*cell = str;
+	new = ft_lstnew(cell);
+	if (!new)
+		exit(MS_ALLOC);
+	ft_lstadd_back(list, new);
+}
+
+static void	split_var(t_string *var, t_string *exp, t_list **out)
+{
+	char	*var_from;
+	char	*var_to;
+
+	var_from = var->content;
+	while (true)
+	{
+		while (*var_from == ' ')
+			var_from++;
+		var_to = ft_strchr(var_from, ' ');
+		if (!var_to)
+		{
+			ft_string_cat(exp, var_from);
+			break ;
+		}
+		ft_string_ncat(exp, var_from, var_to - var_from);
+		add_string(out, *exp);
+		*exp = ft_string_new();
+		var_from = var_to;
+	}
+}
+
+t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 {
 	size_t		idx;
 	size_t		len;
@@ -54,7 +94,9 @@ void	expand_arg(t_string *arg, t_shell_data *shell_data)
 	t_string	var;
 	char		del;
 	bool		has_empty_var;
+	t_list		*out;
 
+	out = NULL;
 	exp = ft_string_new();
 	del = '\0';
 	idx = 0;
@@ -105,9 +147,12 @@ void	expand_arg(t_string *arg, t_shell_data *shell_data)
 					len++;
 				ft_string_ncat(&var, &arg->content[idx], len);
 				expand_var(&var, shell_data, del);
-				ft_string_ncat(&exp, var.content, var.length);
 				if (var.length == 0)
 					has_empty_var = true;
+				else if (del == '\0')
+					split_var(&var, &exp, &out);
+				else
+					ft_string_cat(&exp, var.content);
 				ft_string_destroy(&var);
 				idx += len;
 				continue ;
@@ -123,10 +168,10 @@ void	expand_arg(t_string *arg, t_shell_data *shell_data)
 		ft_string_ncat(&exp, &arg->content[idx], 1);
 		idx++;
 	}
-	ft_string_destroy(arg);
+	add_string(&out, exp);
 	if (exp.length == 0 && has_empty_var)
-		return (ft_string_destroy(&exp), (void)0);
-	*arg = exp;
+		return (ft_lstclear(&out, lstclear_string), NULL);
+	return (out);
 }
 
 char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
@@ -134,13 +179,24 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 	char	**args;
 	size_t	idx;
 	t_list	*arg_list;
+	t_list	*expanded;
+	t_list	*lst;
 
-	args = ft_calloc((ft_lstsize(cmd.args) + 1), sizeof(char *));
-	idx = 0;
+	expanded = NULL;
 	arg_list = cmd.args;
 	while (arg_list && arg_list->content)
 	{
-		expand_arg(&((t_arg_data *)arg_list->content)->string, shell_data);
+		lst = expand_arg(&((t_arg_data *)arg_list->content)->string,
+				shell_data);
+		while (lst)
+			ft_lstadd_back(&expanded, ft_lstpop_front(&lst));
+		arg_list = arg_list->next;
+	}
+	args = ft_calloc((ft_lstsize(expanded) + 1), sizeof(char *));
+	idx = 0;
+	arg_list = expanded;
+	while (arg_list && arg_list->content)
+	{
 		if (((t_arg_data *)arg_list->content)->string.content)
 		{
 			args[idx] = ft_strdup(((t_string *)arg_list->content)->content);

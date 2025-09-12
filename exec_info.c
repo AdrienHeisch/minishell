@@ -28,12 +28,8 @@ t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell
 	t_exec_info	exec;
 	char		*path;
 
-	path = NULL;
-	if (cmd.args && cmd.args->content)
-		path = ((t_arg_data *)cmd.args->content)->string.content;
-	if (!path)
-		path = "";
 	exec.args = make_arg_list(cmd, shell_data);
+	path = exec.args[0];
 	if (is_builtin(exec.args[0]))
 		exec.error = -1;
 	else
