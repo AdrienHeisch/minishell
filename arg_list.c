@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static void	expand_var(t_string *var, t_shell_data *shell_data, char del)
+static void	expand_var(t_string *var, t_shell_data *shell_data)
 {
 	t_string	var_name;
 	char		*value;
@@ -26,15 +26,7 @@ static void	expand_var(t_string *var, t_shell_data *shell_data, char del)
 	value = ft_getenv(shell_data->envp, var_name.content);
 	if (!value)
 		value = "";
-	if (del != '"')
-	{
-		value = ft_strtrim(value, " \t\n");
-		if (!value)
-			exit(MS_ALLOC);
-	}
 	ft_string_cat(var, value);
-	if (del != '"')
-		free(value);
 	ft_string_destroy(&var_name);
 }
 
@@ -54,10 +46,13 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 	char	*var_to;
 
 	var_from = var->content;
-	while (true)
+	if (exp->length == 0)
 	{
 		while (*var_from == ' ')
 			var_from++;
+	}
+	while (true)
+	{
 		var_to = ft_strchr(var_from, ' ');
 		if (!var_to)
 		{
@@ -68,6 +63,8 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 		lstadd_back_string(out, *exp);
 		*exp = ft_string_new();
 		var_from = var_to;
+		while (*var_from == ' ')
+			var_from++;
 	}
 }
 
@@ -171,7 +168,7 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 					&& is_var_name_char(arg->content[idx + len]))
 					len++;
 				ft_string_ncat(&var, &arg->content[idx], len);
-				expand_var(&var, shell_data, del);
+				expand_var(&var, shell_data);
 				if (var.length == 0)
 					has_empty_var = true;
 				else if (del == '\0')
