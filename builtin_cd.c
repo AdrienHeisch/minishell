@@ -20,15 +20,23 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	char	*path;
 	char	*old_cwd;
 	char	*cwd;
+	int		flags;
+	size_t	idx;
 
-	if (args[1] && args[2])
+	idx = 1;
+	if (find_options(&flags, args, &idx, ""))
+	{
+		shell_data->status = 2;
+		return ;
+	}
+	if (args[idx] && args[idx + 1])
 	{
 		ft_putstr_fd("cd: too many arguments\n", 2);
 		shell_data->status = 1;
 		return ;
 	}
 	old_cwd = getcwd(NULL, 0);
-	path = args[1];
+	path = args[idx];
 	if (!path)
 	{
 		path = ft_getenv(shell_data->envp, "HOME");

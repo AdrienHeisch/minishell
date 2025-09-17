@@ -27,7 +27,7 @@ bool	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
 	else if (ft_strncmp("echo", path, len) == 0)
 		builtin_echo(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("env", path, len) == 0)
-		builtin_env(shell_data, cmd.fd_out);
+		builtin_env(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("exit", path, len) == 0)
 		builtin_exit(cmd.args, shell_data);
 	else if (ft_strncmp("export", path, len) == 0)

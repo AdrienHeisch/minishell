@@ -160,7 +160,7 @@ bool						exec_builtin(t_exec_info args,
 void						builtin_cd(char **args, t_shell_data *shell_data);
 void						builtin_echo(char **args, t_shell_data *shell_data,
 								int fd_out);
-void						builtin_env(t_shell_data *shell_data, int fd_out);
+void						builtin_env(char **args, t_shell_data *shell_data, int fd_out);
 void						builtin_exit(char **args, t_shell_data *shell_data);
 void						builtin_export(char **args,
 								t_shell_data *shell_data, int fd_out);
