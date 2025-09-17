@@ -1,7 +1,4 @@
 # TODO
 
-- Ctrl-D -> print exit on stderr
-- use find_options in all builtins ?
-- export: exported variable should be stored separately ?
-- heredoc: expansion and quotes
-- wildcards
+- heredoc: single and double quotes should be inverted in input ??
+- use print_error / normalize error messages / copy bash error messages ?
