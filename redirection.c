@@ -48,14 +48,14 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 		}
 		if (redir->type == REDIR_IN || redir->type == REDIR_HEREDOC)
 		{
-			if (expr->fd_in != 0)
+			if (expr->fd_in != STDIN_FILENO)
 				close(expr->fd_in);
 			if (redir->type == REDIR_HEREDOC)
 			{
 				if (pipe(pipe_fds) == -1)
 				{
 					perror("pipe");
-					return (1); // TODO return or continue ?
+					return (1);
 				}
 				prompt_heredoc(STDIN_FILENO, pipe_fds[1],
 					redir->file_name.content);
@@ -68,31 +68,27 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 				if (expr->fd_in == -1)
 				{
 					perror("open");
-					return (1); // TODO return or continue ?
+					return (1);
 				}
 			}
 		}
-		else
-			expr->fd_in = STDIN_FILENO;
 		if (redir->type == REDIR_OUT || redir->type == REDIR_APPEND)
 		{
+			if (expr->fd_out != STDOUT_FILENO && expr->fd_out != STDERR_FILENO)
+				close(expr->fd_out);
 			oflag = O_WRONLY | O_CREAT;
 			if (redir->type == REDIR_APPEND)
 				oflag |= O_APPEND;
 			else
 				oflag |= O_TRUNC;
-			if (expr->fd_out != 1 && expr->fd_out != 1)
-				close(expr->fd_out);
 			expr->fd_out = open(redir->file_name.content, oflag,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 			if (expr->fd_in == -1)
 			{
 				perror("open");
-				return (1); // TODO return or continue ?
+				return (1);
 			}
 		}
-		else
-			expr->fd_out = STDOUT_FILENO;
 		redir_list = redir_list->next;
 	}
 	return (0);
