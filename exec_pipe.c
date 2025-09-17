@@ -69,6 +69,8 @@ static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
 {
 	if (expr->type == EX_CMD)
 	{
+		if (resolve_redirections(expr, shell_data))
+			exit(-1);
 		t_exec_info exec = make_exec_info(expr->data.cmd, expr->fd_in,
 				expr->fd_out, shell_data); // HACK PAREN/CMD
 		if (exec.error >= 0)
@@ -79,6 +81,7 @@ static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
 		}
 		shell_data->status = wait_all(fork_run_cmd(exec, shell_data));
 		free_exec_info(&exec);
+		close_redirections(expr->fd_in, expr->fd_out);
 	}
 	else if (expr->type == EX_PARENTHESES)
 	{
@@ -165,7 +168,5 @@ void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 	if (((t_expr *)el->content)->fd_in == STDIN_FILENO)
 		((t_expr *)el->content)->fd_in = prev_fd;
 	run_last_child(el->content, shell_data);
-	if (prev_fd > STDIN_FILENO)
-		close(prev_fd);
 	ft_lstclear(&pipeline, no_op);
 }
