@@ -176,6 +176,14 @@ void	ft_unsetenv(char ***envp, const char *name)
 	*envp = new;
 }
 
+static size_t	size_t_max(size_t a, size_t b)
+{
+	if (a > b)
+		return (a);
+	else
+		return (b);
+}
+
 void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
 {
 	t_string	line;
@@ -188,7 +196,8 @@ void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
 		line = ft_string_from(readline("> "));
 		if (!line.content)
 			return ; // TODO error handling
-		if (!ft_strncmp(line.content, delim, line.length - 1))
+		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
+					ft_strlen(delim))))
 			return ;
 		expanded = expand_arg(&line, shell_data);
 		while (expanded && expanded->content)
