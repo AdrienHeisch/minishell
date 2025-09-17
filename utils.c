@@ -184,30 +184,67 @@ static size_t	size_t_max(size_t a, size_t b)
 		return (b);
 }
 
+static char	*process_heredoc_delim(char *delim)
+{
+	char		*quote;
+	char		*s;
+	t_string	out;
+	char		*rec;
+
+	quote = ft_strchr(delim, '"');
+	if (!quote)
+		quote = ft_strchr(delim, '\'');
+	if (!quote)
+		return (NULL);
+	out = ft_string_new();
+	s = delim;
+	while (*s)
+	{
+		if (*s != *quote)
+			ft_string_ncat(&out, s, 1);
+		s++;
+	}
+	rec = process_heredoc_delim(out.content);
+	if (rec)
+		return (rec);
+	return (out.content);
+}
+
 void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
 {
+	char		*no_expand;
 	t_string	line;
 	t_list		*expanded;
 
 	if (!delim)
 		return ;
+	no_expand = process_heredoc_delim(delim);
+	if (no_expand)
+		delim = no_expand;
 	while (1)
 	{
 		line = ft_string_from(readline("> "));
 		if (!line.content)
-			return ; // TODO error handling
+			break ; // TODO error handling
 		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
 					ft_strlen(delim))))
-			return ;
-		expanded = expand_arg(&line, shell_data);
-		while (expanded && expanded->content)
+			break ;
+		if (no_expand)
+			ft_putstr_fd(line.content, out);
+		else
 		{
-			ft_putstr_fd(((t_string *)expanded->content)->content, out);
-			expanded = expanded->next;
+			expanded = expand_arg(&line, shell_data);
+			while (expanded && expanded->content)
+			{
+				ft_putstr_fd(((t_string *)expanded->content)->content, out);
+				expanded = expanded->next;
+			}
 		}
 		ft_putstr_fd("\n", out);
 		ft_string_destroy(&line);
 	}
+	if (no_expand)
+		free(delim);
 }
 
 static bool	parse_options(char *arg, int *flags, char *options)
