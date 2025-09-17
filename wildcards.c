@@ -72,8 +72,6 @@ t_list	*expand_wildcards(char *pattern)
 
 	ret = NULL;
 	dir = opendir(getcwd(NULL, 0));
-	ent = readdir(dir);
-	ent = readdir(dir);
 	if (dir != NULL)
 	{
 		while (1)
@@ -81,6 +79,9 @@ t_list	*expand_wildcards(char *pattern)
 			ent = readdir(dir);
 			if (!ent)
 				break ;
+			if (!ft_strncmp(ent->d_name, ".", 2) || !ft_strncmp(ent->d_name,
+					"..", 3))
+				continue ;
 			if (is_correct_pattern(ent->d_name, pattern))
 			{
 				name = ft_string_new();
