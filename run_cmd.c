@@ -29,14 +29,11 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 			exit(-1);
 		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
 			exit(-1);
-		if (execve(cmd.args[0], cmd.args, shell_data->envp) == -1)
-		{
-			print_error_code(cmd.args[0], errno);
-			free_args_list(cmd.args);
-			exit(126);
-		}
+		execve(cmd.args[0], cmd.args, shell_data->envp);
+		// TODO shell scripts ?
+		print_error_code(cmd.args[0], errno);
 		free_args_list(cmd.args);
-		exit(0);
+		exit(126);
 	}
 }
 
