@@ -155,7 +155,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	return (NULL);
 }
 
-int		resolve_exec_path(char **args, t_shell_data *shell_data)
+int	resolve_exec_path(char **args, t_shell_data *shell_data)
 {
 	DIR		*dir;
 	char	*initial_path;
@@ -165,7 +165,7 @@ int		resolve_exec_path(char **args, t_shell_data *shell_data)
 	if (ft_strlen(args[0]) == 0)
 		return (127);
 	initial_path = args[0];
-	if (access(args[0], F_OK) == -1)
+	if (!ft_strchr(args[0], '/') || access(args[0], F_OK) == -1)
 	{
 		args[0] = find_cmd_path(args[0], shell_data->envp);
 	}
