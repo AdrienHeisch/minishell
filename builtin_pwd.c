@@ -20,6 +20,7 @@ void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 	char	*cwd;
 	int		flags;
 	size_t	idx;
+	bool	free_cwd;
 
 	idx = 1;
 	if (find_options(&flags, args, &idx, ""))
@@ -27,12 +28,18 @@ void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 		shell_data->status = 2;
 		return ;
 	}
+	free_cwd = false;
 	cwd = getcwd(NULL, 0);
 	if (cwd)
+	{
 		ft_setenv(&shell_data->envp, "PWD", cwd, true);
+		free_cwd = true;
+	}
 	else
 		cwd = ft_getenv(shell_data->envp, "PWD");
 	ft_putstr_fd(cwd, fd_out);
 	ft_putstr_fd("\n", fd_out);
+	if (free_cwd)
+		free(cwd);
 	shell_data->status = 0;
 }

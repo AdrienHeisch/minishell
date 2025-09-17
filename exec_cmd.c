@@ -29,10 +29,14 @@ void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 	if (exec.error >= 0)
 	{
 		shell_data->status = exec.error;
+		free_exec_info(&exec);
+		close_redirections(expr->fd_in, expr->fd_out);
 		return ;
 	}
 	if (is_builtin(exec.args[0])) // DESIGN also checked in run_cmd
+	{
 		exec_builtin(exec, shell_data);
+	}
 	else
 	{
 		status_location = -1;
@@ -42,5 +46,6 @@ void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 		else
 			shell_data->status = 0;
 	}
-	close_redirections(expr);
+	free_exec_info(&exec);
+	close_redirections(expr->fd_in, expr->fd_out);
 }

@@ -103,6 +103,7 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 	*len = idx;
 	if (is_pattern)
 		return (pattern.content);
+	ft_string_destroy(&pattern);
 	return (NULL);
 }
 
@@ -143,7 +144,9 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 			if (arg->content[idx + 1] == '?')
 			{
 				idx += 2;
-				ft_string_cat(&exp, ft_itoa(shell_data->status));
+				char *status = ft_itoa(shell_data->status);
+				ft_string_cat(&exp, status);
+				free(status);
 				continue ;
 			}
 			if (arg->content[idx + 1] == '*')
@@ -201,15 +204,19 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 			wildcard = expand_wildcards(pattern);
 			if (!wildcard)
 				ft_string_cat(&exp, pattern);
+			free(pattern);
 			while (wildcard)
 				ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
 			continue ;
 		}
+		free(pattern);
 		ft_string_ncat(&exp, &arg->content[idx], 1);
 		idx++;
 	}
 	if (exp.length > 0)
 		lstadd_back_string(&out, exp);
+	else
+		ft_string_destroy(&exp);
 	if (ft_lstsize(out) == 0 && !has_empty_var)
 	{
 		t_string empty = ft_string_new();
@@ -249,15 +256,6 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 		}
 		arg_list = arg_list->next;
 	}
+	ft_lstclear(&expanded, lstclear_string);
 	return (args);
-}
-
-void	free_args_list(char **args)
-{
-	size_t	idx;
-
-	idx = 0;
-	while (args[idx])
-		free(args[idx++]);
-	free(args);
 }

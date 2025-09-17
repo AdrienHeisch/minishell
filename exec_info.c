@@ -42,4 +42,7 @@ t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell
 	return (exec);
 }
 
-// TODO free_exec_info
+void	free_exec_info(t_exec_info *exec)
+{
+	free_tab((void **)exec->args);
+}

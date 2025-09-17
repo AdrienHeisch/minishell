@@ -134,6 +134,7 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 		}
 		idx++;
 	}
+	free(name_suffix);
 }
 
 void	ft_unsetenv(char ***envp, const char *name)
@@ -164,6 +165,7 @@ void	ft_unsetenv(char ***envp, const char *name)
 		if (ft_strncmp(old[idx + n_skipped], name_suffix,
 				ft_strlen(name_suffix)) == 0)
 		{
+			free(old[idx + n_skipped]);
 			n_skipped++;
 			continue ;
 		}
@@ -210,11 +212,12 @@ static char	*process_heredoc_delim(char *delim)
 	return (out.content);
 }
 
-void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
+void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 {
 	char		*no_expand;
 	t_string	line;
 	t_list		*expanded;
+	t_list		*o_expanded;
 
 	if (!delim)
 		return ;
@@ -230,17 +233,19 @@ void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
 					ft_strlen(delim))))
 			break ;
 		if (no_expand)
-			ft_putstr_fd(line.content, out);
+			ft_putstr_fd(line.content, fd_out);
 		else
 		{
-			expanded = expand_arg(&line, shell_data);
+			o_expanded = expand_arg(&line, shell_data);
+			expanded = o_expanded;
 			while (expanded && expanded->content)
 			{
-				ft_putstr_fd(((t_string *)expanded->content)->content, out);
+				ft_putstr_fd(((t_string *)expanded->content)->content, fd_out);
 				expanded = expanded->next;
 			}
+			ft_lstclear(&o_expanded, lstclear_string);
 		}
-		ft_putstr_fd("\n", out);
+		ft_putstr_fd("\n", fd_out);
 		ft_string_destroy(&line);
 	}
 	if (no_expand)
@@ -304,4 +309,14 @@ void	lstadd_back_string(t_list **list, t_string str)
 	if (!new)
 		exit(MS_ALLOC);
 	ft_lstadd_back(list, new);
+}
+
+void	free_tab(void **tab)
+{
+	size_t	idx;
+
+	idx = 0;
+	while (tab[idx])
+		free(tab[idx++]);
+	free(tab);
 }

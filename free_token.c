@@ -17,5 +17,7 @@ void	free_token(t_token *token)
 {
 	if (token->type == TK_ARG)
 		ft_string_destroy(&token->data.arg.string);
+	if (token->type == TK_REDIR)
+		ft_string_destroy(&token->data.redir.file_name);
 	free(token);
 }

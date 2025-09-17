@@ -21,7 +21,13 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 	if (is_builtin(*cmd.args))
 	{
 		exec_builtin(cmd, shell_data);
-		exit(shell_data->status);
+		close_redirections(cmd.fd_in, cmd.fd_out);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		free_exec_info(&cmd);
+		int status = shell_data->status;
+		free_shell_data(shell_data);
+		exit(status);
 	}
 	else
 	{
@@ -32,7 +38,10 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 		execve(cmd.args[0], cmd.args, shell_data->envp);
 		// TODO shell scripts ?
 		print_error_code(cmd.args[0], errno);
-		free_args_list(cmd.args);
+		close_redirections(cmd.fd_in, cmd.fd_out);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		free_exec_info(&cmd);
 		exit(126);
 	}
 }

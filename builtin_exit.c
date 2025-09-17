@@ -74,17 +74,19 @@ void	builtin_exit(char **args, t_shell_data *shell_data)
 		exit_code = checked_atol(args[1]);
 		if (errno != 0 || !is_fully_numeric(args[1]))
 		{
-			ft_putstr_fd("exit: ", 2);
+			ft_putstr_fd("minishell: exit: ", 2);
 			ft_putstr_fd(args[1], 2);
 			ft_putstr_fd(" numeric argument required\n", 2);
+			free_shell_data(shell_data);
 			exit(2);
 		}
 		if (args[2])
 		{
-			ft_putstr_fd("exit: too many arguments\n", 2);
+			ft_putstr_fd("minishell: exit: too many arguments\n", 2);
 			shell_data->status = 1;
 			return ;
 		}
 	}
+	free_shell_data(shell_data);
 	exit(exit_code);
 }

@@ -129,6 +129,8 @@ typedef struct s_exec_info
 	int						error;
 }							t_exec_info;
 
+void						free_shell_data(t_shell_data *shell_data);
+
 void						init_signals(void);
 
 struct termios				set_terminal_attributes(void);
@@ -160,7 +162,8 @@ bool						exec_builtin(t_exec_info args,
 void						builtin_cd(char **args, t_shell_data *shell_data);
 void						builtin_echo(char **args, t_shell_data *shell_data,
 								int fd_out);
-void						builtin_env(char **args, t_shell_data *shell_data, int fd_out);
+void						builtin_env(char **args, t_shell_data *shell_data,
+								int fd_out);
 void						builtin_exit(char **args, t_shell_data *shell_data);
 void						builtin_export(char **args,
 								t_shell_data *shell_data, int fd_out);
@@ -174,17 +177,17 @@ t_list						*expand_arg(t_string *arg,
 								t_shell_data *shell_data);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
-void						free_args_list(char **args);
 
 t_exec_info					make_exec_info(t_cmd cmd, int fd_in, int fd_out,
 								t_shell_data *shell_data);
+void						free_exec_info(t_exec_info *exec);
 int							resolve_exec_path(char **cmd,
 								t_shell_data *shell_data);
 
 void						add_redirection(t_list *token, t_list **list);
 int							resolve_redirections(t_expr *expr,
 								t_shell_data *shell_data);
-void						close_redirections(t_expr *expr);
+void						close_redirections(int fd_in, int fd_out);
 
 void						print_error(char *err);
 void						print_error_code(char *path, int code);
@@ -202,6 +205,7 @@ void						prompt_heredoc(int out, char *delim,
 int							find_options(int *flags, char **args, size_t *idx,
 								char *options);
 void						lstadd_back_string(t_list **list, t_string str);
+void						free_tab(void **tab);
 
 t_list						*expand_wildcards(char *pattern);
 

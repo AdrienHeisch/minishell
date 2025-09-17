@@ -28,7 +28,10 @@ void	add_redirection(t_list *token, t_list **list)
 	redir = ft_calloc(sizeof(t_redir_data), 1);
 	if (!redir)
 		exit(MS_ALLOC);
-	*redir = ((t_token *)token->content)->data.redir;
+	redir->fd = ((t_token *)token->content)->data.redir.fd;
+	redir->type = ((t_token *)token->content)->data.redir.type;
+	ft_string_move(&((t_token *)token->content)->data.redir.file_name,
+		&redir->file_name);
 	redir_list = ft_lstnew(redir);
 	if (!redir_list)
 		exit(MS_ALLOC);

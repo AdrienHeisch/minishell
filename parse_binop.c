@@ -53,13 +53,13 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 	{
 		expr->data.binop.right = parse_expr(tokens, &expr->data.binop.left);
 		if (!expr->data.binop.right)
-			return (free(expr->data.binop.right), free(expr), ft_putstr_fd("unexpected token\n", 2), NULL);
+			return (free_expr(expr), print_error("unexpected token"), NULL);
 	}
 	else
 	{
 		expr->data.binop.right = parse(tokens);
 		if (!expr->data.binop.right)
-			return (free(expr), NULL);
+			return (free_expr(expr), print_error("unexpected token"), NULL);
 		if (expr->data.binop.right->type == EX_BINOP
 			&& get_precedence(expr->data.binop.right->data.binop.op) <= get_precedence(expr->data.binop.op))
 		{

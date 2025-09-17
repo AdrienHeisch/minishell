@@ -104,6 +104,7 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 		{
 			shell_data->status = 1;
 			idx++;
+			free_tab((void **)split);
 			continue ;
 		}
 		valid_var_code = is_valid_var(split[0]);
@@ -111,6 +112,7 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 		{
 			shell_data->status = valid_var_code;
 			idx++;
+			free_tab((void **)split);
 			continue ;
 		}
 		if (split[1])
@@ -119,6 +121,7 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 		else if (ft_strchr(args[idx], '='))
 			ft_setenv(&shell_data->envp, split[0], "", true);
 		export_var(&shell_data->exported, split[0]);
+		free_tab((void **)split);
 		idx++;
 	}
 }

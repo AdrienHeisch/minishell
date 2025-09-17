@@ -98,9 +98,14 @@ t_list	*expand_wildcards(char *pattern)
 	struct dirent	*ent;
 	t_list			*ret;
 	t_string		name;
+	char			*cwd;
 
 	ret = NULL;
-	dir = opendir(getcwd(NULL, 0));
+	cwd = getcwd(NULL, 0);
+	if (!cwd)
+		perror("error retrieving current directory: getcwd");
+	dir = opendir(cwd);
+	free(cwd);
 	if (dir != NULL)
 	{
 		while (1)

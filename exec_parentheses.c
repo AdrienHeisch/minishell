@@ -32,6 +32,11 @@ void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 		if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
 			exit(-1);
 		exec_expr(paren->data.paren.inner, shell_data);
+		close_redirections(paren->fd_in, paren->fd_out);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		free_expr(paren);
+		free_shell_data(shell_data);
 		exit(shell_data->status);
 	}
 	waitpid(pid, &status_location, 0);

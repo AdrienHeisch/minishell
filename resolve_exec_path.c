@@ -49,7 +49,7 @@ static char	*copy_dir(const char *start, int len)
 	return (dir);
 }
 
-static void	free_tab(char ***tab)
+static void	free_tab_and_null(char ***tab)
 {
 	int	i;
 
@@ -89,7 +89,7 @@ static char	**split_path(const char *s)
 				i++;
 			dirs[j] = copy_dir(&s[start], i - start);
 			if (!dirs[j++])
-				return (free_tab(&dirs), NULL);
+				return (free_tab_and_null(&dirs), NULL);
 			start = i + 1;
 		}
 	}
@@ -143,15 +143,15 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	{
 		path = join_path_cmd(dirs[i], cmd);
 		if (!path)
-			return (free_tab(&dirs), NULL);
+			return (free_tab_and_null(&dirs), NULL);
 		if (access(path, X_OK) == 0)
 		{
-			free_tab(&dirs);
+			free_tab_and_null(&dirs);
 			return (path);
 		}
 		free(path);
 	}
-	free_tab(&dirs);
+	free_tab_and_null(&dirs);
 	return (NULL);
 }
 

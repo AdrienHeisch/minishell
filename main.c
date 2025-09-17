@@ -42,12 +42,17 @@ static char	**dup_env(char **envp)
 	cwd = getcwd(NULL, 0);
 	if (cwd)
 		ft_setenv(&dup, "PWD", cwd, true);
+	free(cwd);
 	shlvl = ft_getenv(dup, "SHLVL");
-	if (!shlvl)
-		ft_setenv(&dup, "SHLVL", "0", true);
-	else
-		ft_setenv(&dup, "SHLVL", ft_itoa(ft_atoi(ft_getenv(dup, "SHLVL")) + 1),
+	if (shlvl)
+	{
+		char *new_shlvl = ft_itoa(ft_atoi(shlvl) + 1);
+		ft_setenv(&dup, "SHLVL", new_shlvl,
 			true);
+		free(new_shlvl);
+	}
+	else
+		ft_setenv(&dup, "SHLVL", "0", true);
 	return (dup);
 }
 
@@ -57,6 +62,7 @@ static char	**make_export_list(char **envp)
 	size_t	len;
 	size_t	idx;
 	char	**split;
+	char	**o_split;
 
 	len = 0;
 	while (envp[len])
@@ -65,16 +71,15 @@ static char	**make_export_list(char **envp)
 	idx = 0;
 	while (envp[idx])
 	{
-		split = ft_split(envp[idx], '=');
+		o_split = ft_split(envp[idx], '=');
+		split = o_split;
 		if (!split || !split[0])
 			exit(MS_UNREACHABLE);
 		list[idx] = split[0];
 		split++;
 		while (*split)
-		{
-			free(*split);
-			split++;
-		}
+			free(*split++);
+		free(o_split);
 		idx++;
 	}
 	return (list);
@@ -117,6 +122,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	tokens = lex(str);
 	// ft_lstiter(tokens, (void (*)(void *))print_token);
 	expr = parse(&tokens);
+	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
 	{
 		data->status = 2;
@@ -125,6 +131,12 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	exec_expr(expr, data);
 	free_expr(expr);
 	add_history(str->content);
+}
+
+void	free_shell_data(t_shell_data *shell_data)
+{
+	free_tab((void **)shell_data->envp);
+	free_tab((void **)shell_data->exported);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -150,16 +162,18 @@ int	main(int argc, char **argv, char **envp)
 		idx = 0;
 		while (tab[idx])
 		{
-			str = ft_string_new();
-			ft_string_cat(&str, tab[idx]);
+			str = ft_string_from(tab[idx]);
+			// ft_string_cat(&str, tab[idx]);
 			parse_and_exec(&str, &data);
 			ft_string_destroy(&str);
 			idx++;
 		}
+		free(tab);
+		free_shell_data(&data);
 		return (data.status);
 	}
 	if (argc > 1)
-		return (MS_USAGE);
+		return (free_shell_data(&data), MS_USAGE);
 	tio = set_terminal_attributes();
 	rl_outstream = stderr;
 	str.content = NULL;
@@ -182,5 +196,6 @@ int	main(int argc, char **argv, char **envp)
 	restore_terminal_attributes(&tio);
 	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
 		ft_putstr_fd("exit\n", 2);
+	free_shell_data(&data);
 	return (data.status);
 }
