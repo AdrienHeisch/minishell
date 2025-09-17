@@ -63,6 +63,35 @@ static int	is_correct_pattern(char *name, char *pattern)
 	return (1);
 }
 
+static void	sort_list(t_list **list)
+{
+	t_list	*lst;
+	t_list	*prev;
+	t_list	*swap;
+
+	lst = *list;
+	prev = NULL;
+	while (lst && lst->content && lst->next && lst->next->content)
+	{
+		if (ft_strncmp(((t_string *)lst->content)->content, ((t_string *)lst->next->content)->content, ((t_string *)lst->content)->length) > 0)
+		{
+			if (prev)
+				prev->next = lst->next;
+			else
+				*list = lst->next;
+			swap = lst->next->next;
+			lst->next->next = lst;
+			lst->next = swap;
+			lst = NULL;
+		}
+		prev = lst;
+		if (!lst)
+			lst = *list;
+		else
+			lst = lst->next;
+	}
+}
+
 t_list	*expand_wildcards(char *pattern)
 {
 	DIR				*dir;
@@ -97,5 +126,6 @@ t_list	*expand_wildcards(char *pattern)
 		ft_lstclear(&ret, free);
 		return (ret);
 	}
+	sort_list(&ret);
 	return (ret);
 }
