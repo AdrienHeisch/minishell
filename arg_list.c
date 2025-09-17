@@ -146,6 +146,12 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 				ft_string_cat(&exp, ft_itoa(shell_data->status));
 				continue ;
 			}
+			if (arg->content[idx + 1] == '*')
+			{
+				idx += 2;
+				has_empty_var = true;
+				continue ;
+			}
 			if (!del && (arg->content[idx + 1] == '\'' || arg->content[idx
 					+ 1] == '"'))
 			{
@@ -187,24 +193,16 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 				continue ;
 			}
 		}
-		size_t len_;
-		pattern = get_wildcard_pattern(&arg->content[idx], &len_);
-		if (pattern && del == '\0')
+		size_t pattern_len;
+		pattern = get_wildcard_pattern(&arg->content[idx], &pattern_len);
+		if (exp.length == 0 && pattern && del == '\0')
 		{
-			idx += len_;
+			idx += pattern_len;
 			wildcard = expand_wildcards(pattern);
 			if (!wildcard)
 				ft_string_cat(&exp, pattern);
-			else
-			{
-				if (exp.length > 0)
-				{
-					lstadd_back_string(&out, exp);
-					exp = ft_string_new();
-				}
-				while (wildcard)
-					ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
-			}
+			while (wildcard)
+				ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
 			continue ;
 		}
 		ft_string_ncat(&exp, &arg->content[idx], 1);
@@ -246,6 +244,7 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 		if (((t_arg_data *)arg_list->content)->string.content)
 		{
 			args[idx] = ft_strdup(((t_string *)arg_list->content)->content);
+			// printf("arg: |%s|\n", args[idx]);
 			idx++;
 		}
 		arg_list = arg_list->next;
