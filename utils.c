@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <readline/readline.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -175,22 +176,28 @@ void	ft_unsetenv(char ***envp, const char *name)
 	*envp = new;
 }
 
-void	prompt_heredoc(int fd, int out, char *delim)
+void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
 {
-	char		*line;
+	t_string	line;
+	t_list		*expanded;
 
 	if (!delim)
 		return ;
 	while (1)
 	{
-		ft_putstr_fd("> ", STDERR_FILENO);
-		line = ft_get_next_line(fd);
-		if (!line)
+		line = ft_string_from(readline("> "));
+		if (!line.content)
 			return ; // TODO error handling
-		if (!ft_strncmp(line, delim, ft_strlen(line) - 1))
+		if (!ft_strncmp(line.content, delim, line.length - 1))
 			return ;
-		ft_putstr_fd(line, out);
-		free(line);
+		expanded = expand_arg(&line, shell_data);
+		while (expanded && expanded->content)
+		{
+			ft_putstr_fd(((t_string *)expanded->content)->content, out);
+			expanded = expanded->next;
+		}
+		ft_putstr_fd("\n", out);
+		ft_string_destroy(&line);
 	}
 }
 

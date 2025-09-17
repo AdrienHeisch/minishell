@@ -57,8 +57,8 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 					perror("pipe");
 					return (1);
 				}
-				prompt_heredoc(STDIN_FILENO, pipe_fds[1],
-					redir->file_name.content);
+				prompt_heredoc(pipe_fds[1],
+					redir->file_name.content, shell_data);
 				close(pipe_fds[1]);
 				expr->fd_in = pipe_fds[0];
 			}

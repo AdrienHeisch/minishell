@@ -197,7 +197,8 @@ char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 void						ft_unsetenv(char ***envp, const char *name);
-void						prompt_heredoc(int fd, int out, char *delim);
+void						prompt_heredoc(int out, char *delim,
+								t_shell_data *shell_data);
 int							find_options(int *flags, char **args, size_t *idx,
 								char *options);
 void						lstadd_back_string(t_list **list, t_string str);
