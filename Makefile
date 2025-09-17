@@ -15,6 +15,7 @@ SRCS = \
 	exec_binop.c \
 	exec_builtin.c \
 	exec_cmd.c \
+	exec_info.c \
 	exec_parentheses.c \
 	exec_pipe.c \
 	free_expr.c \
@@ -27,13 +28,16 @@ SRCS = \
 	parse_expr.c \
 	parse_binop.c \
 	parse_parentheses.c \
+	print_error.c \
 	print_expr.c \
 	print_token.c \
 	redirection.c \
+	resolve_exec_path.c \
 	run_cmd.c \
 	signals.c \
 	termios.c \
 	utils.c \
+	wildcards.c \
 
 #	CONFIG
 

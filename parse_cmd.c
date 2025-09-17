@@ -46,16 +46,16 @@ t_expr	*parse_cmd(t_list **tokens)
 	if (!expr)
 		exit(MS_ALLOC);
 	expr->type = EX_CMD;
+	expr->fd_in = STDIN_FILENO;
+	expr->fd_out = STDOUT_FILENO;
+	expr->redirs = NULL;
 	expr->data.cmd.args = NULL;
-	expr->data.cmd.fd_in = STDIN_FILENO;
-	expr->data.cmd.fd_out = STDOUT_FILENO;
-	expr->data.cmd.redirs = NULL;
 	while (*tokens && is_cmd(((t_token *)(*tokens)->content)->type))
 	{
 		token = ft_lstpop_front(tokens);
 		if (((t_token *)token->content)->type == TK_REDIR)
 		{
-			add_redirection(token, &expr->data.cmd.redirs);
+			add_redirection(token, &expr->redirs);
 			ft_lstdelone(token, (void (*)(void *))free_token);
 			continue ;
 		}

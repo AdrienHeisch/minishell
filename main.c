@@ -26,6 +26,7 @@ static char	**dup_env(char **envp)
 	size_t	len;
 	size_t	idx;
 	char	*cwd;
+	char	*shlvl;
 
 	len = 0;
 	while (envp[len])
@@ -41,7 +42,42 @@ static char	**dup_env(char **envp)
 	cwd = getcwd(NULL, 0);
 	if (cwd)
 		ft_setenv(&dup, "PWD", cwd, true);
+	shlvl = ft_getenv(dup, "SHLVL");
+	if (!shlvl)
+		ft_setenv(&dup, "SHLVL", "0", true);
+	else
+		ft_setenv(&dup, "SHLVL", ft_itoa(ft_atoi(ft_getenv(dup, "SHLVL")) + 1),
+			true);
 	return (dup);
+}
+
+static char	**make_export_list(char **envp)
+{
+	char	**list;
+	size_t	len;
+	size_t	idx;
+	char	**split;
+
+	len = 0;
+	while (envp[len])
+		len++;
+	list = ft_calloc(len + 1, sizeof(char *));
+	idx = 0;
+	while (envp[idx])
+	{
+		split = ft_split(envp[idx], '=');
+		if (!split || !split[0])
+			exit(MS_UNREACHABLE);
+		list[idx] = split[0];
+		split++;
+		while (*split)
+		{
+			free(*split);
+			split++;
+		}
+		idx++;
+	}
+	return (list);
 }
 
 static char	*make_prompt(char **envp)
@@ -103,6 +139,10 @@ int	main(int argc, char **argv, char **envp)
 	received_signal = 0;
 	init_signals();
 	data.envp = dup_env(envp);
+	data.exported = make_export_list(data.envp);
+	export_var(&data.exported, "OLDPWD");
+	if (argc >= 1)
+		ft_setenv(&data.envp, "_", argv[0], true);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
 	{
@@ -121,6 +161,7 @@ int	main(int argc, char **argv, char **envp)
 	if (argc > 1)
 		return (MS_USAGE);
 	tio = set_terminal_attributes();
+	rl_outstream = stderr;
 	str.content = NULL;
 	while (1)
 	{
@@ -139,5 +180,7 @@ int	main(int argc, char **argv, char **envp)
 	}
 	ft_string_destroy(&str);
 	restore_terminal_attributes(&tio);
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+		ft_putstr_fd("exit\n", 2);
 	return (data.status);
 }

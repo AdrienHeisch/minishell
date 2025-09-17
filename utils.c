@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <readline/readline.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,6 +25,17 @@ void	no_op(void *p)
 void	lstclear_string(void *str)
 {
 	ft_string_delete((t_string **)&str);
+}
+
+bool	is_str_all(char *s, int f(int))
+{
+	while (*s)
+	{
+		if (!f(*s))
+			return (false);
+		s++;
+	}
+	return (true);
 }
 
 bool	is_whitespace(t_string *str)
@@ -96,6 +108,8 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 	size_t	len;
 	size_t	idx;
 
+	if (!value)
+		ft_unsetenv(envp, name);
 	if (!ft_getenv(*envp, name))
 	{
 		add_to_env(envp, name, value);
@@ -162,23 +176,132 @@ void	ft_unsetenv(char ***envp, const char *name)
 	*envp = new;
 }
 
-t_string	prompt_heredoc(int fd, char *delim)
+static size_t	size_t_max(size_t a, size_t b)
 {
-	t_string	ret;
-	char		*line;
+	if (a > b)
+		return (a);
+	else
+		return (b);
+}
 
-	ret = ft_string_new();
+static char	*process_heredoc_delim(char *delim)
+{
+	char		*quote;
+	char		*s;
+	t_string	out;
+	char		*rec;
+
+	quote = ft_strchr(delim, '"');
+	if (!quote)
+		quote = ft_strchr(delim, '\'');
+	if (!quote)
+		return (NULL);
+	out = ft_string_new();
+	s = delim;
+	while (*s)
+	{
+		if (*s != *quote)
+			ft_string_ncat(&out, s, 1);
+		s++;
+	}
+	rec = process_heredoc_delim(out.content);
+	if (rec)
+		return (rec);
+	return (out.content);
+}
+
+void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
+{
+	char		*no_expand;
+	t_string	line;
+	t_list		*expanded;
+
 	if (!delim)
-		return (ft_string_destroy(&ret), ret);
+		return ;
+	no_expand = process_heredoc_delim(delim);
+	if (no_expand)
+		delim = no_expand;
 	while (1)
 	{
-		write(2, "> ", 2);
-		line = ft_get_next_line(fd);
-		if (!line)
-			return (ft_string_destroy(&ret), ret);
-		if (!ft_strncmp(line, delim, ft_strlen(line) - 1))
-			return (free(line), ret);
-		ft_string_cat(&ret, line);
-		free(line);
+		line = ft_string_from(readline("> "));
+		if (!line.content)
+			break ; // TODO error handling
+		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
+					ft_strlen(delim))))
+			break ;
+		if (no_expand)
+			ft_putstr_fd(line.content, out);
+		else
+		{
+			expanded = expand_arg(&line, shell_data);
+			while (expanded && expanded->content)
+			{
+				ft_putstr_fd(((t_string *)expanded->content)->content, out);
+				expanded = expanded->next;
+			}
+		}
+		ft_putstr_fd("\n", out);
+		ft_string_destroy(&line);
 	}
+	if (no_expand)
+		free(delim);
+}
+
+static bool	parse_options(char *arg, int *flags, char *options)
+{
+	int		new_flags;
+	size_t	idx;
+	size_t	opt_idx;
+
+	new_flags = 0;
+	idx = 1;
+	while (arg[idx])
+	{
+		opt_idx = 0;
+		while (options[opt_idx])
+		{
+			if (arg[idx] == options[opt_idx])
+			{
+				new_flags |= opt_idx + 1;
+				break ;
+			}
+			opt_idx++;
+		}
+		if (!options[opt_idx])
+			return (false);
+		idx++;
+	}
+	*flags |= new_flags;
+	return (true);
+}
+
+int	find_options(int *flags, char **args, size_t *idx, char *options)
+{
+	*flags = 0;
+	while (args[*idx] && args[*idx][0] == '-')
+	{
+		if (args[*idx][1] == '-')
+			return (-1);
+		if (!options)
+			return (-1);
+		if (!parse_options(args[*idx], flags, options))
+			return (-1);
+		(*idx)++;
+	}
+	return (0);
+}
+
+void	lstadd_back_string(t_list **list, t_string str)
+{
+	t_string	*cell;
+	t_list		*new;
+
+	cell = (t_string *)malloc(sizeof(t_string));
+	if (!cell)
+		exit(MS_ALLOC);
+	*cell = str;
+	new = ft_lstnew(cell);
+	if (!new)
+		exit(MS_ALLOC);
+	ft_lstadd_back(list, new);
 }

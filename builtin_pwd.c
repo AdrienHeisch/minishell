@@ -12,45 +12,26 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 #include <unistd.h>
-
-static bool	parse_args(char **args)
-{
-	size_t	idx;
-
-	idx = 1;
-	while (args[idx])
-	{
-		if (args[idx][0] == '-')
-		{
-			if (args[idx][1] == '-')
-			{
-				if (args[idx][2])
-					return (false);
-			}
-			else if (args[idx][1])
-				return (false);
-		}
-		idx++;
-	}
-	return (true);
-}
 
 void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 {
 	char	*cwd;
+	int		flags;
+	size_t	idx;
 
-	if (!parse_args(args))
+	idx = 1;
+	if (find_options(&flags, args, &idx, ""))
 	{
 		shell_data->status = 2;
 		return ;
 	}
 	cwd = getcwd(NULL, 0);
-	if (!cwd)
-	{
-		shell_data->status = 1;
-		return ;
-	}
+	if (cwd)
+		ft_setenv(&shell_data->envp, "PWD", cwd, true);
+	else
+		cwd = ft_getenv(shell_data->envp, "PWD");
 	ft_putstr_fd(cwd, fd_out);
 	ft_putstr_fd("\n", fd_out);
 	shell_data->status = 0;

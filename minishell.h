@@ -22,6 +22,8 @@ extern int					received_signal;
 enum						e_error
 {
 	MS_SUCCESS,
+	MS_COMMAND_FAILED,
+	MS_SYNTAX_ERROR,
 	MS_USAGE,
 	MS_ALLOC,
 	MS_UNREACHABLE,
@@ -31,6 +33,7 @@ enum						e_error
 typedef struct s_shell_data
 {
 	char					**envp;
+	char					**exported;
 	int						status;
 }							t_shell_data;
 
@@ -97,9 +100,6 @@ typedef struct s_expr
 		struct				s_cmd
 		{
 			t_list			*args;
-			int				fd_in;
-			int				fd_out;
-			t_list			*redirs;
 		} cmd;
 		struct				s_binop
 		{
@@ -110,16 +110,24 @@ typedef struct s_expr
 		struct				s_paren
 		{
 			struct s_expr	*inner;
-			int				fd_in;
-			int				fd_out;
-			t_list			*redirs;
 		} paren;
 	} data;
+	int						fd_in;
+	int						fd_out;
+	t_list					*redirs;
 }							t_expr;
 
 typedef struct s_cmd		t_cmd;
 typedef struct s_binop		t_binop;
 typedef struct s_paren		t_paren;
+
+typedef struct s_exec_info
+{
+	char					**args;
+	int						fd_in;
+	int						fd_out;
+	int						error;
+}							t_exec_info;
 
 void						init_signals(void);
 
@@ -138,19 +146,21 @@ t_expr						*parse_binop(t_list **tokens, t_expr **prev);
 t_expr						*parse_parentheses(t_list **tokens);
 void						exec_binop(t_binop binop, t_shell_data *shell_data);
 void						exec_expr(t_expr *expr, t_shell_data *shell_data);
-void						exec_cmd(t_cmd cmd, t_shell_data *shell_data);
-void						exec_parentheses(t_paren paren,
+void						exec_cmd(t_expr *expr, t_shell_data *shell_data);
+void						exec_parentheses(t_expr *expr,
 								t_shell_data *shell_data);
 void						exec_pipe(t_binop pipe, t_shell_data *shell_data);
-int							fork_exec_cmd(t_cmd cmd, t_shell_data *shell_data);
-void						run_cmd(t_cmd cmd, t_shell_data *shell_data);
+void						run_cmd(t_exec_info cmd, t_shell_data *shell_data);
+int							fork_run_cmd(t_exec_info exec,
+								t_shell_data *shell_data);
 
-bool						is_builtin(t_string *name);
-bool						exec_builtin(t_cmd cmd, t_shell_data *shell_data);
+bool						is_builtin(char *name);
+bool						exec_builtin(t_exec_info args,
+								t_shell_data *shell_data);
 void						builtin_cd(char **args, t_shell_data *shell_data);
 void						builtin_echo(char **args, t_shell_data *shell_data,
 								int fd_out);
-void						builtin_env(t_shell_data *shell_data, int fd_out);
+void						builtin_env(char **args, t_shell_data *shell_data, int fd_out);
 void						builtin_exit(char **args, t_shell_data *shell_data);
 void						builtin_export(char **args,
 								t_shell_data *shell_data, int fd_out);
@@ -158,22 +168,41 @@ void						builtin_unset(char **args,
 								t_shell_data *shell_data);
 void						builtin_pwd(char **args, t_shell_data *shell_data,
 								int fd_out);
+void						export_var(char ***exported, const char *name);
 
+t_list						*expand_arg(t_string *arg,
+								t_shell_data *shell_data);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 void						free_args_list(char **args);
 
+t_exec_info					make_exec_info(t_cmd cmd, int fd_in, int fd_out,
+								t_shell_data *shell_data);
+int							resolve_exec_path(char **cmd,
+								t_shell_data *shell_data);
+
 void						add_redirection(t_list *token, t_list **list);
-int							resolve_redirections(t_cmd *cmd);
-void						close_redirections(t_cmd *cmd);
+int							resolve_redirections(t_expr *expr,
+								t_shell_data *shell_data);
+void						close_redirections(t_expr *expr);
+
+void						print_error(char *err);
+void						print_error_code(char *path, int code);
 
 void						no_op(void *p);
 void						lstclear_string(void *str);
 bool						is_whitespace(t_string *str);
+bool						is_str_all(char *s, int f(int));
 char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 void						ft_unsetenv(char ***envp, const char *name);
-t_string					prompt_heredoc(int fd, char *delim);
+void						prompt_heredoc(int out, char *delim,
+								t_shell_data *shell_data);
+int							find_options(int *flags, char **args, size_t *idx,
+								char *options);
+void						lstadd_back_string(t_list **list, t_string str);
+
+t_list						*expand_wildcards(char *pattern);
 
 #endif // !MINISHELL_H

@@ -13,31 +13,29 @@
 #include "libft.h"
 #include "minishell.h"
 
-bool	exec_builtin(t_cmd cmd, t_shell_data *shell_data)
+bool	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
 {
-	char	**args;
 	char	*path;
 	size_t	len;
 
-	args = make_arg_list(cmd, shell_data);
-	path = args[0];
+	path = cmd.args[0];
 	len = ft_strlen(path) + 1;
 	if (len == 0)
 		return (false);
 	if (ft_strncmp("cd", path, len) == 0)
-		builtin_cd(args, shell_data);
+		builtin_cd(cmd.args, shell_data);
 	else if (ft_strncmp("echo", path, len) == 0)
-		builtin_echo(args, shell_data, cmd.fd_out);
+		builtin_echo(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("env", path, len) == 0)
-		builtin_env(shell_data, cmd.fd_out);
+		builtin_env(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("exit", path, len) == 0)
-		builtin_exit(args, shell_data);
+		builtin_exit(cmd.args, shell_data);
 	else if (ft_strncmp("export", path, len) == 0)
-		builtin_export(args, shell_data, cmd.fd_out);
+		builtin_export(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("pwd", path, len) == 0)
-		builtin_pwd(args, shell_data, cmd.fd_out);
+		builtin_pwd(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("unset", path, len) == 0)
-		builtin_unset(args, shell_data);
+		builtin_unset(cmd.args, shell_data);
 	else
 		return (false);
 	return (true);

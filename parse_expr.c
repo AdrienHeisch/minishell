@@ -23,7 +23,8 @@ t_expr	*parse_expr(t_list **tokens, t_expr **prev)
 	t_token	*token;
 
 	if (!tokens || !*tokens)
-		return (NULL);
+		return (ft_putstr_fd("minishell: syntax error: unexpected end of file\n",
+				2), NULL);
 	token = (t_token *)(*tokens)->content;
 	if (!token)
 		return (NULL);
@@ -33,14 +34,6 @@ t_expr	*parse_expr(t_list **tokens, t_expr **prev)
 		return (parse_cmd(tokens));
 	else if (token->type == TK_PAROPEN)
 		return (parse_parentheses(tokens));
-	// else if (token->type == TK_REDIR)
-	// {
-	// 	if (!(*tokens)->next || !(*tokens)->next->content
-	// 		|| ((t_token *)(*tokens)->next->content)->type != TK_PAROPEN)
-	// 		return (parse_cmd(tokens));
-	// 	else
-	// 		return (parse_parentheses(tokens));
-	// }
 	else
 		return (NULL);
 }

@@ -13,36 +13,6 @@
 #include "libft.h"
 #include <stdlib.h>
 
-char	*ft_strmapi(const char *s, char (*f)(unsigned int, char))
-{
-	char	*str;
-	size_t	idx;
-
-	str = (char *)malloc(sizeof(char) * (ft_strlen(s) + 1));
-	if (!str)
-		return (NULL);
-	idx = 0;
-	while (s[idx])
-	{
-		str[idx] = f(idx, s[idx]);
-		idx++;
-	}
-	str[idx] = '\0';
-	return (str);
-}
-
-void	ft_striteri(char *s, void (*f)(unsigned int, char *))
-{
-	size_t	idx;
-
-	idx = 0;
-	while (s[idx])
-	{
-		f(idx, &s[idx]);
-		idx++;
-	}
-}
-
 char	*ft_strjoin(const char *s1, const char *s2)
 {
 	size_t	s1_len;

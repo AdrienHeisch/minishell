@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -38,7 +40,73 @@ static bool	is_var_name_char(char c)
 	return (ft_isalnum(c) || c == '_');
 }
 
-static void	expand_arg(t_string *arg, t_shell_data *shell_data)
+static void	split_var(t_string *var, t_string *exp, t_list **out)
+{
+	char	*var_from;
+	char	*var_to;
+
+	var_from = var->content;
+	if (exp->length == 0)
+	{
+		while (*var_from == ' ')
+			var_from++;
+	}
+	while (true)
+	{
+		var_to = ft_strchr(var_from, ' ');
+		if (!var_to)
+		{
+			ft_string_cat(exp, var_from);
+			break ;
+		}
+		ft_string_ncat(exp, var_from, var_to - var_from);
+		lstadd_back_string(out, *exp);
+		*exp = ft_string_new();
+		var_from = var_to;
+		while (*var_from == ' ')
+			var_from++;
+	}
+}
+
+static char	*get_wildcard_pattern(char *s, size_t *len)
+{
+	bool		is_pattern;
+	char		del;
+	t_string	pattern;
+	size_t		idx;
+
+	is_pattern = false;
+	pattern = ft_string_new();
+	del = '\0';
+	idx = 0;
+	while (s[idx])
+	{
+		if (!del)
+		{
+			if (s[idx] == ' ')
+				break ;
+			if (s[idx] == '\'' || s[idx] == '"')
+			{
+				del = s[idx];
+				idx++;
+				continue ;
+			}
+		}
+		if (s[idx] != del)
+			ft_string_ncat(&pattern, &s[idx], 1);
+		else if (del)
+			del = '\0';
+		if (s[idx] == '*')
+			is_pattern = true;
+		idx++;
+	}
+	*len = idx;
+	if (is_pattern)
+		return (pattern.content);
+	return (NULL);
+}
+
+t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 {
 	size_t		idx;
 	size_t		len;
@@ -46,7 +114,11 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 	t_string	var;
 	char		del;
 	bool		has_empty_var;
+	t_list		*out;
+	t_list		*wildcard;
+	char		*pattern;
 
+	out = NULL;
 	exp = ft_string_new();
 	del = '\0';
 	idx = 0;
@@ -74,6 +146,12 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 				ft_string_cat(&exp, ft_itoa(shell_data->status));
 				continue ;
 			}
+			if (arg->content[idx + 1] == '*')
+			{
+				idx += 2;
+				has_empty_var = true;
+				continue ;
+			}
 			if (!del && (arg->content[idx + 1] == '\'' || arg->content[idx
 					+ 1] == '"'))
 			{
@@ -97,9 +175,12 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 					len++;
 				ft_string_ncat(&var, &arg->content[idx], len);
 				expand_var(&var, shell_data);
-				ft_string_ncat(&exp, var.content, var.length);
 				if (var.length == 0)
 					has_empty_var = true;
+				else if (del == '\0')
+					split_var(&var, &exp, &out);
+				else
+					ft_string_cat(&exp, var.content);
 				ft_string_destroy(&var);
 				idx += len;
 				continue ;
@@ -112,31 +193,61 @@ static void	expand_arg(t_string *arg, t_shell_data *shell_data)
 				continue ;
 			}
 		}
+		size_t pattern_len;
+		pattern = get_wildcard_pattern(&arg->content[idx], &pattern_len);
+		if (exp.length == 0 && pattern && del == '\0')
+		{
+			idx += pattern_len;
+			wildcard = expand_wildcards(pattern);
+			if (!wildcard)
+				ft_string_cat(&exp, pattern);
+			while (wildcard)
+				ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
+			continue ;
+		}
 		ft_string_ncat(&exp, &arg->content[idx], 1);
 		idx++;
 	}
-	ft_string_destroy(arg);
-	if (exp.length == 0 && has_empty_var)
-		return (ft_string_destroy(&exp), (void)0);
-	*arg = exp;
+	if (exp.length > 0)
+		lstadd_back_string(&out, exp);
+	if (ft_lstsize(out) == 0 && !has_empty_var)
+	{
+		t_string empty = ft_string_new();
+		lstadd_back_string(&out, empty);
+	}
+	return (out);
 }
 
 char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
 	size_t	idx;
+	t_list	*arg_list;
+	t_list	*expanded;
+	t_list	*lst;
 
-	args = ft_calloc((ft_lstsize(cmd.args) + 1), sizeof(char *));
-	idx = 0;
-	while (cmd.args && cmd.args->content)
+	expanded = NULL;
+	arg_list = cmd.args;
+	while (arg_list && arg_list->content)
 	{
-		expand_arg(&((t_arg_data *)cmd.args->content)->string, shell_data);
-		if (((t_arg_data *)cmd.args->content)->string.content)
+		lst = expand_arg(&((t_arg_data *)arg_list->content)->string,
+				shell_data);
+		while (lst)
+			ft_lstadd_back(&expanded, ft_lstpop_front(&lst));
+		arg_list = arg_list->next;
+	}
+	args = ft_calloc((ft_lstsize(expanded) + 1), sizeof(char *));
+	idx = 0;
+	arg_list = expanded;
+	while (arg_list && arg_list->content)
+	{
+		if (((t_arg_data *)arg_list->content)->string.content)
 		{
-			args[idx] = ((t_string *)cmd.args->content)->content;
+			args[idx] = ft_strdup(((t_string *)arg_list->content)->content);
+			// printf("arg: |%s|\n", args[idx]);
 			idx++;
 		}
-		cmd.args = cmd.args->next;
+		arg_list = arg_list->next;
 	}
 	return (args);
 }

@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static bool	is_arg(char c)
 {
@@ -100,7 +101,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 	{
 		token.type = TK_REDIR;
 		token.data.redir.type = REDIR_IN;
-		token.data.redir.fd = 0;
+		token.data.redir.fd = STDIN_FILENO;
 		(*idx)++;
 		if (str->content[*idx] == '<')
 		{
@@ -119,7 +120,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 	{
 		token.type = TK_REDIR;
 		token.data.redir.type = REDIR_OUT;
-		token.data.redir.fd = 1;
+		token.data.redir.fd = STDOUT_FILENO;
 		(*idx)++;
 		if (str->content[*idx] == '>')
 		{
