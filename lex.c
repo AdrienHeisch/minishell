@@ -108,7 +108,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 			token.data.redir.type = REDIR_HEREDOC;
 			(*idx)++;
 		}
-		while (str->content[*idx] == ' ')
+		while (is_whitespace(str->content[*idx]))
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
 			return (errno = 1, NULL);
@@ -127,7 +127,7 @@ static t_token	*get_token(t_string *str, size_t *idx)
 			token.data.redir.type = REDIR_APPEND;
 			(*idx)++;
 		}
-		while (str->content[*idx] == ' ')
+		while (is_whitespace(str->content[*idx]))
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
 			return (errno = 1, NULL);
@@ -163,11 +163,8 @@ t_list	*lex(t_string *str)
 	idx = 0;
 	while (idx < str->length)
 	{
-		if (str->content[idx] == ' ')
-		{
+		while (idx < str->length && is_whitespace(str->content[idx]))
 			idx++;
-			continue ;
-		}
 		errno = 0;
 		token = get_token(str, &idx);
 		if (errno)

@@ -38,15 +38,21 @@ bool	is_str_all(char *s, int f(int))
 	return (true);
 }
 
-bool	is_whitespace(t_string *str)
+bool	is_whitespace(char c)
+{
+	static const char	*list = " \t\n";
+
+	return (ft_strchr(list, c) != NULL);
+}
+
+bool	is_only_whitespace(t_string *str)
 {
 	size_t	idx;
 
 	idx = 0;
 	while (idx < str->length)
 	{
-		if (str->content[idx] != ' ' && str->content[idx] != '\t'
-			&& str->content[idx] != '\n')
+		if (!is_whitespace(str->content[idx]))
 			return (false);
 		idx++;
 	}

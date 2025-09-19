@@ -194,7 +194,8 @@ void						print_error_code(char *path, int code);
 
 void						no_op(void *p);
 void						lstclear_string(void *str);
-bool						is_whitespace(t_string *str);
+bool						is_whitespace(char c);
+bool						is_only_whitespace(t_string *str);
 bool						is_str_all(char *s, int f(int));
 char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,

@@ -122,7 +122,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	t_list	*tokens;
 	t_expr	*expr;
 
-	if (is_whitespace(str))
+	if (is_only_whitespace(str))
 	{
 		data->status = 0;
 		return ;
