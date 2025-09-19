@@ -23,7 +23,10 @@ void	builtin_unset(char **args, t_shell_data *shell_data)
 		shell_data->status = 2;
 		return ;
 	}
-	if (args[idx])
+	while (args[idx])
+	{
 		ft_unsetenv(&shell_data->envp, args[idx]);
+		idx++;
+	}
 	shell_data->status = 0;
 }
