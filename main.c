@@ -89,6 +89,7 @@ static char	*make_prompt(char **envp)
 {
 	t_string	prompt;
 	char		*s;
+	char		*h;
 
 	prompt = ft_string_new();
 	s = ft_getenv(envp, "USER");
@@ -104,7 +105,14 @@ static char	*make_prompt(char **envp)
 	s = ft_getenv(envp, "PWD");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
-	ft_string_cat(&prompt, s);
+	h = ft_getenv(envp, "HOME");
+	if (h && !ft_strncmp(s, h, ft_strlen(h)))
+	{
+		ft_string_cat(&prompt, "~");
+		ft_string_cat(&prompt, s + ft_strlen(h));
+	}
+	else
+		ft_string_cat(&prompt, s);
 	ft_string_cat(&prompt, "$ ");
 	return (prompt.content);
 }
