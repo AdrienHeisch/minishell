@@ -17,13 +17,13 @@
 void	print_token(t_token *token)
 {
 	if (token->type == TK_ARG)
-		printf("ARG: |%s|\n", ft_string_get(&token->data.arg.string));
+		printf("ARG: |%s|", ft_string_get(&token->data.arg.string));
 	else if (token->type == TK_PIPE)
-		printf("|\n");
+		printf("|");
 	else if (token->type == TK_OR)
-		printf("||\n");
+		printf("||");
 	else if (token->type == TK_AND)
-		printf("&&\n");
+		printf("&&");
 	else if (token->type == TK_REDIR)
 	{
 		if (token->data.redir.type == REDIR_IN)
@@ -36,14 +36,15 @@ void	print_token(t_token *token)
 			printf(">> ");
 		else
 			exit(MS_UNREACHABLE);
-		printf("%s\n", token->data.redir.file_name.content);
+		printf("%s", token->data.redir.file_name.content);
 	}
 	else if (token->type == TK_PAROPEN)
-		printf("(\n");
+		printf("(");
 	else if (token->type == TK_PARCLOSE)
-		printf(")\n");
+		printf(")");
 	else if (token->type == TK_INVALID)
-		printf("!!! INVALID !!!\n");
+		printf("!!! INVALID !!!");
 	else
 		exit(MS_UNREACHABLE);
+	printf("\n");
 }
