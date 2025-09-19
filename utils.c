@@ -218,6 +218,27 @@ static char	*process_heredoc_delim(char *delim)
 	return (out.content);
 }
 
+t_string	readline_lite(void)
+{
+	t_string	line;
+	char		c;
+	ssize_t		n_read;
+
+	line = ft_string_new();
+	while (1)
+	{
+		n_read = read(STDIN_FILENO, &c, 1);
+		if (n_read == -1)
+			return (ft_string_destroy(&line), line);
+		if (n_read == 0)
+			return (ft_string_destroy(&line), line);
+		if (c == '\n')
+			return (line);
+		if (!ft_string_ncat(&line, &c, 1))
+			return (ft_string_destroy(&line), line);
+	}
+}
+
 void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 {
 	char		*no_expand;
@@ -232,7 +253,10 @@ void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 		delim = no_expand;
 	while (1)
 	{
-		line = ft_string_from(readline("> "));
+		if (isatty(STDIN_FILENO))
+			line = ft_string_from(readline("> "));
+		else
+			line = readline_lite();
 		if (!line.content)
 			break ; // TODO error handling
 		if (!ft_strncmp(line.content, delim, size_t_max(line.length,

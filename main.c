@@ -197,7 +197,10 @@ int	main(int argc, char **argv, char **envp)
 	{
 		ft_string_destroy(&str);
 		prompt = make_prompt(data.envp);
-		str = ft_string_from(readline(prompt));
+		if (isatty(STDIN_FILENO))
+			str = ft_string_from(readline(prompt));
+		else
+			str = readline_lite();
 		if (received_signal > 0)
 		{
 			data.status = 128 + received_signal;

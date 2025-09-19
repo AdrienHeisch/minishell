@@ -201,6 +201,7 @@ char						*ft_getenv(char **envp, const char *name);
 void						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 void						ft_unsetenv(char ***envp, const char *name);
+t_string					readline_lite(void);
 void						prompt_heredoc(int out, char *delim,
 								t_shell_data *shell_data);
 int							find_options(int *flags, char **args, size_t *idx,
