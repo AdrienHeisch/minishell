@@ -165,10 +165,8 @@ int	resolve_exec_path(char **args, t_shell_data *shell_data)
 	if (ft_strlen(args[0]) == 0)
 		return (127);
 	initial_path = args[0];
-	if (!ft_strchr(args[0], '/') || access(args[0], F_OK) == -1)
-	{
+	if (!ft_strchr(args[0], '/') && access(args[0], F_OK) == -1)
 		args[0] = find_cmd_path(args[0], shell_data->envp);
-	}
 	if (!args[0])
 	{
 		args[0] = initial_path;

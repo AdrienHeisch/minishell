@@ -285,9 +285,9 @@ int	find_options(int *flags, char **args, size_t *idx, char *options)
 	*flags = 0;
 	while (args[*idx] && args[*idx][0] == '-')
 	{
-		if (args[*idx][1] == '-')
-			return (-1);
-		if (!options)
+		if (!args[*idx][1])
+			break ;
+		if (args[*idx][1] == '-' || !options)
 			return (-1);
 		if (!parse_options(args[*idx], flags, options))
 			return (-1);
