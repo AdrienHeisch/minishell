@@ -48,12 +48,16 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 	var_from = var->content;
 	if (exp->length == 0)
 	{
-		while (*var_from == ' ')
+		while (is_whitespace(*var_from))
 			var_from++;
 	}
 	while (true)
 	{
 		var_to = ft_strchr(var_from, ' ');
+		if (!var_to)
+			var_to = ft_strchr(var_from, '\t');
+		if (!var_to)
+			var_to = ft_strchr(var_from, '\n');
 		if (!var_to)
 		{
 			ft_string_cat(exp, var_from);
@@ -63,7 +67,7 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 		lstadd_back_string(out, *exp);
 		*exp = ft_string_new();
 		var_from = var_to;
-		while (*var_from == ' ')
+		while (is_whitespace(*var_from))
 			var_from++;
 	}
 }
@@ -83,7 +87,7 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 	{
 		if (!del)
 		{
-			if (s[idx] == ' ')
+			if (is_whitespace(s[idx]))
 				break ;
 			if (s[idx] == '\'' || s[idx] == '"')
 			{

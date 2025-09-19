@@ -21,6 +21,8 @@ static bool	is_fully_numeric(const char *s)
 {
 	size_t	idx;
 
+	if (!*s)
+		return (false);
 	idx = 0;
 	if (s[idx] == '-' || s[idx] == '+')
 		idx++;
@@ -40,7 +42,7 @@ static long	checked_atol(const char *nptr)
 	long	add;
 
 	sign = 1;
-	while ((*nptr >= 9 && *nptr <= 13) || *nptr == ' ')
+	while ((*nptr >= 9 && *nptr <= 13) || is_whitespace(*nptr))
 		nptr++;
 	if (*nptr == '+' || *nptr == '-')
 	{

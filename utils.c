@@ -42,6 +42,8 @@ bool	is_whitespace(char c)
 {
 	static const char	*list = " \t\n";
 
+	if (!c)
+		return (false);
 	return (ft_strchr(list, c) != NULL);
 }
 

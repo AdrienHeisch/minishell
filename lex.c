@@ -39,9 +39,11 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 {
 	t_string	arg;
 	char		del;
+	bool		can_be_null;
 
 	arg = ft_string_new();
 	del = '\0';
+	can_be_null = true;
 	while (*idx < str->length)
 	{
 		if (!del)
@@ -49,7 +51,10 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 			if (!is_arg(str->content[*idx]))
 				break ;
 			if (str->content[*idx] == '\'' || str->content[*idx] == '"')
+			{
 				del = str->content[*idx];
+				can_be_null = false;
+			}
 		}
 		else if (del == str->content[*idx])
 			del = '\0';
@@ -59,6 +64,8 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 	// STRICTLY NOT INTERPRETING UNCLOSED QUOTES RATHER THAN RAISING AN ERROR
 	// if (del)
 	// 	ft_string_destroy(&arg);
+	if (arg.length == 0 && can_be_null)
+		ft_string_destroy(&arg);
 	return (arg);
 }
 
