@@ -92,6 +92,7 @@ static char	*make_prompt(char **envp)
 	char		*h;
 
 	prompt = ft_string_new();
+	ft_string_cat(&prompt, "\033[32m");
 	s = ft_getenv(envp, "USER");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
@@ -113,6 +114,7 @@ static char	*make_prompt(char **envp)
 	}
 	else
 		ft_string_cat(&prompt, s);
+	ft_string_cat(&prompt, "\033[0m");
 	ft_string_cat(&prompt, "$ ");
 	return (prompt.content);
 }
