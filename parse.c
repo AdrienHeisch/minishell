@@ -23,16 +23,10 @@ t_expr	*parse(t_list **tokens)
 	while (*tokens)
 	{
 		if (((t_token *)(*tokens)->content)->type == TK_PARCLOSE)
-			break ;
+			return (print_error("unexpected token ')'"), expr);
 		new = parse_expr(tokens, &expr);
-		if (!new)
-			return (free_expr(expr), NULL);
-		if (expr)
-		{
-			print_expr(expr);
-			print_expr(new);
-			exit(MS_LOGIC_ERROR);
-		}
+		if (!new || expr)
+			return (free_expr(new), free_expr(expr), NULL);
 		expr = new;
 	}
 	// print_expr(expr);

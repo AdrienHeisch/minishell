@@ -132,6 +132,12 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	tokens = lex(str);
 	// ft_lstiter(tokens, (void (*)(void *))print_token);
 	expr = parse(&tokens);
+	if (tokens)
+	{
+		ft_lstclear(&tokens, (void(*)(void *))free_token);
+		data->status = 2;
+		return ;
+	}
 	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
 	{
