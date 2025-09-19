@@ -134,6 +134,8 @@ static char	*find_cmd_path(char *cmd, char **envp)
 
 	path = ft_getenv(envp, "PATH");
 	if (!path || !*path)
+		path = ft_getenv(envp, "PWD");
+	if (!path || !*path)
 		return (NULL);
 	dirs = split_path(path);
 	if (!dirs)
@@ -144,7 +146,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 		path = join_path_cmd(dirs[i], cmd);
 		if (!path)
 			return (free_tab_and_null(&dirs), NULL);
-		if (access(path, X_OK) == 0)
+		if (access(path, F_OK) == 0)
 		{
 			free_tab_and_null(&dirs);
 			return (path);
@@ -165,7 +167,7 @@ int	resolve_exec_path(char **args, t_shell_data *shell_data)
 	if (ft_strlen(args[0]) == 0)
 		return (127);
 	initial_path = args[0];
-	if (!ft_strchr(args[0], '/') && access(args[0], F_OK) == -1)
+	if (!ft_strchr(args[0], '/'))
 		args[0] = find_cmd_path(args[0], shell_data->envp);
 	if (!args[0])
 	{
