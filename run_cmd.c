@@ -42,7 +42,10 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		free_exec_info(&cmd);
-		exit(126);
+		if (errno == EACCES)
+			exit(126);
+		else
+			exit(127);
 	}
 }
 

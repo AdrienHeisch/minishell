@@ -70,7 +70,7 @@ static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
 	if (expr->type == EX_CMD)
 	{
 		if (resolve_redirections(expr, shell_data))
-			exit(-1);
+			exit(1);
 		t_exec_info exec = make_exec_info(expr->data.cmd, expr->fd_in,
 				expr->fd_out, shell_data); // HACK PAREN/CMD
 		if (exec.error >= 0)
@@ -109,9 +109,8 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 	}
 	if (pid == 0)
 	{
-		// FIXME how do we handle this ?
 		if (resolve_redirections(expr, shell_data))
-			exit(-1);
+			exit(1);
 		close(next_fd[0]);
 		if (expr->fd_in == STDIN_FILENO)
 			expr->fd_in = *prev_fd;
