@@ -181,7 +181,28 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 					&& is_var_name_char(arg->content[idx + len]))
 					len++;
 				ft_string_ncat(&var, &arg->content[idx], len);
+				idx += len;
 				expand_var(&var, shell_data);
+				t_string potential_pattern = ft_string_new();
+				ft_string_cat(&potential_pattern, var.content);
+				ft_string_cat(&potential_pattern, &arg->content[idx]);
+				size_t pattern_len;
+				pattern = get_wildcard_pattern(potential_pattern.content, &pattern_len);
+				ft_string_destroy(&potential_pattern);
+				if (pattern && del == '\0')
+				{
+					idx += pattern_len - var.length;
+					wildcard = expand_wildcards(pattern);
+					if (wildcard)
+					{
+						while (wildcard)
+							ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
+						ft_string_destroy(&var);
+						free(pattern);
+						continue;
+					}
+				}
+				free(pattern);
 				if (var.length == 0)
 					has_empty_var = true;
 				else if (del == '\0')
@@ -189,7 +210,6 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 				else
 					ft_string_cat(&exp, var.content);
 				ft_string_destroy(&var);
-				idx += len;
 				continue ;
 			}
 			if (ft_isdigit(arg->content[idx + 1]))
