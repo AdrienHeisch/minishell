@@ -44,7 +44,7 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 		if (redir->type != REDIR_HEREDOC && expand_redir(&redir->file_name,
 				shell_data))
 		{
-			print_error("ambiguous redirection");
+			print_error("ambiguous redirect");
 			redir_list = redir_list->next;
 			return (close_redirections(expr->fd_in, expr->fd_out), 1);
 		}
