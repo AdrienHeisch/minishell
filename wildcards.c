@@ -113,8 +113,7 @@ t_list	*expand_wildcards(char *pattern)
 			ent = readdir(dir);
 			if (!ent)
 				break ;
-			if (!ft_strncmp(ent->d_name, ".", 2) || !ft_strncmp(ent->d_name,
-					"..", 3))
+			if (!ft_strncmp(ent->d_name, ".", 1))
 				continue ;
 			if (is_correct_pattern(ent->d_name, pattern))
 			{
