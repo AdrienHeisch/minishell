@@ -100,6 +100,7 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 
 	if (pipe(next_fd) == -1)
 		exit(-1);
+	int redir_res = resolve_redirections(expr, shell_data);
 	pid = fork();
 	if (pid == -1)
 	{
@@ -110,7 +111,7 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 	}
 	if (pid == 0)
 	{
-		if (resolve_redirections(expr, shell_data))
+		if (redir_res)
 			exit(1);
 		close(next_fd[0]);
 		if (expr->fd_in == STDIN_FILENO)
@@ -124,6 +125,7 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 		run_child(expr, shell_data);
 		exit(MS_UNREACHABLE);
 	}
+	close_redirections(expr->fd_in, expr->fd_out);
 	close_redirections(*prev_fd, next_fd[1]);
 	*prev_fd = next_fd[0];
 }
