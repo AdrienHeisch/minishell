@@ -165,22 +165,16 @@ int	resolve_exec_path(char **args, t_shell_data *shell_data)
 	if (!args[0])
 		return (0);
 	if (ft_strlen(args[0]) == 0)
-		return (127);
+		return (ERR_COMMAND_NOT_FOUND);
 	initial_path = args[0];
 	if (!ft_strchr(args[0], '/'))
 		args[0] = find_cmd_path(args[0], shell_data->envp);
 	if (!args[0])
-	{
-		args[0] = initial_path;
-		return (127);
-	}
+		return (args[0] = initial_path, ERR_COMMAND_NOT_FOUND);
 	if (initial_path != args[0])
 		free(initial_path);
 	dir = opendir(args[0]);
 	if (dir != NULL)
-	{
-		closedir(dir);
-		return (126);
-	}
+		return (closedir(dir), ERR_PERMISSION);
 	return (-1);
 }

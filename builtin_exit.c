@@ -64,35 +64,34 @@ static long	checked_atol(const char *nptr)
 	return (n);
 }
 
-void	builtin_exit(char **args, t_shell_data *shell_data)
+int	builtin_exit(char **args, t_shell_data *shell_data)
 {
 	long		exit_code;
 	t_string	error;
 
-	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		ft_putstr_fd("exit\n", 2);
+	if (isatty(STDERR_FILENO))
+		ft_putstr_fd("exit\n", STDERR_FILENO);
 	exit_code = 0;
 	if (args[1])
 	{
 		exit_code = checked_atol(args[1]);
 		if (errno != 0 || !is_fully_numeric(args[1]))
 		{
-			error = ft_string_from("exit: ");
+			error = ft_string_new();
+			if (!ft_string_cat(&error, "exit: "))
+				exit(ERR_SYSTEM);
 			if (!ft_string_cat(&error, args[1]))
-				exit(ERR_ALLOC);
+				exit(ERR_SYSTEM);
 			if (!ft_string_cat(&error, " numeric argument required"))
-				exit(ERR_ALLOC);
+				exit(ERR_SYSTEM);
 			print_error(error.content);
 			ft_string_destroy(&error);
 			free_shell_data(shell_data);
-			exit(2);
+			exit(ERR_SYNTAX_ERROR);
 		}
 		if (args[2])
-		{
-			print_error("exit: too many arguments");
-			shell_data->status = 1;
-			return ;
-		}
+			return (print_error("exit: too many arguments"),
+				ERR_COMMAND_FAILED);
 	}
 	free_shell_data(shell_data);
 	exit(exit_code);

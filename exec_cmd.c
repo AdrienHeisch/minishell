@@ -21,7 +21,7 @@ void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 
 	if (resolve_redirections(expr, shell_data))
 	{
-		shell_data->status = 1;
+		shell_data->status = ERR_COMMAND_FAILED;
 		return ;
 	}
 	cmd = expr->data.cmd;
@@ -44,7 +44,7 @@ void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 		if (WIFEXITED(status_location))
 			shell_data->status = WEXITSTATUS(status_location);
 		else
-			shell_data->status = 0;
+			shell_data->status = ERR_SUCCESS;
 	}
 	free_exec_info(&exec);
 	close_redirections(expr->fd_in, expr->fd_out);

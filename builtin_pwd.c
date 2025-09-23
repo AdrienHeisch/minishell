@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
+int	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 {
 	char	*cwd;
 	int		flags;
@@ -24,10 +24,7 @@ void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 
 	idx = 1;
 	if (find_options(&flags, args, &idx, ""))
-	{
-		shell_data->status = 2;
-		return ;
-	}
+		return (ERR_SYNTAX_ERROR);
 	free_cwd = false;
 	cwd = getcwd(NULL, 0);
 	if (cwd)
@@ -41,5 +38,5 @@ void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 	ft_putstr_fd("\n", fd_out);
 	if (free_cwd)
 		free(cwd);
-	shell_data->status = 0;
+	return (ERR_SUCCESS);
 }

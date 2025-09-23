@@ -22,15 +22,18 @@ void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 
 	pid = fork();
 	if (pid == -1)
-		exit(42);
+	{
+		print_error_system(NULL);
+		exit(ERR_SYSTEM);
+	}
 	if (pid == 0)
 	{
 		if (resolve_redirections(paren, shell_data))
-			exit(1);
+			exit(ERR_COMMAND_FAILED);
 		if (dup2(paren->fd_in, STDIN_FILENO) == -1)
-			exit(-1);
+			exit(ERR_COMMAND_FAILED);
 		if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
-			exit(-1);
+			exit(ERR_COMMAND_FAILED);
 		exec_expr(paren->data.paren.inner, shell_data);
 		close_redirections(paren->fd_in, paren->fd_out);
 		close(STDIN_FILENO);
@@ -43,5 +46,5 @@ void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 	if (WIFEXITED(status_location))
 		shell_data->status = WEXITSTATUS(status_location);
 	else
-		shell_data->status = 0;
+		shell_data->status = ERR_SUCCESS;
 }

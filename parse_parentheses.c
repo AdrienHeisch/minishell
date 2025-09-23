@@ -22,7 +22,7 @@ t_expr	*parse_parentheses(t_list **tokens)
 
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(42);
+		exit(ERR_SYSTEM);
 	expr->type = EX_PARENTHESES;
 	expr->fd_in = STDIN_FILENO;
 	expr->fd_out = STDOUT_FILENO;

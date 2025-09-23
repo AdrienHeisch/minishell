@@ -23,19 +23,19 @@ bool	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
 	if (len == 0)
 		return (false);
 	if (ft_strncmp("cd", path, len) == 0)
-		builtin_cd(cmd.args, shell_data);
+		shell_data->status = builtin_cd(cmd.args, shell_data);
 	else if (ft_strncmp("echo", path, len) == 0)
-		builtin_echo(cmd.args, shell_data, cmd.fd_out);
+		shell_data->status = builtin_echo(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("env", path, len) == 0)
-		builtin_env(cmd.args, shell_data, cmd.fd_out);
+		shell_data->status = builtin_env(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("exit", path, len) == 0)
-		builtin_exit(cmd.args, shell_data);
+		shell_data->status = builtin_exit(cmd.args, shell_data);
 	else if (ft_strncmp("export", path, len) == 0)
-		builtin_export(cmd.args, shell_data, cmd.fd_out);
+		shell_data->status = builtin_export(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("pwd", path, len) == 0)
-		builtin_pwd(cmd.args, shell_data, cmd.fd_out);
+		shell_data->status = builtin_pwd(cmd.args, shell_data, cmd.fd_out);
 	else if (ft_strncmp("unset", path, len) == 0)
-		builtin_unset(cmd.args, shell_data);
+		shell_data->status = builtin_unset(cmd.args, shell_data);
 	else
 		return (false);
 	return (true);

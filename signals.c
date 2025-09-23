@@ -26,16 +26,16 @@ static void	handle_sigint(int sig)
 	{
 		str = ft_string_new();
 		if (!str.content)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		if (!ft_string_cat(&str, rl_line_buffer))
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		if (!ft_string_cat(&str, "^C"))
-			exit(ERR_ALLOC);
-		rl_replace_line(str.content, 0);
+			exit(ERR_SYSTEM);
+		rl_replace_line(str.content, false);
 		rl_redisplay();
 		rl_on_new_line();
-		printf("\n");
-		rl_replace_line("", 0);
+		ft_putstr_fd("\n", STDOUT_FILENO);
+		rl_replace_line("", false);
 		rl_redisplay();
 	}
 }

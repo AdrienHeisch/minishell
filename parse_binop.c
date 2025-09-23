@@ -38,7 +38,7 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	expr->type = EX_BINOP;
 	expr->redirs = NULL;
 	token = ft_lstpop_front(tokens);

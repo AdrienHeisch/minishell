@@ -69,7 +69,7 @@ char	*ft_getenv(char **envp, const char *name)
 
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	len = ft_strlen(name_suffix);
 	idx = 0;
 	while (envp[idx])
@@ -95,14 +95,14 @@ static void	add_to_env(char ***envp, const char *name, const char *value)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	ft_memcpy(new, old, len * sizeof(char *));
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	new[len] = ft_strjoin(name_suffix, value);
 	if (!new[len])
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	new[len + 1] = NULL;
 	free(name_suffix);
 	free(old);
@@ -127,7 +127,7 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 		return ;
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	len = ft_strlen(name_suffix);
 	idx = 0;
 	while ((*envp)[idx])
@@ -162,10 +162,10 @@ void	ft_unsetenv(char ***envp, const char *name)
 		len++;
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	new = malloc(len * sizeof(char *));
 	if (!new)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	idx = 0;
 	n_skipped = 0;
 	while (idx + n_skipped < len)
@@ -208,14 +208,14 @@ static char	*process_heredoc_delim(char *delim)
 		return (NULL);
 	out = ft_string_new();
 	if (!out.content)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	s = delim;
 	while (*s)
 	{
 		if (*s != *quote)
 		{
 			if (!ft_string_ncat(&out, s, 1))
-				exit(ERR_ALLOC);
+				exit(ERR_SYSTEM);
 		}
 		s++;
 	}
@@ -233,7 +233,7 @@ t_string	readline_lite(void)
 
 	line = ft_string_new();
 	if (!line.content)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	while (1)
 	{
 		n_read = read(STDIN_FILENO, &c, 1);
@@ -342,11 +342,11 @@ void	lstadd_back_string(t_list **list, t_string str)
 
 	cell = (t_string *)malloc(sizeof(t_string));
 	if (!cell)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	*cell = str;
 	new = ft_lstnew(cell);
 	if (!new)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	ft_lstadd_back(list, new);
 }
 

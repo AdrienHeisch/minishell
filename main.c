@@ -33,13 +33,13 @@ static char	**dup_env(char **envp)
 		len++;
 	dup = ft_calloc(len + 1, sizeof(char *));
 	if (!dup)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	idx = 0;
 	while (envp[idx])
 	{
 		dup[idx] = ft_strdup(envp[idx]);
 		if (!dup[idx])
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		idx++;
 	}
 	dup[len] = 0;
@@ -52,7 +52,7 @@ static char	**dup_env(char **envp)
 	{
 		char *new_shlvl = ft_itoa(ft_atoi(shlvl) + 1);
 		if (!new_shlvl)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		ft_setenv(&dup, "SHLVL", new_shlvl,
 			true);
 		free(new_shlvl);
@@ -74,18 +74,18 @@ static char	**make_export_list(char **envp)
 		len++;
 	list = ft_calloc(len + 1, sizeof(char *));
 	if (!list)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	idx = 0;
 	while (envp[idx])
 	{
 		split = ft_split(envp[idx], '=');
 		if (!split)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		if (!split[0])
 			exit(ERR_UNREACHABLE);
 		list[idx] = ft_strdup(split[0]);
 		if (!list[idx])
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		free_tab((void ***)&split);
 		idx++;
 	}
@@ -100,23 +100,23 @@ static char	*make_prompt(char **envp)
 
 	prompt = ft_string_new();
 	if (!prompt.content)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	if (!ft_string_cat(&prompt, "\033[32m"))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	s = ft_getenv(envp, "USER");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
 	if (!ft_string_cat(&prompt, s))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	if (!ft_string_cat(&prompt, "@"))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	s = ft_getenv(envp, "HOSTNAME");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
 	if (!ft_string_cat(&prompt, s))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	if (!ft_string_cat(&prompt, ":"))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	s = ft_getenv(envp, "PWD");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
@@ -124,19 +124,19 @@ static char	*make_prompt(char **envp)
 	if (h && !ft_strncmp(s, h, ft_strlen(h)))
 	{
 		if (!ft_string_cat(&prompt, "~"))
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		if (!ft_string_cat(&prompt, s + ft_strlen(h)))
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 	}
 	else
 	{
 		if (!ft_string_cat(&prompt, s))
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 	}
 	if (!ft_string_cat(&prompt, "\033[0m"))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	if (!ft_string_cat(&prompt, "$ "))
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	return (prompt.content);
 }
 
@@ -147,7 +147,7 @@ static int	parse_and_exec(t_string *str, t_shell_data *data, bool is_interactive
 
 	if (is_only_whitespace(str))
 	{
-		data->status = 0;
+		data->status = ERR_SUCCESS;
 		return (0);
 	}
 	tokens = lex(str);
@@ -156,7 +156,7 @@ static int	parse_and_exec(t_string *str, t_shell_data *data, bool is_interactive
 	if (tokens)
 	{
 		ft_lstclear(&tokens, (void(*)(void *))free_token);
-		data->status = 2;
+		data->status = ERR_SYNTAX_ERROR;
 		if (!is_interactive)
 			return (1);
 		return (0);
@@ -164,7 +164,7 @@ static int	parse_and_exec(t_string *str, t_shell_data *data, bool is_interactive
 	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
 	{
-		data->status = 2;
+		data->status = ERR_SYNTAX_ERROR;
 		if (!is_interactive)
 			return (1);
 		return (0);
@@ -181,6 +181,7 @@ void	free_shell_data(t_shell_data *shell_data)
 	free_tab((void ***)&shell_data->exported);
 }
 
+#include <string.h>
 int	main(int argc, char **argv, char **envp)
 {
 	t_string		str;
@@ -202,7 +203,7 @@ int	main(int argc, char **argv, char **envp)
 	{
 		tab = ft_split(argv[2], '\n');
 		if (!tab)
-			return (ERR_ALLOC);
+			return (ERR_SYSTEM);
 		idx = 0;
 		while (tab[idx])
 		{
@@ -242,7 +243,7 @@ int	main(int argc, char **argv, char **envp)
 	ft_string_destroy(&str);
 	restore_terminal_attributes(&tio);
 	if (isatty(STDERR_FILENO))
-		ft_putstr_fd("exit\n", 2);
+		ft_putstr_fd("exit\n", STDERR_FILENO);
 	free_shell_data(&data);
 	return (data.status);
 }

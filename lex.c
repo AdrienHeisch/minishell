@@ -43,7 +43,7 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 
 	arg = ft_string_new();
 	if (!arg.content)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	del = '\0';
 	can_be_null = true;
 	while (*idx < str->length)
@@ -61,7 +61,7 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 		else if (del == str->content[*idx])
 			del = '\0';
 		if (!ft_string_ncat(&arg, &str->content[*idx], 1))
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		(*idx)++;
 	}
 	// STRICTLY NOT INTERPRETING UNCLOSED QUOTES RATHER THAN RAISING AN ERROR
@@ -185,7 +185,7 @@ t_list	*lex(t_string *str)
 			break ;
 		new_list = ft_lstnew(token);
 		if (!new_list)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		ft_lstadd_back(&tokens, new_list);
 	}
 	return (tokens);

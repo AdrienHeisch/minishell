@@ -24,13 +24,13 @@ static int	allowed_char(int c)
 static int	is_valid_var(char *name)
 {
 	if (ft_strlen(name) == 0)
-		return (1);
+		return (ERR_COMMAND_FAILED);
 	if (ft_strchr(name, '!'))
-		return (1);
+		return (ERR_COMMAND_FAILED);
 	if (ft_isdigit(name[0]))
-		return (1);
+		return (ERR_COMMAND_FAILED);
 	if (!is_str_all(name, allowed_char))
-		return (1);
+		return (ERR_COMMAND_FAILED);
 	return (-1);
 }
 
@@ -46,31 +46,28 @@ void	export_var(char ***exported, const char *name)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	ft_memcpy(new, old, len * sizeof(char *));
 	new[len] = ft_strdup(name);
 	if (!new[len])
-		exit(ERR_ALLOC);
+		exit(ERR_SYSTEM);
 	new[len + 1] = NULL;
 	free(old);
 	*exported = new;
 }
 
-void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
+int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 {
 	size_t	idx;
 	char	**split;
 	char	*value;
 	int		valid_var_code;
 	int		flags;
+	int		status;
 
-	shell_data->status = 0;
 	idx = 1;
 	if (find_options(&flags, args, &idx, NULL))
-	{
-		shell_data->status = 2;
-		return ;
-	}
+		return (ERR_SYNTAX_ERROR);
 	if (!args[idx])
 	{
 		idx = 0;
@@ -86,25 +83,27 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 				ft_putstr_fd(value, fd_out);
 				ft_putstr_fd("\"", fd_out);
 			}
+			// TODO else ?
 			ft_putstr_fd("\n", fd_out);
 			idx++;
 		}
-		return ;
+		return (ERR_SUCCESS);
 	}
+	status = ERR_SUCCESS;
 	while (args[idx])
 	{
 		if (ft_strlen(args[idx]) == 0 || ft_strchr(args[idx], '=') == args[idx])
 		{
-			shell_data->status = 1;
+			status = ERR_COMMAND_FAILED;
 			idx++;
 			continue ;
 		}
 		split = ft_split(args[idx], '=');
 		if (!split)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		if (!split[0])
 		{
-			shell_data->status = 1;
+			status = ERR_COMMAND_FAILED;
 			idx++;
 			free_tab((void ***)&split);
 			continue ;
@@ -112,7 +111,7 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 		valid_var_code = is_valid_var(split[0]);
 		if (valid_var_code >= 0)
 		{
-			shell_data->status = valid_var_code;
+			status = valid_var_code;
 			idx++;
 			free_tab((void ***)&split);
 			continue ;
@@ -126,4 +125,5 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 		free_tab((void ***)&split);
 		idx++;
 	}
+	return (status);
 }

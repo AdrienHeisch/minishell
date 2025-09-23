@@ -56,10 +56,10 @@ static int	wait_all(int last_pid)
 		if (WIFEXITED(status_location))
 			exit_code = WEXITSTATUS(status_location);
 		else
-			exit_code = -1;
+			exit_code = 1;
 	}
 	else
-		exit_code = -1;
+		exit_code = 1;
 	while (waitpid(0, &status_location, 0) > 0)
 		;
 	return (exit_code);
@@ -70,7 +70,7 @@ static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
 	if (expr->type == EX_CMD)
 	{
 		if (resolve_redirections(expr, shell_data))
-			exit(1);
+			exit(ERR_COMMAND_FAILED);
 		t_exec_info exec = make_exec_info(expr->data.cmd, expr->fd_in,
 				expr->fd_out, shell_data); // HACK PAREN/CMD
 		if (exec.error >= 0)
@@ -99,7 +99,7 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 	pid_t	pid;
 
 	if (pipe(next_fd) == -1)
-		exit(-1);
+		exit(ERR_SYSTEM);
 	int redir_res = resolve_redirections(expr, shell_data);
 	pid = fork();
 	if (pid == -1)
@@ -107,12 +107,12 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 		close(*prev_fd);
 		close(next_fd[0]);
 		close(next_fd[1]);
-		exit(-1);
+		exit(ERR_SYSTEM);
 	}
 	if (pid == 0)
 	{
 		if (redir_res)
-			exit(1);
+			exit(ERR_COMMAND_FAILED);
 		close(next_fd[0]);
 		if (expr->fd_in == STDIN_FILENO)
 			expr->fd_in = *prev_fd;
@@ -143,7 +143,7 @@ static void	build_pipeline(t_list **pipeline, t_binop pipe)
 	{
 		t_list *new = ft_lstnew(pipe.left);
 		if (!new)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		ft_lstadd_back(pipeline, new);
 	}
 	else
@@ -152,7 +152,7 @@ static void	build_pipeline(t_list **pipeline, t_binop pipe)
 	{
 		t_list *new = ft_lstnew(pipe.right);
 		if (!new)
-			exit(ERR_ALLOC);
+			exit(ERR_SYSTEM);
 		ft_lstadd_back(pipeline, new);
 	}
 	else

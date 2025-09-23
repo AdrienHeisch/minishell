@@ -45,7 +45,7 @@ static int	is_correct_pattern(char *name, char *pattern)
 				len++;
 			target = ft_substr(pattern, p_idx + 1, len);
 			if (!target)
-				exit(42);
+				exit(ERR_SYSTEM);
 			if (*target)
 			{
 				found = ft_strnstr(name + n_idx, target, ft_strlen(name) + 1);
@@ -119,9 +119,9 @@ t_list	*expand_wildcards(char *pattern)
 			{
 				name = ft_string_new();
 				if (!name.content)
-					exit(ERR_ALLOC);
+					exit(ERR_SYSTEM);
 				if (!ft_string_cat(&name, ent->d_name))
-					exit(ERR_ALLOC);
+					exit(ERR_SYSTEM);
 				lstadd_back_string(&ret, name);
 			}
 		}

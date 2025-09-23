@@ -17,18 +17,18 @@
 # include <stdbool.h>
 # include <stdio.h>
 
-extern int					received_signal;
+# define ERR_SUCCESS 0
+# define ERR_COMMAND_FAILED 1
+# define ERR_SYNTAX_ERROR 2
+# define ERR_USAGE 3
+# define ERR_UNREACHABLE 4
+# define ERR_LOGIC_ERROR 5
+# define ERR_SYSTEM 6
 
-enum						e_error
-{
-	ERR_SUCCESS,
-	ERR_COMMAND_FAILED,
-	ERR_SYNTAX_ERROR,
-	ERR_USAGE,
-	ERR_ALLOC,
-	ERR_UNREACHABLE,
-	ERR_LOGIC_ERROR,
-};
+# define ERR_PERMISSION 126
+# define ERR_COMMAND_NOT_FOUND 127
+
+extern int					received_signal;
 
 typedef struct s_shell_data
 {
@@ -159,17 +159,17 @@ int							fork_run_cmd(t_exec_info exec,
 bool						is_builtin(char *name);
 bool						exec_builtin(t_exec_info args,
 								t_shell_data *shell_data);
-void						builtin_cd(char **args, t_shell_data *shell_data);
-void						builtin_echo(char **args, t_shell_data *shell_data,
+int							builtin_cd(char **args, t_shell_data *shell_data);
+int							builtin_echo(char **args, t_shell_data *shell_data,
 								int fd_out);
-void						builtin_env(char **args, t_shell_data *shell_data,
+int							builtin_env(char **args, t_shell_data *shell_data,
 								int fd_out);
-void						builtin_exit(char **args, t_shell_data *shell_data);
-void						builtin_export(char **args,
+int							builtin_exit(char **args, t_shell_data *shell_data);
+int							builtin_export(char **args,
 								t_shell_data *shell_data, int fd_out);
-void						builtin_unset(char **args,
+int							builtin_unset(char **args,
 								t_shell_data *shell_data);
-void						builtin_pwd(char **args, t_shell_data *shell_data,
+int							builtin_pwd(char **args, t_shell_data *shell_data,
 								int fd_out);
 void						export_var(char ***exported, const char *name);
 
@@ -190,6 +190,7 @@ int							resolve_redirections(t_expr *expr,
 void						close_redirections(int fd_in, int fd_out);
 
 void						print_error(char *err);
+void						print_error_system(char *prefix);
 void						print_error_code(char *path, int code);
 
 void						no_op(void *p);

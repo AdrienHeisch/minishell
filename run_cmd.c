@@ -32,9 +32,9 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 	else
 	{
 		if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
-			exit(-1);
+			exit(ERR_SYSTEM);
 		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
-			exit(-1);
+			exit(ERR_SYSTEM);
 		execve(cmd.args[0], cmd.args, shell_data->envp);
 		// TODO shell scripts ?
 		print_error_code(cmd.args[0], errno);
@@ -43,9 +43,9 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 		close(STDOUT_FILENO);
 		free_exec_info(&cmd);
 		if (errno == EACCES)
-			exit(126);
+			exit(ERR_PERMISSION);
 		else
-			exit(127);
+			exit(ERR_COMMAND_NOT_FOUND);
 	}
 }
 
@@ -55,7 +55,7 @@ int	fork_run_cmd(t_exec_info exec, t_shell_data *shell_data)
 
 	pid = fork();
 	if (pid == -1)
-		exit(-1);
+		exit(ERR_SYSTEM);
 	if (pid == 0)
 		run_cmd(exec, shell_data);
 	return (pid);
