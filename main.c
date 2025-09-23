@@ -119,7 +119,7 @@ static char	*make_prompt(char **envp)
 	return (prompt.content);
 }
 
-static void	parse_and_exec(t_string *str, t_shell_data *data)
+static int	parse_and_exec(t_string *str, t_shell_data *data, bool is_interactive)
 {
 	t_list	*tokens;
 	t_expr	*expr;
@@ -127,7 +127,7 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	if (is_only_whitespace(str))
 	{
 		data->status = 0;
-		return ;
+		return (0);
 	}
 	tokens = lex(str);
 	// ft_lstiter(tokens, (void (*)(void *))print_token);
@@ -136,17 +136,22 @@ static void	parse_and_exec(t_string *str, t_shell_data *data)
 	{
 		ft_lstclear(&tokens, (void(*)(void *))free_token);
 		data->status = 2;
-		return ;
+		if (!is_interactive)
+			return (1);
+		return (0);
 	}
 	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
 	{
 		data->status = 2;
-		return ;
+		if (!is_interactive)
+			return (1);
+		return (0);
 	}
 	exec_expr(expr, data);
 	free_expr(expr);
 	add_history(str->content);
+	return (0);
 }
 
 void	free_shell_data(t_shell_data *shell_data)
@@ -180,7 +185,7 @@ int	main(int argc, char **argv, char **envp)
 		{
 			str = ft_string_from(tab[idx]);
 			// ft_string_cat(&str, tab[idx]);
-			parse_and_exec(&str, &data);
+			parse_and_exec(&str, &data, false);
 			ft_string_destroy(&str);
 			idx++;
 		}
@@ -208,12 +213,13 @@ int	main(int argc, char **argv, char **envp)
 		}
 		if (!str.content)
 			break ;
-		parse_and_exec(&str, &data);
+		if (parse_and_exec(&str, &data, isatty(STDIN_FILENO)))
+			break ;
 		received_signal = 0;
 	}
 	ft_string_destroy(&str);
 	restore_terminal_attributes(&tio);
-	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+	if (isatty(STDERR_FILENO))
 		ft_putstr_fd("exit\n", 2);
 	free_shell_data(&data);
 	return (data.status);
