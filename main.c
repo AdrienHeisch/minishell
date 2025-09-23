@@ -99,6 +99,8 @@ static char	*make_prompt(char **envp)
 	char		*h;
 
 	prompt = ft_string_new();
+	if (!prompt.content)
+		exit(ERR_ALLOC);
 	if (!ft_string_cat(&prompt, "\033[32m"))
 		exit(ERR_ALLOC);
 	s = ft_getenv(envp, "USER");

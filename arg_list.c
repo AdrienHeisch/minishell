@@ -23,6 +23,8 @@ static void	expand_var(t_string *var, t_shell_data *shell_data)
 
 	ft_string_move(var, &var_name);
 	*var = ft_string_new();
+	if (!var->content)
+		exit(ERR_ALLOC);
 	value = ft_getenv(shell_data->envp, var_name.content);
 	if (!value)
 		value = "";
@@ -69,6 +71,8 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 			exit(ERR_ALLOC);
 		lstadd_back_string(out, *exp);
 		*exp = ft_string_new();
+		if (!exp->content)
+			exit(ERR_ALLOC);
 		var_from = var_to;
 		while (is_whitespace(*var_from))
 			var_from++;
@@ -84,6 +88,8 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 
 	is_pattern = false;
 	pattern = ft_string_new();
+	if (!pattern.content)
+		exit(ERR_ALLOC);
 	del = '\0';
 	idx = 0;
 	while (s[idx])
@@ -131,6 +137,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 
 	out = NULL;
 	exp = ft_string_new();
+	if (!exp.content)
+		exit(ERR_ALLOC);
 	del = '\0';
 	idx = 0;
 	has_empty_var = false;
@@ -186,6 +194,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				idx++;
 				len = 0;
 				var = ft_string_new();
+				if (!var.content)
+					exit(ERR_ALLOC);
 				while (idx + len < arg->length
 					&& is_var_name_char(arg->content[idx + len]))
 					len++;
@@ -194,6 +204,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				idx += len;
 				expand_var(&var, shell_data);
 				t_string potential_pattern = ft_string_new();
+				if (!potential_pattern.content)
+					exit(ERR_ALLOC);
 				if (!ft_string_cat(&potential_pattern, var.content))
 					exit(ERR_ALLOC);
 				if (!ft_string_cat(&potential_pattern, &arg->content[idx]))
@@ -262,6 +274,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 	if (ft_lstsize(out) == 0 && !has_empty_var)
 	{
 		t_string empty = ft_string_new();
+		if (!empty.content)
+			exit(ERR_ALLOC);
 		lstadd_back_string(&out, empty);
 	}
 	return (out);

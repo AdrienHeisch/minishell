@@ -207,6 +207,8 @@ static char	*process_heredoc_delim(char *delim)
 	if (!quote)
 		return (NULL);
 	out = ft_string_new();
+	if (!out.content)
+		exit(ERR_ALLOC);
 	s = delim;
 	while (*s)
 	{
@@ -230,6 +232,8 @@ t_string	readline_lite(void)
 	ssize_t		n_read;
 
 	line = ft_string_new();
+	if (!line.content)
+		exit(ERR_ALLOC);
 	while (1)
 	{
 		n_read = read(STDIN_FILENO, &c, 1);

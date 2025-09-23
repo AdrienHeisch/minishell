@@ -42,6 +42,8 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 	bool		can_be_null;
 
 	arg = ft_string_new();
+	if (!arg.content)
+		exit(ERR_ALLOC);
 	del = '\0';
 	can_be_null = true;
 	while (*idx < str->length)

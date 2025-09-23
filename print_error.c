@@ -35,6 +35,8 @@ void	print_error_code(char *path, int code)
 	if (code == 0)
 		return ;
 	err = ft_string_new();
+	if (!err.content)
+		exit(ERR_ALLOC);
 	if (!ft_string_cat(&err, path))
 		exit(ERR_ALLOC);
 	if (!ft_string_cat(&err, ": "))

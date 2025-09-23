@@ -25,6 +25,8 @@ static void	handle_sigint(int sig)
 	if (rl_readline_state & RL_STATE_READCMD)
 	{
 		str = ft_string_new();
+		if (!str.content)
+			exit(ERR_ALLOC);
 		if (!ft_string_cat(&str, rl_line_buffer))
 			exit(ERR_ALLOC);
 		if (!ft_string_cat(&str, "^C"))
