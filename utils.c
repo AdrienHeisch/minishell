@@ -69,7 +69,7 @@ char	*ft_getenv(char **envp, const char *name)
 
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	len = ft_strlen(name_suffix);
 	idx = 0;
 	while (envp[idx])
@@ -95,14 +95,14 @@ static void	add_to_env(char ***envp, const char *name, const char *value)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	ft_memcpy(new, old, len * sizeof(char *));
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	new[len] = ft_strjoin(name_suffix, value);
 	if (!new[len])
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	new[len + 1] = NULL;
 	free(name_suffix);
 	free(old);
@@ -127,7 +127,7 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 		return ;
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	len = ft_strlen(name_suffix);
 	idx = 0;
 	while ((*envp)[idx])
@@ -137,7 +137,7 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 			free((*envp)[idx]);
 			(*envp)[idx] = ft_strjoin(name_suffix, value);
 			if (!(*envp)[idx])
-				exit(MS_SUCCESS);
+				exit(ERR_SUCCESS);
 			break ;
 		}
 		idx++;
@@ -162,10 +162,10 @@ void	ft_unsetenv(char ***envp, const char *name)
 		len++;
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	new = malloc(len * sizeof(char *));
 	if (!new)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	idx = 0;
 	n_skipped = 0;
 	while (idx + n_skipped < len)
@@ -213,7 +213,7 @@ static char	*process_heredoc_delim(char *delim)
 		if (*s != *quote)
 		{
 			if (!ft_string_ncat(&out, s, 1))
-				exit(MS_ALLOC);
+				exit(ERR_ALLOC);
 		}
 		s++;
 	}
@@ -338,11 +338,11 @@ void	lstadd_back_string(t_list **list, t_string str)
 
 	cell = (t_string *)malloc(sizeof(t_string));
 	if (!cell)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	*cell = str;
 	new = ft_lstnew(cell);
 	if (!new)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	ft_lstadd_back(list, new);
 }
 

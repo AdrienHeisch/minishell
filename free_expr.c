@@ -34,7 +34,7 @@ void	free_expr(t_expr *expr)
 	else if (expr->type == EX_PARENTHESES)
 		free_expr(expr->data.paren.inner);
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	ft_lstclear(&expr->redirs, (void (*)(void *))free_redir);
 	free(expr);
 }

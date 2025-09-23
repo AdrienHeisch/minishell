@@ -46,11 +46,11 @@ void	export_var(char ***exported, const char *name)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	ft_memcpy(new, old, len * sizeof(char *));
 	new[len] = ft_strdup(name);
 	if (!new[len])
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	new[len + 1] = NULL;
 	free(old);
 	*exported = new;
@@ -101,7 +101,7 @@ void	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 		}
 		split = ft_split(args[idx], '=');
 		if (!split)
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		if (!split[0])
 		{
 			shell_data->status = 1;

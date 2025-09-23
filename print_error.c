@@ -29,23 +29,23 @@ void	print_error_code(char *path, int code)
 		return ;
 	err = ft_string_new();
 	if (!ft_string_cat(&err, path))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	if (!ft_string_cat(&err, ": "))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	if (code == 126)
 	{
 		if (!ft_string_cat(&err, "Is a directory"))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 	}
 	else if (code == 127)
 	{
 		if (!ft_string_cat(&err, "command not found"))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 	}
 	else
 	{
 		if (!ft_string_cat(&err, strerror(code)))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 	}
 	print_error(err.content);
 	ft_string_destroy(&err);

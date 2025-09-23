@@ -35,7 +35,7 @@ void	print_token(t_token *token)
 		else if (token->data.redir.type == REDIR_APPEND)
 			printf(">> ");
 		else
-			exit(MS_UNREACHABLE);
+			exit(ERR_UNREACHABLE);
 		printf("%s", token->data.redir.file_name.content);
 	}
 	else if (token->type == TK_PAROPEN)
@@ -45,6 +45,6 @@ void	print_token(t_token *token)
 	else if (token->type == TK_INVALID)
 		printf("!!! INVALID !!!");
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	printf("\n");
 }

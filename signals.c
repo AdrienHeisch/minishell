@@ -26,9 +26,9 @@ static void	handle_sigint(int sig)
 	{
 		str = ft_string_new();
 		if (!ft_string_cat(&str, rl_line_buffer))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		if (!ft_string_cat(&str, "^C"))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		rl_replace_line(str.content, 0);
 		rl_redisplay();
 		rl_on_new_line();

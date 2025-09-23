@@ -33,7 +33,7 @@ static void	run_child(t_expr *expr, t_shell_data *shell_data)
 			exit(error);
 		}
 		run_cmd(exec, shell_data);
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	}
 	else if (expr->type == EX_PARENTHESES)
 	{
@@ -41,7 +41,7 @@ static void	run_child(t_expr *expr, t_shell_data *shell_data)
 		exit(shell_data->status);
 	}
 	else
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC_ERROR);
 }
 
 static int	wait_all(int last_pid)
@@ -90,7 +90,7 @@ static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
 		wait_all(0);
 	}
 	else
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC_ERROR);
 }
 
 static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
@@ -123,7 +123,7 @@ static void	fork_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
 		else
 			close(next_fd[1]);
 		run_child(expr, shell_data);
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	}
 	close_redirections(expr->fd_in, expr->fd_out);
 	close_redirections(*prev_fd, next_fd[1]);
@@ -137,26 +137,26 @@ static void	build_pipeline(t_list **pipeline, t_binop pipe)
 		if (pipe.left->data.binop.op == OP_PIPE)
 			build_pipeline(pipeline, pipe.left->data.binop);
 		else
-			exit(MS_LOGIC_ERROR);
+			exit(ERR_LOGIC_ERROR);
 	}
 	else if (pipe.left->type == EX_CMD || pipe.left->type == EX_PARENTHESES)
 	{
 		t_list *new = ft_lstnew(pipe.left);
 		if (!new)
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		ft_lstadd_back(pipeline, new);
 	}
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	if (pipe.right->type == EX_CMD || pipe.right->type == EX_PARENTHESES)
 	{
 		t_list *new = ft_lstnew(pipe.right);
 		if (!new)
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		ft_lstadd_back(pipeline, new);
 	}
 	else
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC_ERROR);
 }
 
 void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
@@ -169,7 +169,7 @@ void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 	pipeline = NULL;
 	build_pipeline(&pipeline, pipe);
 	if (!pipeline)
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC_ERROR);
 	el = pipeline;
 	prev_fd = ((t_expr *)el->content)->fd_in;
 	while (el->next != NULL)

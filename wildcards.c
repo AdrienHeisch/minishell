@@ -119,7 +119,7 @@ t_list	*expand_wildcards(char *pattern)
 			{
 				name = ft_string_new();
 				if (!ft_string_cat(&name, ent->d_name))
-					exit(MS_ALLOC);
+					exit(ERR_ALLOC);
 				lstadd_back_string(&ret, name);
 			}
 		}

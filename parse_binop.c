@@ -21,7 +21,7 @@ static t_operator	get_op(t_token_type token)
 		return (OP_AND);
 	if (token == TK_OR)
 		return (OP_OR);
-	exit(MS_UNREACHABLE);
+	exit(ERR_UNREACHABLE);
 }
 
 static int	get_precedence(t_operator op)
@@ -38,7 +38,7 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	expr->type = EX_BINOP;
 	expr->redirs = NULL;
 	token = ft_lstpop_front(tokens);

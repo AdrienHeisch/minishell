@@ -21,13 +21,13 @@ extern int					received_signal;
 
 enum						e_error
 {
-	MS_SUCCESS,
-	MS_COMMAND_FAILED,
-	MS_SYNTAX_ERROR,
-	MS_USAGE,
-	MS_ALLOC,
-	MS_UNREACHABLE,
-	MS_LOGIC_ERROR,
+	ERR_SUCCESS,
+	ERR_COMMAND_FAILED,
+	ERR_SYNTAX_ERROR,
+	ERR_USAGE,
+	ERR_ALLOC,
+	ERR_UNREACHABLE,
+	ERR_LOGIC_ERROR,
 };
 
 typedef struct s_shell_data

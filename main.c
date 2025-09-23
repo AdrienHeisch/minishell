@@ -33,13 +33,13 @@ static char	**dup_env(char **envp)
 		len++;
 	dup = ft_calloc(len + 1, sizeof(char *));
 	if (!dup)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	idx = 0;
 	while (envp[idx])
 	{
 		dup[idx] = ft_strdup(envp[idx]);
 		if (!dup[idx])
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		idx++;
 	}
 	dup[len] = 0;
@@ -52,7 +52,7 @@ static char	**dup_env(char **envp)
 	{
 		char *new_shlvl = ft_itoa(ft_atoi(shlvl) + 1);
 		if (!new_shlvl)
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		ft_setenv(&dup, "SHLVL", new_shlvl,
 			true);
 		free(new_shlvl);
@@ -74,18 +74,18 @@ static char	**make_export_list(char **envp)
 		len++;
 	list = ft_calloc(len + 1, sizeof(char *));
 	if (!list)
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	idx = 0;
 	while (envp[idx])
 	{
 		split = ft_split(envp[idx], '=');
 		if (!split)
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		if (!split[0])
-			exit(MS_UNREACHABLE);
+			exit(ERR_UNREACHABLE);
 		list[idx] = ft_strdup(split[0]);
 		if (!list[idx])
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		free_tab((void ***)&split);
 		idx++;
 	}
@@ -100,21 +100,21 @@ static char	*make_prompt(char **envp)
 
 	prompt = ft_string_new();
 	if (!ft_string_cat(&prompt, "\033[32m"))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	s = ft_getenv(envp, "USER");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
 	if (!ft_string_cat(&prompt, s))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	if (!ft_string_cat(&prompt, "@"))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	s = ft_getenv(envp, "HOSTNAME");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
 	if (!ft_string_cat(&prompt, s))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	if (!ft_string_cat(&prompt, ":"))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	s = ft_getenv(envp, "PWD");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
@@ -122,19 +122,19 @@ static char	*make_prompt(char **envp)
 	if (h && !ft_strncmp(s, h, ft_strlen(h)))
 	{
 		if (!ft_string_cat(&prompt, "~"))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 		if (!ft_string_cat(&prompt, s + ft_strlen(h)))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 	}
 	else
 	{
 		if (!ft_string_cat(&prompt, s))
-			exit(MS_ALLOC);
+			exit(ERR_ALLOC);
 	}
 	if (!ft_string_cat(&prompt, "\033[0m"))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	if (!ft_string_cat(&prompt, "$ "))
-		exit(MS_ALLOC);
+		exit(ERR_ALLOC);
 	return (prompt.content);
 }
 
@@ -200,7 +200,7 @@ int	main(int argc, char **argv, char **envp)
 	{
 		tab = ft_split(argv[2], '\n');
 		if (!tab)
-			return (MS_ALLOC);
+			return (ERR_ALLOC);
 		idx = 0;
 		while (tab[idx])
 		{
@@ -214,7 +214,7 @@ int	main(int argc, char **argv, char **envp)
 		return (data.status);
 	}
 	if (argc > 1)
-		return (free_shell_data(&data), MS_USAGE);
+		return (free_shell_data(&data), ERR_USAGE);
 	tio = set_terminal_attributes();
 	rl_outstream = stderr;
 	str.content = NULL;

@@ -24,5 +24,5 @@ void	exec_expr(t_expr *expr, t_shell_data *shell_data)
 	else if (expr->type == EX_PARENTHESES)
 		exec_parentheses(expr, shell_data);
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 }
