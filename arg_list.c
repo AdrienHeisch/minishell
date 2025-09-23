@@ -111,7 +111,7 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 	return (NULL);
 }
 
-t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
+t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 {
 	size_t		idx;
 	size_t		len;
@@ -130,7 +130,7 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 	has_empty_var = false;
 	while (idx < arg->length && arg->content[idx])
 	{
-		if (!del && (arg->content[idx] == '\'' || arg->content[idx] == '"'))
+		if (!del && (arg->content[idx] == '\'' || (!is_heredoc && arg->content[idx] == '"')))
 		{
 			del = arg->content[idx];
 			idx++;
@@ -159,8 +159,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data)
 				has_empty_var = true;
 				continue ;
 			}
-			if (!del && (arg->content[idx + 1] == '\'' || arg->content[idx
-					+ 1] == '"'))
+			if (!del && (arg->content[idx + 1] == '\'' || (!is_heredoc && arg->content[idx
+					+ 1] == '"')))
 			{
 				del = arg->content[idx + 1];
 				idx += 2;
@@ -262,7 +262,7 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 	while (arg_list && arg_list->content)
 	{
 		lst = expand_arg(&((t_arg_data *)arg_list->content)->string,
-				shell_data);
+				shell_data, false);
 		while (lst)
 			ft_lstadd_back(&expanded, ft_lstpop_front(&lst));
 		arg_list = arg_list->next;

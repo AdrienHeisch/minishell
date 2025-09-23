@@ -268,7 +268,7 @@ void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 			ft_putstr_fd(line.content, fd_out);
 		else
 		{
-			o_expanded = expand_arg(&line, shell_data);
+			o_expanded = expand_arg(&line, shell_data, true);
 			expanded = o_expanded;
 			while (expanded && expanded->content)
 			{

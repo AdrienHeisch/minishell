@@ -19,7 +19,7 @@ static int	expand_redir(t_string *file_name, t_shell_data *shell_data)
 {
 	t_list	*lst;
 
-	lst = expand_arg(file_name, shell_data);
+	lst = expand_arg(file_name, shell_data, false);
 	if (!lst || !lst->content)
 		return (ft_lstclear(&lst, lstclear_string), 1);
 	if (ft_lstsize(lst) > 1)

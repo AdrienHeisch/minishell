@@ -174,7 +174,7 @@ void						builtin_pwd(char **args, t_shell_data *shell_data,
 void						export_var(char ***exported, const char *name);
 
 t_list						*expand_arg(t_string *arg,
-								t_shell_data *shell_data);
+								t_shell_data *shell_data, bool is_heredoc);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 
