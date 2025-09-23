@@ -79,9 +79,10 @@ static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
 			free_exec_info(&exec);
 			return ;
 		}
-		shell_data->status = wait_all(fork_run_cmd(exec, shell_data));
-		free_exec_info(&exec);
+		int pid = fork_run_cmd(exec, shell_data);
 		close_redirections(expr->fd_in, expr->fd_out);
+		shell_data->status = wait_all(pid);
+		free_exec_info(&exec);
 	}
 	else if (expr->type == EX_PARENTHESES)
 	{
