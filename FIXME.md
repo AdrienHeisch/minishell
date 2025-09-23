@@ -1,5 +1,6 @@
 # FIXME
 
+- prompt overwrites itself on small terminal
 - heredoc command output in pipe (heredoc prompt before fork ?) -> ls | cat << stop | ls -la | cat << stop1
 - yes | head -10
 
