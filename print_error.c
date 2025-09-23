@@ -10,15 +10,22 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 void	print_error(char *err)
 {
-	ft_putstr_fd("minishell: ", 2);
-	ft_putstr_fd(err, 2);
-	ft_putstr_fd("\n", 2);
+	t_string	error;
+
+	error = ft_string_from("minishell: ");
+	if (!ft_string_cat(&error, err))
+		exit(ERR_ALLOC);
+	if (!ft_string_cat(&error, "\n"))
+		exit(ERR_ALLOC);
+	ft_putstr_fd(error.content, STDERR_FILENO);
 }
 
 void	print_error_code(char *path, int code)

@@ -66,7 +66,8 @@ static long	checked_atol(const char *nptr)
 
 void	builtin_exit(char **args, t_shell_data *shell_data)
 {
-	long	exit_code;
+	long		exit_code;
+	t_string	error;
 
 	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
 		ft_putstr_fd("exit\n", 2);
@@ -76,15 +77,19 @@ void	builtin_exit(char **args, t_shell_data *shell_data)
 		exit_code = checked_atol(args[1]);
 		if (errno != 0 || !is_fully_numeric(args[1]))
 		{
-			ft_putstr_fd("minishell: exit: ", 2);
-			ft_putstr_fd(args[1], 2);
-			ft_putstr_fd(" numeric argument required\n", 2);
+			error = ft_string_from("exit: ");
+			if (!ft_string_cat(&error, args[1]))
+				exit(ERR_ALLOC);
+			if (!ft_string_cat(&error, " numeric argument required"))
+				exit(ERR_ALLOC);
+			print_error(error.content);
+			ft_string_destroy(&error);
 			free_shell_data(shell_data);
 			exit(2);
 		}
 		if (args[2])
 		{
-			ft_putstr_fd("minishell: exit: too many arguments\n", 2);
+			print_error("exit: too many arguments");
 			shell_data->status = 1;
 			return ;
 		}

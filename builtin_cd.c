@@ -32,7 +32,7 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 	}
 	if (args[idx] && args[idx + 1])
 	{
-		ft_putstr_fd("cd: too many arguments\n", 2);
+		print_error("cd: too many arguments");
 		shell_data->status = 1;
 		return ;
 	}
