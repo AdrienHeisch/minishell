@@ -207,7 +207,7 @@ void						prompt_heredoc(int out, char *delim,
 int							find_options(int *flags, char **args, size_t *idx,
 								char *options);
 void						lstadd_back_string(t_list **list, t_string str);
-void						free_tab(void **tab);
+void						free_tab(void ***tab);
 
 t_list						*expand_wildcards(char *pattern);
 

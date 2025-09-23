@@ -211,7 +211,10 @@ static char	*process_heredoc_delim(char *delim)
 	while (*s)
 	{
 		if (*s != *quote)
-			ft_string_ncat(&out, s, 1);
+		{
+			if (!ft_string_ncat(&out, s, 1))
+				exit(MS_ALLOC);
+		}
 		s++;
 	}
 	rec = process_heredoc_delim(out.content);
@@ -343,12 +346,15 @@ void	lstadd_back_string(t_list **list, t_string str)
 	ft_lstadd_back(list, new);
 }
 
-void	free_tab(void **tab)
+void	free_tab(void ***tab)
 {
 	size_t	idx;
 
+	if (!*tab)
+		return ;
 	idx = 0;
-	while (tab[idx])
-		free(tab[idx++]);
-	free(tab);
+	while ((*tab)[idx])
+		free((*tab)[idx++]);
+	free(*tab);
+	*tab = NULL;
 }

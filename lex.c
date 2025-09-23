@@ -58,7 +58,8 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 		}
 		else if (del == str->content[*idx])
 			del = '\0';
-		ft_string_ncat(&arg, &str->content[*idx], 1);
+		if (!ft_string_ncat(&arg, &str->content[*idx], 1))
+			exit(MS_ALLOC);
 		(*idx)++;
 	}
 	// STRICTLY NOT INTERPRETING UNCLOSED QUOTES RATHER THAN RAISING AN ERROR
@@ -155,6 +156,8 @@ static t_token	*get_token(t_string *str, size_t *idx)
 	else
 		return (NULL);
 	cell = malloc(sizeof(t_token));
+	if (!cell)
+		return (NULL);
 	*cell = token;
 	return (cell);
 }

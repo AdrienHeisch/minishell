@@ -58,7 +58,7 @@ char				*ft_untoa(unsigned long long n, const char *base);
 char				*ft_strmapi(const char *s, char (*f)(unsigned int, char));
 void				ft_striteri(char *s, void (*f)(unsigned int, char *));
 void				ft_putchar_fd(char c, int fd);
-void				ft_putstr_fd(char *s, int fd);
+long				ft_putstr_fd(char *s, int fd);
 void				ft_putendl_fd(char *s, int fd);
 void				ft_putnbr_fd(int n, int fd);
 
@@ -93,7 +93,7 @@ typedef struct s_string
 
 t_string			ft_string_new(void);
 t_string			ft_string_from(char *s);
-t_string			*ft_string_new_alloc(void);
+t_string			*ft_string_new_ptr(void);
 void				ft_string_move(t_string *from, t_string *to);
 t_string			ft_string_destroy(t_string *str);
 void				*ft_string_delete(t_string **str);

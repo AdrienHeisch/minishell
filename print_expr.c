@@ -44,7 +44,7 @@ static void	print_expr_rec(t_expr *expr)
 		lst = expr->data.cmd.args;
 		while (lst)
 		{
-			printf("%s", ft_string_get(lst->content));
+			printf("%s", ((t_string *)lst->content)->content);
 			lst = lst->next;
 			if (lst)
 				printf(" ");

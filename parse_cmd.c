@@ -68,6 +68,8 @@ t_expr	*parse_cmd(t_list **tokens)
 		ft_string_move(&((t_token *)token->content)->data.arg.string,
 			&arg_data->string);
 		arg = ft_lstnew(arg_data);
+		if (!arg)
+			exit(MS_ALLOC);
 		ft_lstadd_back(&expr->data.cmd.args, arg);
 		ft_lstdelone(token, (void (*)(void *))free_token);
 	}

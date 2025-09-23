@@ -140,11 +140,21 @@ static void	build_pipeline(t_list **pipeline, t_binop pipe)
 			exit(MS_LOGIC_ERROR);
 	}
 	else if (pipe.left->type == EX_CMD || pipe.left->type == EX_PARENTHESES)
-		ft_lstadd_back(pipeline, ft_lstnew(pipe.left));
+	{
+		t_list *new = ft_lstnew(pipe.left);
+		if (!new)
+			exit(MS_ALLOC);
+		ft_lstadd_back(pipeline, new);
+	}
 	else
 		exit(MS_UNREACHABLE);
 	if (pipe.right->type == EX_CMD || pipe.right->type == EX_PARENTHESES)
-		ft_lstadd_back(pipeline, ft_lstnew(pipe.right));
+	{
+		t_list *new = ft_lstnew(pipe.right);
+		if (!new)
+			exit(MS_ALLOC);
+		ft_lstadd_back(pipeline, new);
+	}
 	else
 		exit(MS_LOGIC_ERROR);
 }

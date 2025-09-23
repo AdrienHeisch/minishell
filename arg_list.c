@@ -26,7 +26,8 @@ static void	expand_var(t_string *var, t_shell_data *shell_data)
 	value = ft_getenv(shell_data->envp, var_name.content);
 	if (!value)
 		value = "";
-	ft_string_cat(var, value);
+	if (!ft_string_cat(var, value))
+		exit(MS_ALLOC);
 	ft_string_destroy(&var_name);
 }
 
@@ -60,10 +61,12 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 			var_to = ft_strchr(var_from, '\n');
 		if (!var_to)
 		{
-			ft_string_cat(exp, var_from);
+			if (!ft_string_cat(exp, var_from))
+				exit(MS_ALLOC);
 			break ;
 		}
-		ft_string_ncat(exp, var_from, var_to - var_from);
+		if (!ft_string_ncat(exp, var_from, var_to - var_from))
+			exit(MS_ALLOC);
 		lstadd_back_string(out, *exp);
 		*exp = ft_string_new();
 		var_from = var_to;
@@ -97,7 +100,10 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 			}
 		}
 		if (s[idx] != del)
-			ft_string_ncat(&pattern, &s[idx], 1);
+		{
+			if (!ft_string_ncat(&pattern, &s[idx], 1))
+				exit(MS_ALLOC);
+		}
 		else if (del)
 			del = '\0';
 		if (s[idx] == '*')
@@ -149,8 +155,10 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 			{
 				idx += 2;
 				char *status = ft_itoa(shell_data->status);
-				ft_string_cat(&exp, status);
-				free(status);
+				if (!status)
+					exit(MS_ALLOC);
+				if (!ft_string_cat_free(&exp, status))
+					exit(MS_ALLOC);
 				continue ;
 			}
 			if (arg->content[idx + 1] == '*')
@@ -168,7 +176,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				while (idx + len < arg->length && arg->content[idx
 					+ len] != del)
 					len++;
-				ft_string_ncat(&exp, &arg->content[idx], len);
+				if (!ft_string_ncat(&exp, &arg->content[idx], len))
+					exit(MS_ALLOC);
 				idx += len;
 				continue ;
 			}
@@ -180,12 +189,15 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				while (idx + len < arg->length
 					&& is_var_name_char(arg->content[idx + len]))
 					len++;
-				ft_string_ncat(&var, &arg->content[idx], len);
+				if (!ft_string_ncat(&var, &arg->content[idx], len))
+					exit(MS_ALLOC);
 				idx += len;
 				expand_var(&var, shell_data);
 				t_string potential_pattern = ft_string_new();
-				ft_string_cat(&potential_pattern, var.content);
-				ft_string_cat(&potential_pattern, &arg->content[idx]);
+				if (!ft_string_cat(&potential_pattern, var.content))
+					exit(MS_ALLOC);
+				if (!ft_string_cat(&potential_pattern, &arg->content[idx]))
+					exit(MS_ALLOC);
 				size_t pattern_len;
 				pattern = get_wildcard_pattern(potential_pattern.content, &pattern_len);
 				ft_string_destroy(&potential_pattern);
@@ -208,7 +220,10 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				else if (del == '\0')
 					split_var(&var, &exp, &out);
 				else
-					ft_string_cat(&exp, var.content);
+				{
+					if (!ft_string_cat(&exp, var.content))
+						exit(MS_ALLOC);
+				}
 				ft_string_destroy(&var);
 				continue ;
 			}
@@ -227,14 +242,17 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 			idx += pattern_len;
 			wildcard = expand_wildcards(pattern);
 			if (!wildcard)
-				ft_string_cat(&exp, pattern);
-			free(pattern);
+			{
+				if (!ft_string_cat_free(&exp, pattern))
+					exit(MS_ALLOC);
+			}
 			while (wildcard)
 				ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
 			continue ;
 		}
 		free(pattern);
-		ft_string_ncat(&exp, &arg->content[idx], 1);
+		if (!ft_string_ncat(&exp, &arg->content[idx], 1))
+			exit(MS_ALLOC);
 		idx++;
 	}
 	if (exp.length > 0)
@@ -268,16 +286,16 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 		arg_list = arg_list->next;
 	}
 	args = ft_calloc((ft_lstsize(expanded) + 1), sizeof(char *));
+	if (!args)
+		exit(MS_ALLOC);
 	idx = 0;
 	arg_list = expanded;
 	while (arg_list && arg_list->content)
 	{
-		if (((t_arg_data *)arg_list->content)->string.content)
-		{
-			args[idx] = ft_strdup(((t_string *)arg_list->content)->content);
-			// printf("arg: |%s|\n", args[idx]);
-			idx++;
-		}
+		args[idx] = ft_strdup(((t_arg_data *)arg_list->content)->string.content);
+		if (!args[idx])
+			exit (MS_ALLOC);
+		idx++;
 		arg_list = arg_list->next;
 	}
 	ft_lstclear(&expanded, lstclear_string);

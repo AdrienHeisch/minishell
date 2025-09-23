@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 #include <string.h>
 
 void	print_error(char *err)
@@ -27,14 +28,25 @@ void	print_error_code(char *path, int code)
 	if (code == 0)
 		return ;
 	err = ft_string_new();
-	ft_string_cat(&err, path);
-	ft_string_cat(&err, ": ");
+	if (!ft_string_cat(&err, path))
+		exit(MS_ALLOC);
+	if (!ft_string_cat(&err, ": "))
+		exit(MS_ALLOC);
 	if (code == 126)
-		ft_string_cat(&err, "Is a directory");
+	{
+		if (!ft_string_cat(&err, "Is a directory"))
+			exit(MS_ALLOC);
+	}
 	else if (code == 127)
-		ft_string_cat(&err, "command not found");
+	{
+		if (!ft_string_cat(&err, "command not found"))
+			exit(MS_ALLOC);
+	}
 	else
-		ft_string_cat(&err, strerror(code));
+	{
+		if (!ft_string_cat(&err, strerror(code)))
+			exit(MS_ALLOC);
+	}
 	print_error(err.content);
 	ft_string_destroy(&err);
 }

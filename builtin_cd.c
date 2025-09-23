@@ -72,6 +72,11 @@ void	builtin_cd(char **args, t_shell_data *shell_data)
 		free(cwd);
 	}
 	else
-		ft_setenv(&shell_data->envp, "PWD", ft_strjoin(ft_getenv(shell_data->envp, "PWD"), path), true);
+	{
+		char *new_path = ft_strjoin(ft_getenv(shell_data->envp, "PWD"), path);
+		if (!new_path)
+			exit(MS_ALLOC);
+		ft_setenv(&shell_data->envp, "PWD", new_path, true);
+	}
 	shell_data->status = 0;
 }

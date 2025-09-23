@@ -118,7 +118,8 @@ t_list	*expand_wildcards(char *pattern)
 			if (is_correct_pattern(ent->d_name, pattern))
 			{
 				name = ft_string_new();
-				ft_string_cat(&name, ent->d_name);
+				if (!ft_string_cat(&name, ent->d_name))
+					exit(MS_ALLOC);
 				lstadd_back_string(&ret, name);
 			}
 		}

@@ -14,6 +14,7 @@
 #include "minishell.h"
 #include <readline/readline.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 static void	handle_sigint(int sig)
@@ -24,8 +25,10 @@ static void	handle_sigint(int sig)
 	if (rl_readline_state & RL_STATE_READCMD)
 	{
 		str = ft_string_new();
-		ft_string_cat(&str, rl_line_buffer);
-		ft_string_cat(&str, "^C");
+		if (!ft_string_cat(&str, rl_line_buffer))
+			exit(MS_ALLOC);
+		if (!ft_string_cat(&str, "^C"))
+			exit(MS_ALLOC);
 		rl_replace_line(str.content, 0);
 		rl_redisplay();
 		rl_on_new_line();
