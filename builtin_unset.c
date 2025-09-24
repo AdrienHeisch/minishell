@@ -25,5 +25,5 @@ int	builtin_unset(char **args, t_shell_data *shell_data)
 		ft_unsetenv(&shell_data->envp, args[idx]);
 		idx++;
 	}
-	return (ERR_SUCCESS);
+	return (ERR_OK);
 }

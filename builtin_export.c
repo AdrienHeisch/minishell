@@ -87,9 +87,9 @@ int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 			ft_putstr_fd("\n", fd_out);
 			idx++;
 		}
-		return (ERR_SUCCESS);
+		return (ERR_OK);
 	}
-	status = ERR_SUCCESS;
+	status = ERR_OK;
 	while (args[idx])
 	{
 		if (ft_strlen(args[idx]) == 0 || ft_strchr(args[idx], '=') == args[idx])

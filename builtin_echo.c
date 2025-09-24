@@ -31,5 +31,5 @@ int	builtin_echo(char **args, t_shell_data *shell_data, int fd_out)
 	}
 	if (!(flags & (ft_strchr(options, 'n') - options + 1)))
 		ft_putstr_fd("\n", fd_out);
-	return (ERR_SUCCESS);
+	return (ERR_OK);
 }

@@ -147,7 +147,7 @@ static int	parse_and_exec(t_string *str, t_shell_data *data, bool is_interactive
 
 	if (is_only_whitespace(str))
 	{
-		data->status = ERR_SUCCESS;
+		data->status = ERR_OK;
 		return (0);
 	}
 	tokens = lex(str);

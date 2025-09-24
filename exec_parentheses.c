@@ -46,5 +46,5 @@ void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 	if (WIFEXITED(status_location))
 		shell_data->status = WEXITSTATUS(status_location);
 	else
-		shell_data->status = ERR_SUCCESS;
+		shell_data->status = ERR_OK;
 }

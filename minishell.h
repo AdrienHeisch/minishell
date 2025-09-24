@@ -17,7 +17,7 @@
 # include <stdbool.h>
 # include <stdio.h>
 
-# define ERR_SUCCESS 0
+# define ERR_OK 0
 # define ERR_COMMAND_FAILED 1
 # define ERR_SYNTAX_ERROR 2
 # define ERR_USAGE 3

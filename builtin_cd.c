@@ -64,5 +64,5 @@ int	builtin_cd(char **args, t_shell_data *shell_data)
 			exit(ERR_SYSTEM);
 		ft_setenv(&shell_data->envp, "PWD", new_path, true);
 	}
-	return (ERR_SUCCESS);
+	return (ERR_OK);
 }

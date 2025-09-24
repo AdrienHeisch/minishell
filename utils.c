@@ -137,7 +137,7 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 			free((*envp)[idx]);
 			(*envp)[idx] = ft_strjoin(name_suffix, value);
 			if (!(*envp)[idx])
-				exit(ERR_SUCCESS);
+				exit(ERR_OK);
 			break ;
 		}
 		idx++;

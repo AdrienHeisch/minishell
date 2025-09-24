@@ -30,5 +30,5 @@ int	builtin_env(char **args, t_shell_data *shell_data, int fd_out)
 		ft_putstr_fd(shell_data->envp[env_idx++], fd_out);
 		ft_putstr_fd("\n", fd_out);
 	}
-	return (ERR_SUCCESS);
+	return (ERR_OK);
 }

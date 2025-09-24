@@ -44,7 +44,7 @@ void	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 		if (WIFEXITED(status_location))
 			shell_data->status = WEXITSTATUS(status_location);
 		else
-			shell_data->status = ERR_SUCCESS;
+			shell_data->status = ERR_OK;
 	}
 	free_exec_info(&exec);
 	close_redirections(expr->fd_in, expr->fd_out);

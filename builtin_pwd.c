@@ -38,5 +38,5 @@ int	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 	ft_putstr_fd("\n", fd_out);
 	if (free_cwd)
 		free(cwd);
-	return (ERR_SUCCESS);
+	return (ERR_OK);
 }
