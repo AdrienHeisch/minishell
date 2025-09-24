@@ -20,7 +20,7 @@ bool	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
 
 	path = cmd.args[0];
 	len = ft_strlen(path) + 1;
-	if (len == 0)
+	if (len <= 1)
 		return (false);
 	if (ft_strncmp("cd", path, len) == 0)
 		shell_data->status = builtin_cd(cmd.args, shell_data);
