@@ -21,16 +21,20 @@ static void	handle_sigint(int sig)
 	t_string	str;
 
 	received_signal = sig;
-	if (rl_readline_state & RL_STATE_READCMD)
+	if (USE_READLINE && rl_readline_state & RL_STATE_READCMD)
 	{
 		str = ft_string_new();
-		ft_string_cat(&str, rl_line_buffer);
-		ft_string_cat(&str, "^C");
-		rl_replace_line(str.content, 0);
+		if (!str.content)
+			return (print_error(), (void)0);
+		if (!ft_string_cat(&str, rl_line_buffer))
+			return (print_error(), (void)0);
+		if (!ft_string_cat(&str, "^C"))
+			return (print_error(), (void)0);
+		rl_replace_line(str.content, false);
 		rl_redisplay();
 		rl_on_new_line();
-		printf("\n");
-		rl_replace_line("", 0);
+		ft_putstr_fd("\n", STDOUT_FILENO);
+		rl_replace_line("", false);
 		rl_redisplay();
 	}
 }
@@ -42,14 +46,19 @@ static void	handle_sigquit(int sig)
 		rl_redisplay();
 }
 
-void	init_signals(void)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	init_signals(void)
 {
 	struct sigaction	sig;
 
-	sigemptyset(&sig.sa_mask);
+	if (sigemptyset(&sig.sa_mask))
+		return (ERR_SYSTEM);
 	sig.sa_flags = 0;
 	sig.sa_handler = handle_sigint;
-	sigaction(SIGINT, &sig, NULL);
+	if (sigaction(SIGINT, &sig, NULL))
+		return (ERR_SYSTEM);
 	sig.sa_handler = handle_sigquit;
-	sigaction(SIGQUIT, &sig, NULL);
+	if (sigaction(SIGQUIT, &sig, NULL))
+		return (ERR_SYSTEM);
+	return (ERR_OK);
 }

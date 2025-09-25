@@ -49,7 +49,7 @@ t_string	ft_string_from(char *s)
 	return (str);
 }
 
-t_string	*ft_string_new_alloc(void)
+t_string	*ft_string_new_ptr(void)
 {
 	t_string	*str;
 

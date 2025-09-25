@@ -14,15 +14,18 @@
 #include "minishell.h"
 #include <stdlib.h>
 
+static void	free_redir(t_redir_data *redir)
+{
+	ft_string_destroy(&redir->file_name);
+	free(redir);
+}
+
 void	free_expr(t_expr *expr)
 {
 	if (!expr)
 		return ;
 	if (expr->type == EX_CMD)
-	{
 		ft_lstclear(&expr->data.cmd.args, lstclear_string);
-		// TODO free_redir
-	}
 	else if (expr->type == EX_BINOP)
 	{
 		free_expr(expr->data.binop.left);
@@ -30,6 +33,8 @@ void	free_expr(t_expr *expr)
 	}
 	else if (expr->type == EX_PARENTHESES)
 		free_expr(expr->data.paren.inner);
-	ft_lstclear(&expr->redirs, no_op);
+	else
+		exit(ERR_UNREACHABLE);
+	ft_lstclear(&expr->redirs, (void (*)(void *))free_redir);
 	free(expr);
 }

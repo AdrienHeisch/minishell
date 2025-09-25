@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <asm-generic/errno-base.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/wait.h>
@@ -20,20 +21,34 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 {
 	if (is_builtin(*cmd.args))
 	{
-		exec_builtin(cmd, shell_data);
-		exit(shell_data->status);
+		if (exec_builtin(cmd, shell_data))
+			print_error();
+		close_redirections(cmd.fd_in, cmd.fd_out);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		free_exec_info(&cmd);
+		int status = shell_data->status;
+		free_shell_data(shell_data);
+		exit(status);
 	}
 	else
 	{
 		if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
-			exit(-1);
+			exit(ERR_SYSTEM);
 		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
-			exit(-1);
+			exit(ERR_SYSTEM);
 		execve(cmd.args[0], cmd.args, shell_data->envp);
 		// TODO shell scripts ?
-		print_error_code(cmd.args[0], errno);
-		free_args_list(cmd.args);
-		exit(126);
+		int error = errno;
+		print_error_prefix(cmd.args[0]);
+		close_redirections(cmd.fd_in, cmd.fd_out);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		free_exec_info(&cmd);
+		if (error == EACCES)
+			exit(ERR_PERMISSION);
+		else
+			exit(ERR_COMMAND_NOT_FOUND);
 	}
 }
 
@@ -42,8 +57,6 @@ int	fork_run_cmd(t_exec_info exec, t_shell_data *shell_data)
 	pid_t	pid;
 
 	pid = fork();
-	if (pid == -1)
-		exit(-1);
 	if (pid == 0)
 		run_cmd(exec, shell_data);
 	return (pid);

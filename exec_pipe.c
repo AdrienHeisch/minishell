@@ -18,150 +18,202 @@
 
 static void	run_child(t_expr *expr, t_shell_data *shell_data)
 {
+	t_exec_info	exec;
+	int			error;
+
 	if (expr->type == EX_CMD)
 	{
-		t_exec_info exec = make_exec_info(expr->data.cmd, expr->fd_in, expr->fd_out, shell_data);
+		exec = make_exec_info(expr->data.cmd, expr->fd_in, expr->fd_out,
+				shell_data);
+		if (!exec.args)
+		{
+			print_error();
+			exit(ERR_SYSTEM);
+		}
 		if (exec.error >= 0)
-			return ;
+		{
+			close_redirections(expr->fd_in, expr->fd_out);
+			error = exec.error;
+			free_exec_info(&exec);
+			exit(error);
+		}
 		run_cmd(exec, shell_data);
-		exit(0);
+		exit(ERR_UNREACHABLE);
 	}
 	else if (expr->type == EX_PARENTHESES)
 	{
-		exec_parentheses(expr, shell_data);
+		if (exec_parentheses(expr, shell_data))
+			exit(ERR_SYSTEM);
 		exit(shell_data->status);
 	}
 	else
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC);
 }
 
-static int	wait_all(int last_pid)
+static t_err	wait_all(int last_pid)
 {
-	int	status_location;
-	int	exit_code;
+	int		status_location;
+	t_err	exit_code;
 
 	status_location = -1;
+	exit_code = ERR_COMMAND_FAILED;
 	if (last_pid != 0)
 	{
-		waitpid(last_pid, &status_location, 0);
+		if (waitpid(last_pid, &status_location, 0) == -1)
+			exit_code = ERR_SYSTEM;
 		if (WIFEXITED(status_location))
 			exit_code = WEXITSTATUS(status_location);
-		else
-			exit_code = -1;
 	}
-	else
-		exit_code = -1;
 	while (waitpid(0, &status_location, 0) > 0)
 		;
 	return (exit_code);
 }
 
-static void	run_last_child(t_expr *expr, t_shell_data *shell_data)
+/// Returns ERR_OK, ERR_COMMAND_FAILED or ERR_SYSTEM
+static t_err	run_last_child(t_expr *expr, t_shell_data *shell_data)
 {
+	t_err		err;
+	t_exec_info	exec;
+	int			pid;
+
 	if (expr->type == EX_CMD)
 	{
-		t_exec_info exec = make_exec_info(expr->data.cmd,
-				expr->fd_in, expr->fd_out,
-				shell_data); // HACK PAREN/CMD
+		err = resolve_redirections(expr, shell_data);
+		if (err == ERR_SYSTEM)
+			print_error();
+		if (err)
+			return (ERR_COMMAND_FAILED);
+		exec = make_exec_info(expr->data.cmd, expr->fd_in, expr->fd_out,
+				shell_data);
+		if (!exec.args)
+			return (ERR_SYSTEM);
 		if (exec.error >= 0)
 		{
 			shell_data->status = exec.error;
-			return ;
+			free_exec_info(&exec);
+			return (ERR_OK);
 		}
-		shell_data->status = wait_all(fork_run_cmd(exec, shell_data));
+		pid = fork_run_cmd(exec, shell_data);
+		if (pid == -1)
+			return (ERR_SYSTEM);
+		close_redirections(expr->fd_in, expr->fd_out);
+		shell_data->status = wait_all(pid);
+		free_exec_info(&exec);
 	}
 	else if (expr->type == EX_PARENTHESES)
 	{
-		exec_parentheses(expr, shell_data);
+		if (exec_parentheses(expr, shell_data))
+			return (ERR_SYSTEM);
 		wait_all(0);
 	}
 	else
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC);
+	return (ERR_OK);
 }
 
-static void	child_and_pipe(t_expr *expr, t_shell_data *shell_data, int *prev_fd,
-		int *next_fd)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	fork_and_pipe(t_expr *expr, t_shell_data *shell_data,
+		int *prev_fd, int next_fd[2])
 {
-	pid_t		pid;
+	pid_t	pid;
+	int		redir_res;
 
 	if (pipe(next_fd) == -1)
-		exit(-1);
+		return (ERR_SYSTEM);
+	redir_res = resolve_redirections(expr, shell_data);
+	if (redir_res == ERR_SYSTEM)
+		print_error();
 	pid = fork();
 	if (pid == -1)
 	{
+		print_error();
 		close(*prev_fd);
 		close(next_fd[0]);
 		close(next_fd[1]);
-		exit(-1);
+		return (ERR_SYSTEM);
 	}
 	if (pid == 0)
 	{
+		if (redir_res)
+			exit(ERR_COMMAND_FAILED);
 		close(next_fd[0]);
 		if (expr->fd_in == STDIN_FILENO)
 			expr->fd_in = *prev_fd;
+		else
+			close(*prev_fd);
 		if (expr->fd_out == STDOUT_FILENO)
 			expr->fd_out = next_fd[1];
+		else
+			close(next_fd[1]);
 		run_child(expr, shell_data);
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	}
-	close(next_fd[1]);
-	if (*prev_fd > 0)
-		close(*prev_fd);
+	close_redirections(expr->fd_in, expr->fd_out);
+	close_redirections(*prev_fd, next_fd[1]);
 	*prev_fd = next_fd[0];
+	return (ERR_OK);
 }
 
-static void	build_pipeline(t_list **pipeline, t_binop pipe)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	build_pipeline(t_list **pipeline, t_binop pipe)
 {
+	t_list	*new;
+
 	if (pipe.left->type == EX_BINOP)
 	{
 		if (pipe.left->data.binop.op == OP_PIPE)
 			build_pipeline(pipeline, pipe.left->data.binop);
 		else
-			exit(MS_LOGIC_ERROR);
+			exit(ERR_LOGIC);
 	}
 	else if (pipe.left->type == EX_CMD || pipe.left->type == EX_PARENTHESES)
-		ft_lstadd_back(pipeline, ft_lstnew(pipe.left));
+	{
+		new = ft_lstnew(pipe.left);
+		if (!new)
+			return (ERR_SYSTEM);
+		ft_lstadd_back(pipeline, new);
+	}
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	if (pipe.right->type == EX_CMD || pipe.right->type == EX_PARENTHESES)
-		ft_lstadd_back(pipeline, ft_lstnew(pipe.right));
+	{
+		new = ft_lstnew(pipe.right);
+		if (!new)
+			return (ERR_SYSTEM);
+		ft_lstadd_back(pipeline, new);
+	}
 	else
-		exit(MS_LOGIC_ERROR);
+		exit(ERR_LOGIC);
+	return (ERR_OK);
 }
 
-void	exec_pipe(t_binop pipe, t_shell_data *shell_data)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 {
 	t_list	*pipeline;
 	t_list	*el;
 	int		prev_fd;
 	int		next_fd[2];
+	t_err	err;
 
 	pipeline = NULL;
 	build_pipeline(&pipeline, pipe);
 	if (!pipeline)
-		exit(MS_LOGIC_ERROR);
+		return (ERR_SYSTEM);
 	el = pipeline;
-	if (resolve_redirections(el->content, shell_data))
-	{
-		shell_data->status = 1;
-		return ;
-	}
 	prev_fd = ((t_expr *)el->content)->fd_in;
 	while (el->next != NULL)
 	{
-		child_and_pipe(((t_expr *)el->content), shell_data, &prev_fd, next_fd);
+		fork_and_pipe(((t_expr *)el->content), shell_data, &prev_fd, next_fd);
 		el = el->next;
-		// FIXME should kill forked processes ?
-		if (resolve_redirections(el->content, shell_data))
-		{
-			shell_data->status = 1;
-			return ;
-		}
 	}
 	if (((t_expr *)el->content)->fd_in == STDIN_FILENO)
 		((t_expr *)el->content)->fd_in = prev_fd;
-	run_last_child(el->content, shell_data);
-	if (prev_fd > 0)
-		close(prev_fd);
+	err = run_last_child(el->content, shell_data);
+	if (err == ERR_SYSTEM)
+		return (ERR_SYSTEM);
+	if (err)
+		shell_data->status = err;
 	ft_lstclear(&pipeline, no_op);
+	return (ERR_OK);
 }

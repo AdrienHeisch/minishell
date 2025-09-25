@@ -35,13 +35,18 @@ static bool	is_arg(char c)
 	return (true);
 }
 
-static t_string	parse_arg(t_string *str, size_t *idx)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	parse_arg(t_string *str, size_t *idx, t_string *arg)
 {
-	t_string	arg;
-	char		del;
+	char	del;
+	bool	can_be_null;
 
-	arg = ft_string_new();
+	errno = 0;
+	*arg = ft_string_new();
+	if (!arg->content)
+		return (ERR_SYSTEM);
 	del = '\0';
+	can_be_null = true;
 	while (*idx < str->length)
 	{
 		if (!del)
@@ -49,40 +54,43 @@ static t_string	parse_arg(t_string *str, size_t *idx)
 			if (!is_arg(str->content[*idx]))
 				break ;
 			if (str->content[*idx] == '\'' || str->content[*idx] == '"')
+			{
 				del = str->content[*idx];
+				can_be_null = false;
+			}
 		}
 		else if (del == str->content[*idx])
 			del = '\0';
-		ft_string_ncat(&arg, &str->content[*idx], 1);
+		if (!ft_string_ncat(arg, &str->content[*idx], 1))
+			return (ft_string_destroy(arg), ERR_SYSTEM);
 		(*idx)++;
 	}
-	// STRICTLY NOT INTERPRETING UNCLOSED QUOTES RATHER THAN RAISING AN ERROR
-	// if (del)
-	// 	ft_string_destroy(&arg);
-	return (arg);
+	if (arg->length == 0 && can_be_null)
+		ft_string_destroy(arg);
+	return (ERR_OK);
 }
 
-static t_token	*get_token(t_string *str, size_t *idx)
+/// Returns ERR_OK, ERR_SYNTAX_ERROR or ERR_SYSTEM
+static t_err	get_token(t_string *str, size_t *idx, t_token **token)
 {
-	t_token	token;
-	t_token	*cell;
+	t_token	tk;
 	char	c;
 
+	*token = NULL;
 	c = str->content[*idx];
 	if (is_arg(c))
 	{
-		token.type = TK_ARG;
-		token.data.arg.string = parse_arg(str, idx);
-		if (!token.data.arg.string.content)
-			return (errno = 1, NULL);
+		tk.type = TK_ARG;
+		if (parse_arg(str, idx, &tk.data.arg.string))
+			return (ERR_SYSTEM);
 	}
 	else if (c == '|')
 	{
-		token.type = TK_PIPE;
+		tk.type = TK_PIPE;
 		(*idx)++;
 		if (str->content[*idx] == '|')
 		{
-			token.type = TK_OR;
+			tk.type = TK_OR;
 			(*idx)++;
 		}
 	}
@@ -91,93 +99,92 @@ static t_token	*get_token(t_string *str, size_t *idx)
 		(*idx)++;
 		if (str->content[*idx] == '&')
 		{
-			token.type = TK_AND;
+			tk.type = TK_AND;
 			(*idx)++;
 		}
 		else
-			token.type = TK_INVALID;
+			tk.type = TK_INVALID;
 	}
 	else if (c == '<')
 	{
-		token.type = TK_REDIR;
-		token.data.redir.type = REDIR_IN;
-		token.data.redir.fd = STDIN_FILENO;
+		tk.type = TK_REDIR;
+		tk.data.redir.type = REDIR_IN;
+		tk.data.redir.fd = STDIN_FILENO;
 		(*idx)++;
 		if (str->content[*idx] == '<')
 		{
-			token.data.redir.type = REDIR_HEREDOC;
+			tk.data.redir.type = REDIR_HEREDOC;
 			(*idx)++;
 		}
-		while (str->content[*idx] == ' ')
+		while (is_whitespace(str->content[*idx]))
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
-			return (errno = 1, NULL);
-		token.data.redir.file_name = parse_arg(str, idx);
-		if (!token.data.redir.file_name.content)
-			return (errno = 1, NULL);
+			return (ERR_SYNTAX_ERROR);
+		if (parse_arg(str, idx, &tk.data.redir.file_name))
+			return (ERR_SYSTEM);
 	}
 	else if (c == '>')
 	{
-		token.type = TK_REDIR;
-		token.data.redir.type = REDIR_OUT;
-		token.data.redir.fd = STDOUT_FILENO;
+		tk.type = TK_REDIR;
+		tk.data.redir.type = REDIR_OUT;
+		tk.data.redir.fd = STDOUT_FILENO;
 		(*idx)++;
 		if (str->content[*idx] == '>')
 		{
-			token.data.redir.type = REDIR_APPEND;
+			tk.data.redir.type = REDIR_APPEND;
 			(*idx)++;
 		}
-		while (str->content[*idx] == ' ')
+		while (is_whitespace(str->content[*idx]))
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
-			return (errno = 1, NULL);
-		token.data.redir.file_name = parse_arg(str, idx);
-		if (!token.data.redir.file_name.content)
-			return (errno = 1, NULL);
+			return (ERR_SYNTAX_ERROR);
+		if (parse_arg(str, idx, &tk.data.redir.file_name))
+			return (ERR_SYSTEM);
 	}
 	else if (c == '(')
 	{
-		token.type = TK_PAROPEN;
+		tk.type = TK_PAROPEN;
 		(*idx)++;
 	}
 	else if (c == ')')
 	{
-		token.type = TK_PARCLOSE;
+		tk.type = TK_PARCLOSE;
 		(*idx)++;
 	}
 	else
-		return (NULL);
-	cell = malloc(sizeof(t_token));
-	*cell = token;
-	return (cell);
+		return (ERR_OK);
+	;
+	*token = malloc(sizeof(t_token));
+	if (!*token)
+		return (ERR_SYSTEM);
+	**token = tk;
+	return (ERR_OK);
 }
 
-t_list	*lex(t_string *str)
+/// Returns ERR_OK, ERR_SYNTAX_ERROR or ERR_SYSTEM
+t_err	lex(t_string *str, t_list **tokens)
 {
-	t_list	*tokens;
 	t_list	*new_list;
 	t_token	*token;
 	size_t	idx;
+	t_err	err;
 
-	tokens = NULL;
+	*tokens = NULL;
 	idx = 0;
 	while (idx < str->length)
 	{
-		if (str->content[idx] == ' ')
-		{
+		while (idx < str->length && is_whitespace(str->content[idx]))
 			idx++;
-			continue ;
-		}
 		errno = 0;
-		token = get_token(str, &idx);
-		if (errno)
-			return (ft_lstclear(&tokens, (void (*)(void *))free_token), NULL);
+		err = get_token(str, &idx, &token);
+		if (err)
+			return (ft_lstclear(tokens, (void (*)(void *))free_token), err);
 		if (!token)
 			break ;
 		new_list = ft_lstnew(token);
 		if (!new_list)
-			exit(MS_ALLOC);
-		ft_lstadd_back(&tokens, new_list);
+			return (ERR_SYSTEM);
+		ft_lstadd_back(tokens, new_list);
 	}
-	return (tokens);
+	return (ERR_OK);
 }

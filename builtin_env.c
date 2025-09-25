@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-void	builtin_env(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_env(char **args, t_shell_data *shell_data, int fd_out)
 {
 	size_t	env_idx;
 	int		flags;
@@ -23,15 +23,12 @@ void	builtin_env(char **args, t_shell_data *shell_data, int fd_out)
 
 	idx = 1;
 	if (find_options(&flags, args, &idx, ""))
-	{
-		shell_data->status = 2;
-		return ;
-	}
+		return (ERR_SYNTAX_ERROR);
 	env_idx = 0;
 	while (shell_data->envp[env_idx])
 	{
 		ft_putstr_fd(shell_data->envp[env_idx++], fd_out);
 		ft_putstr_fd("\n", fd_out);
 	}
-	shell_data->status = 0;
+	return (ERR_OK);
 }

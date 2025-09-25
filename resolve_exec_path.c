@@ -49,7 +49,7 @@ static char	*copy_dir(const char *start, int len)
 	return (dir);
 }
 
-static void	free_tab(char ***tab)
+static void	free_tab_and_null(char ***tab)
 {
 	int	i;
 
@@ -89,7 +89,7 @@ static char	**split_path(const char *s)
 				i++;
 			dirs[j] = copy_dir(&s[start], i - start);
 			if (!dirs[j++])
-				return (free_tab(&dirs), NULL);
+				return (free_tab_and_null(&dirs), NULL);
 			start = i + 1;
 		}
 	}
@@ -134,6 +134,8 @@ static char	*find_cmd_path(char *cmd, char **envp)
 
 	path = ft_getenv(envp, "PATH");
 	if (!path || !*path)
+		path = ft_getenv(envp, "PWD");
+	if (!path || !*path)
 		return (NULL);
 	dirs = split_path(path);
 	if (!dirs)
@@ -143,18 +145,19 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	{
 		path = join_path_cmd(dirs[i], cmd);
 		if (!path)
-			return (free_tab(&dirs), NULL);
-		if (access(path, X_OK) == 0)
+			return (free_tab_and_null(&dirs), NULL);
+		if (access(path, F_OK) == 0)
 		{
-			free_tab(&dirs);
+			free_tab_and_null(&dirs);
 			return (path);
 		}
 		free(path);
 	}
-	free_tab(&dirs);
+	free_tab_and_null(&dirs);
 	return (NULL);
 }
 
+// TODO ambiguous return
 int	resolve_exec_path(char **args, t_shell_data *shell_data)
 {
 	DIR		*dir;
@@ -163,24 +166,16 @@ int	resolve_exec_path(char **args, t_shell_data *shell_data)
 	if (!args[0])
 		return (0);
 	if (ft_strlen(args[0]) == 0)
-		return (127);
+		return (ERR_COMMAND_NOT_FOUND);
 	initial_path = args[0];
-	if (!ft_strchr(args[0], '/') || access(args[0], F_OK) == -1)
-	{
+	if (!ft_strchr(args[0], '/'))
 		args[0] = find_cmd_path(args[0], shell_data->envp);
-	}
 	if (!args[0])
-	{
-		args[0] = initial_path;
-		return (127);
-	}
+		return (args[0] = initial_path, ERR_COMMAND_NOT_FOUND);
 	if (initial_path != args[0])
 		free(initial_path);
 	dir = opendir(args[0]);
 	if (dir != NULL)
-	{
-		closedir(dir);
-		return (126);
-	}
+		return (closedir(dir), ERR_PERMISSION);
 	return (-1);
 }

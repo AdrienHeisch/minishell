@@ -12,39 +12,48 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-static int	expand_redir(t_string *file_name, t_shell_data *shell_data)
+/// Returns ERR_OK, ERR_COMMAND_FAILED or ERR_SYSTEM
+static t_err	expand_redir(t_string *file_name, t_shell_data *shell_data)
 {
 	t_list	*lst;
 
-	lst = expand_arg(file_name, shell_data);
-	if (ft_lstsize(lst) > 1)
-		return (1);
-	if (!lst || !lst->content)
-		return (1);
+	errno = 0;
+	lst = expand_arg(file_name, shell_data, false);
+	if (errno)
+		return (ft_lstclear(&lst, lstclear_string), ERR_SYSTEM);
+	if (!lst || !lst->content || ft_lstsize(lst) > 1)
+		return (ft_lstclear(&lst, lstclear_string), ERR_COMMAND_FAILED);
 	ft_string_destroy(file_name);
-	*file_name = *(t_string *)lst->content;
-	return (0);
+	ft_string_move((t_string *)lst->content, file_name);
+	ft_lstclear(&lst, lstclear_string);
+	return (ERR_OK);
 }
 
-int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
+/// Returns ERR_OK, ERR_COMMAND_FAILED or ERR_SYSTEM
+t_err	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 {
 	int				oflag;
 	t_list			*redir_list;
 	t_redir_data	*redir;
 	int				pipe_fds[2];
+	t_err			err;
 
+	errno = 0;
 	redir_list = expr->redirs;
-	while (redir_list)
+	while (redir_list && redir_list->content)
 	{
 		redir = redir_list->content;
-		if (redir->type != REDIR_HEREDOC && expand_redir(&redir->file_name, shell_data))
+		if (redir->type != REDIR_HEREDOC)
 		{
-			print_error("ambiguous redirection");
-			redir_list = redir_list->next;
-			return (1);
+			err = expand_redir(&redir->file_name, shell_data);
+			if (err == ERR_COMMAND_FAILED)
+				print_error_msg("ambiguous redirect");
+			if (err)
+				return (close_redirections(expr->fd_in, expr->fd_out), err);
 		}
 		if (redir->type == REDIR_IN || redir->type == REDIR_HEREDOC)
 		{
@@ -54,11 +63,13 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 			{
 				if (pipe(pipe_fds) == -1)
 				{
-					perror("pipe");
-					return (1);
+					print_error_prefix("pipe");
+					return (close_redirections(expr->fd_in, expr->fd_out),
+						ERR_COMMAND_FAILED);
 				}
-				prompt_heredoc(pipe_fds[1],
-					redir->file_name.content, shell_data);
+				if (prompt_heredoc(pipe_fds[1], redir->file_name.content,
+					shell_data))
+					return (ERR_SYSTEM);
 				close(pipe_fds[1]);
 				expr->fd_in = pipe_fds[0];
 			}
@@ -67,8 +78,9 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 				expr->fd_in = open(redir->file_name.content, O_RDONLY);
 				if (expr->fd_in == -1)
 				{
-					perror("open");
-					return (1);
+					print_error_prefix("open");
+					return (close_redirections(expr->fd_in, expr->fd_out),
+						ERR_COMMAND_FAILED);
 				}
 			}
 		}
@@ -83,21 +95,32 @@ int	resolve_redirections(t_expr *expr, t_shell_data *shell_data)
 				oflag |= O_TRUNC;
 			expr->fd_out = open(redir->file_name.content, oflag,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-			if (expr->fd_in == -1)
+			if (expr->fd_out == -1)
 			{
-				perror("open");
-				return (1);
+				print_error_prefix("open");
+				return (close_redirections(expr->fd_in, expr->fd_out),
+					ERR_COMMAND_FAILED);
 			}
 		}
 		redir_list = redir_list->next;
 	}
-	return (0);
+	return (ERR_OK);
 }
 
-void	close_redirections(t_expr *expr)
+/// errno will be preserved
+void	close_redirections(int fd_in, int fd_out)
 {
-	if (expr->fd_in != STDIN_FILENO)
-		close(expr->fd_in);
-	if (expr->fd_out != STDOUT_FILENO)
-		close(expr->fd_out);
+	int	errno_before;
+
+	errno_before = errno;
+	errno = 0;
+	if (fd_in != -1 && fd_in != STDIN_FILENO)
+		close(fd_in);
+	if (errno)
+		print_error();
+	if (fd_out != -1 && fd_out != STDOUT_FILENO)
+		close(fd_out);
+	if (errno)
+		print_error();
+	errno = errno_before;
 }

@@ -21,6 +21,8 @@ static bool	is_fully_numeric(const char *s)
 {
 	size_t	idx;
 
+	if (!*s)
+		return (false);
 	idx = 0;
 	if (s[idx] == '-' || s[idx] == '+')
 		idx++;
@@ -33,6 +35,7 @@ static bool	is_fully_numeric(const char *s)
 	return (true);
 }
 
+/// Sets errno to one in case of overflow
 static long	checked_atol(const char *nptr)
 {
 	long	n;
@@ -40,7 +43,7 @@ static long	checked_atol(const char *nptr)
 	long	add;
 
 	sign = 1;
-	while ((*nptr >= 9 && *nptr <= 13) || *nptr == ' ')
+	while ((*nptr >= 9 && *nptr <= 13) || is_whitespace(*nptr))
 		nptr++;
 	if (*nptr == '+' || *nptr == '-')
 	{
@@ -62,29 +65,37 @@ static long	checked_atol(const char *nptr)
 	return (n);
 }
 
-void	builtin_exit(char **args, t_shell_data *shell_data)
+t_err	builtin_exit(char **args, t_shell_data *shell_data)
 {
-	long	exit_code;
+	long		exit_code;
+	t_string	error;
 
-	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		ft_putstr_fd("exit\n", 2);
+	if (isatty(STDERR_FILENO))
+		ft_putstr_fd("exit\n", STDERR_FILENO);
 	exit_code = 0;
 	if (args[1])
 	{
 		exit_code = checked_atol(args[1]);
-		if (errno != 0 || !is_fully_numeric(args[1]))
+		if (errno || !is_fully_numeric(args[1]))
 		{
-			ft_putstr_fd("exit: ", 2);
-			ft_putstr_fd(args[1], 2);
-			ft_putstr_fd(" numeric argument required\n", 2);
-			exit(2);
+			error = ft_string_new();
+			if (!error.content)
+				return (ERR_SYSTEM);
+			if (!ft_string_cat(&error, "exit: "))
+				return (ft_string_destroy(&error), ERR_SYSTEM);
+			if (!ft_string_cat(&error, args[1]))
+				return (ft_string_destroy(&error), ERR_SYSTEM);
+			if (!ft_string_cat(&error, ": numeric argument required"))
+				return (ft_string_destroy(&error), ERR_SYSTEM);
+			print_error_msg(error.content);
+			ft_string_destroy(&error);
+			free_shell_data(shell_data);
+			exit(ERR_SYNTAX_ERROR);
 		}
 		if (args[2])
-		{
-			ft_putstr_fd("exit: too many arguments\n", 2);
-			shell_data->status = 1;
-			return ;
-		}
+			return (print_error_msg("exit: too many arguments"),
+				ERR_COMMAND_FAILED);
 	}
+	free_shell_data(shell_data);
 	exit(exit_code);
 }

@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdlib.h>
@@ -20,6 +21,7 @@
 
 int			received_signal;
 
+/// Will return null and errno will be set on error
 static char	**dup_env(char **envp)
 {
 	char	**dup;
@@ -32,25 +34,44 @@ static char	**dup_env(char **envp)
 	while (envp[len])
 		len++;
 	dup = ft_calloc(len + 1, sizeof(char *));
+	if (!dup)
+		return (NULL);
 	idx = 0;
 	while (envp[idx])
 	{
 		dup[idx] = ft_strdup(envp[idx]);
+		if (!dup[idx])
+			return (NULL);
 		idx++;
 	}
 	dup[len] = 0;
 	cwd = getcwd(NULL, 0);
 	if (cwd)
-		ft_setenv(&dup, "PWD", cwd, true);
+	{
+		if (ft_setenv(&dup, "PWD", cwd, true))
+			return (NULL);
+	}
+	free(cwd);
 	shlvl = ft_getenv(dup, "SHLVL");
-	if (!shlvl)
-		ft_setenv(&dup, "SHLVL", "0", true);
+	if (shlvl)
+	{
+		char *new_shlvl = ft_itoa(ft_atoi(shlvl) + 1);
+		if (!new_shlvl)
+			return (NULL);
+		if (ft_setenv(&dup, "SHLVL", new_shlvl,
+			true))
+			return (NULL);
+		free(new_shlvl);
+	}
 	else
-		ft_setenv(&dup, "SHLVL", ft_itoa(ft_atoi(ft_getenv(dup, "SHLVL")) + 1),
-			true);
+	{
+		if (ft_setenv(&dup, "SHLVL", "0", true))
+			return (NULL);
+	}
 	return (dup);
 }
 
+/// Will return null and errno will be set on error
 static char	**make_export_list(char **envp)
 {
 	char	**list;
@@ -62,69 +83,122 @@ static char	**make_export_list(char **envp)
 	while (envp[len])
 		len++;
 	list = ft_calloc(len + 1, sizeof(char *));
+	if (!list)
+		return (NULL);
 	idx = 0;
 	while (envp[idx])
 	{
 		split = ft_split(envp[idx], '=');
-		if (!split || !split[0])
-			exit(MS_UNREACHABLE);
-		list[idx] = split[0];
-		split++;
-		while (*split)
-		{
-			free(*split);
-			split++;
-		}
+		if (!split)
+			return (NULL);
+		if (!split[0])
+			exit(ERR_UNREACHABLE);
+		list[idx] = ft_strdup(split[0]);
+		if (!list[idx])
+			return (NULL);
+		free_tab((void ***)&split);
 		idx++;
 	}
 	return (list);
 }
 
+/// Will return null and errno will be set on error
 static char	*make_prompt(char **envp)
 {
 	t_string	prompt;
 	char		*s;
+	char		*h;
 
 	prompt = ft_string_new();
+	if (!prompt.content)
+		return (NULL);
+	if (!ft_string_cat(&prompt, "\033[36m"))
+		return (NULL);
 	s = ft_getenv(envp, "USER");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
-	ft_string_cat(&prompt, s);
-	ft_string_cat(&prompt, "@");
+	if (!ft_string_cat(&prompt, s))
+		return (NULL);
+	if (!ft_string_cat(&prompt, "@"))
+		return (NULL);
 	s = ft_getenv(envp, "HOSTNAME");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
-	ft_string_cat(&prompt, s);
-	ft_string_cat(&prompt, ":");
+	if (!ft_string_cat(&prompt, s))
+		return (NULL);
+	if (!ft_string_cat(&prompt, ":"))
+		return (NULL);
 	s = ft_getenv(envp, "PWD");
 	if (!s)
 		return (ft_string_destroy(&prompt), "$ ");
-	ft_string_cat(&prompt, s);
-	ft_string_cat(&prompt, "$ ");
+	h = ft_getenv(envp, "HOME");
+	if (h && !ft_strncmp(s, h, ft_strlen(h)))
+	{
+		if (!ft_string_cat(&prompt, "~"))
+			return (NULL);
+		if (!ft_string_cat(&prompt, s + ft_strlen(h)))
+			return (NULL);
+	}
+	else
+	{
+		if (!ft_string_cat(&prompt, s))
+			return (NULL);
+	}
+	if (!ft_string_cat(&prompt, "\033[0m"))
+		return (NULL);
+	if (!ft_string_cat(&prompt, "$ "))
+		return (NULL);
 	return (prompt.content);
 }
 
-static void	parse_and_exec(t_string *str, t_shell_data *data)
+/// Returns true if execution should be interrupted in non interactive mode
+static bool	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*tokens;
 	t_expr	*expr;
+	t_err err;
 
-	if (is_whitespace(str))
+	if (is_only_whitespace(str))
+		return (data->status = ERR_OK, false);
+	err = lex(str, &tokens);
+	if (err == ERR_SYSTEM)
+		return (print_error(), true);
+	if (err == ERR_SYNTAX_ERROR)
 	{
-		data->status = 0;
-		return ;
+		ft_lstclear(&tokens, (void(*)(void *))free_token);
+		data->status = ERR_SYNTAX_ERROR;
+		return (true);
 	}
-	tokens = lex(str);
 	// ft_lstiter(tokens, (void (*)(void *))print_token);
 	expr = parse(&tokens);
+	if (errno)
+		return (print_error(), true);
+	if (tokens)
+	{
+		ft_lstclear(&tokens, (void(*)(void *))free_token);
+		data->status = ERR_SYNTAX_ERROR;
+		return (true);
+	}
+	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
 	{
-		data->status = 2;
-		return ;
+		data->status = ERR_SYNTAX_ERROR;
+		return (true);
 	}
-	exec_expr(expr, data);
-	free_expr(expr);
+	err = exec_expr(expr, data);
+	if (err)
+	{
+		print_error();
+		data->status = err;
+	}
 	add_history(str->content);
+	return (free_expr(expr), false);
+}
+
+void	free_shell_data(t_shell_data *shell_data)
+{
+	free_tab((void ***)&shell_data->envp);
+	free_tab((void ***)&shell_data->exported);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -137,37 +211,58 @@ int	main(int argc, char **argv, char **envp)
 	char			*prompt;
 
 	received_signal = 0;
-	init_signals();
+	if (init_signals())
+		return (print_error(), ERR_SYSTEM);
 	data.envp = dup_env(envp);
+	if (!data.envp)
+		return (print_error(), ERR_SYSTEM);
 	data.exported = make_export_list(data.envp);
-	export_var(&data.exported, "OLDPWD");
+	if (!data.exported)
+		return (print_error(), ERR_SYSTEM);
+	if (export_var(&data.exported, "OLDPWD"))
+		return (print_error(), ERR_SYSTEM);
 	if (argc >= 1)
 		ft_setenv(&data.envp, "_", argv[0], true);
 	data.status = 0;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
 	{
 		tab = ft_split(argv[2], '\n');
+		if (!tab)
+			return (ERR_SYSTEM);
 		idx = 0;
 		while (tab[idx])
 		{
-			str = ft_string_new();
-			ft_string_cat(&str, tab[idx]);
-			parse_and_exec(&str, &data);
+			str = ft_string_from(tab[idx]);
+			if (parse_and_exec(&str, &data))
+				break ;
 			ft_string_destroy(&str);
 			idx++;
 		}
+		free(tab);
+		free_shell_data(&data);
 		return (data.status);
 	}
 	if (argc > 1)
-		return (MS_USAGE);
-	tio = set_terminal_attributes();
+		return (free_shell_data(&data), ERR_USAGE);
+	if (isatty(STDIN_FILENO))
+		tio = set_terminal_attributes();
 	rl_outstream = stderr;
-	str.content = NULL;
+	str = (t_string){0};
 	while (1)
 	{
 		ft_string_destroy(&str);
 		prompt = make_prompt(data.envp);
-		str = ft_string_from(readline(prompt));
+		if (!prompt)
+			print_error();
+		if (isatty(STDIN_FILENO))
+		{
+			if (USE_READLINE)
+				str = ft_string_from(readline(prompt));
+			else
+				str = readline_lite(prompt);
+		}
+		else
+			str = readline_lite(NULL);
 		if (received_signal > 0)
 		{
 			data.status = 128 + received_signal;
@@ -175,12 +270,15 @@ int	main(int argc, char **argv, char **envp)
 		}
 		if (!str.content)
 			break ;
-		parse_and_exec(&str, &data);
+		if (parse_and_exec(&str, &data) && !isatty(STDIN_FILENO))
+			break ;
 		received_signal = 0;
 	}
 	ft_string_destroy(&str);
-	restore_terminal_attributes(&tio);
-	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		ft_putstr_fd("exit\n", 2);
+	if (isatty(STDIN_FILENO))
+		restore_terminal_attributes(&tio);
+	if (isatty(STDIN_FILENO))
+		ft_putstr_fd("exit\n", STDERR_FILENO);
+	free_shell_data(&data);
 	return (data.status);
 }

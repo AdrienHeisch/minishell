@@ -12,18 +12,19 @@
 
 #include "minishell.h"
 
-void	builtin_unset(char **args, t_shell_data *shell_data)
+t_err	builtin_unset(char **args, t_shell_data *shell_data)
 {
 	int		flags;
 	size_t	idx;
 
 	idx = 1;
 	if (find_options(&flags, args, &idx, ""))
+		return (ERR_SYNTAX_ERROR);
+	while (args[idx])
 	{
-		shell_data->status = 2;
-		return ;
+		if (ft_unsetenv(&shell_data->envp, args[idx]))
+			return (ERR_SYSTEM);
+		idx++;
 	}
-	if (args[idx])
-		ft_unsetenv(&shell_data->envp, args[idx]);
-	shell_data->status = 0;
+	return (ERR_OK);
 }

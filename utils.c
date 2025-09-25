@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <readline/readline.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -38,15 +39,23 @@ bool	is_str_all(char *s, int f(int))
 	return (true);
 }
 
-bool	is_whitespace(t_string *str)
+bool	is_whitespace(char c)
+{
+	static const char	*list = " \t\n";
+
+	if (!c)
+		return (false);
+	return (ft_strchr(list, c) != NULL);
+}
+
+bool	is_only_whitespace(t_string *str)
 {
 	size_t	idx;
 
 	idx = 0;
 	while (idx < str->length)
 	{
-		if (str->content[idx] != ' ' && str->content[idx] != '\t'
-			&& str->content[idx] != '\n')
+		if (!is_whitespace(str->content[idx]))
 			return (false);
 		idx++;
 	}
@@ -57,24 +66,20 @@ char	*ft_getenv(char **envp, const char *name)
 {
 	int		idx;
 	size_t	len;
-	char	*name_suffix;
 
-	name_suffix = ft_strjoin(name, "=");
-	if (!name_suffix)
-		exit(MS_ALLOC);
-	len = ft_strlen(name_suffix);
+	len = ft_strlen(name);
 	idx = 0;
 	while (envp[idx])
 	{
-		if (ft_strncmp(envp[idx], name_suffix, len) == 0)
-			return (free(name_suffix), envp[idx] + len);
+		if (ft_strncmp(envp[idx], name, len) == 0 && envp[idx][len] == '=')
+			return (envp[idx] + len + 1);
 		idx++;
 	}
-	free(name_suffix);
 	return (NULL);
 }
 
-static void	add_to_env(char ***envp, const char *name, const char *value)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	add_to_env(char ***envp, const char *name, const char *value)
 {
 	char	**old;
 	char	**new;
@@ -87,24 +92,27 @@ static void	add_to_env(char ***envp, const char *name, const char *value)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	ft_memcpy(new, old, len * sizeof(char *));
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	new[len] = ft_strjoin(name_suffix, value);
 	if (!new[len])
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	new[len + 1] = NULL;
 	free(name_suffix);
 	free(old);
 	*envp = new;
+	return (ERR_OK);
 }
 
-void	ft_setenv(char ***envp, const char *name, const char *value,
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	ft_setenv(char ***envp, const char *name, const char *value,
 		int overwrite)
 {
 	char	*name_suffix;
+	char	*name_new;
 	size_t	len;
 	size_t	idx;
 
@@ -113,30 +121,34 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 	if (!ft_getenv(*envp, name))
 	{
 		add_to_env(envp, name, value);
-		return ;
+		return (ERR_OK);
 	}
 	if (!overwrite)
-		return ;
+		return (ERR_OK);
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	len = ft_strlen(name_suffix);
 	idx = 0;
 	while ((*envp)[idx])
 	{
 		if (ft_strncmp((*envp)[idx], name_suffix, len) == 0)
 		{
+			name_new = ft_strjoin(name_suffix, value);
+			if (!name_new)
+				return (free(name_suffix), ERR_SYSTEM);
 			free((*envp)[idx]);
-			(*envp)[idx] = ft_strjoin(name_suffix, value);
-			if (!(*envp)[idx])
-				exit(MS_SUCCESS);
+			(*envp)[idx] = name_new;
 			break ;
 		}
 		idx++;
 	}
+	free(name_suffix);
+	return (ERR_OK);
 }
 
-void	ft_unsetenv(char ***envp, const char *name)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	ft_unsetenv(char ***envp, const char *name)
 {
 	char	**old;
 	char	**new;
@@ -146,17 +158,17 @@ void	ft_unsetenv(char ***envp, const char *name)
 	size_t	n_skipped;
 
 	if (!ft_getenv(*envp, name))
-		return ;
+		return (ERR_OK);
 	old = *envp;
 	len = 0;
 	while (old[len])
 		len++;
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	new = malloc(len * sizeof(char *));
 	if (!new)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	idx = 0;
 	n_skipped = 0;
 	while (idx + n_skipped < len)
@@ -164,6 +176,7 @@ void	ft_unsetenv(char ***envp, const char *name)
 		if (ft_strncmp(old[idx + n_skipped], name_suffix,
 				ft_strlen(name_suffix)) == 0)
 		{
+			free(old[idx + n_skipped]);
 			n_skipped++;
 			continue ;
 		}
@@ -174,6 +187,7 @@ void	ft_unsetenv(char ***envp, const char *name)
 	free(name_suffix);
 	free(old);
 	*envp = new;
+	return (ERR_OK);
 }
 
 static size_t	size_t_max(size_t a, size_t b)
@@ -184,6 +198,34 @@ static size_t	size_t_max(size_t a, size_t b)
 		return (b);
 }
 
+/// errno will only be set on error
+t_string	readline_lite(char *prompt)
+{
+	t_string	line;
+	char		c;
+	ssize_t		n_read;
+
+	errno = 0;
+	if (prompt)
+		ft_putstr_fd(prompt, STDERR_FILENO);
+	line = ft_string_new();
+	if (!line.content)
+		return (line);
+	while (1)
+	{
+		n_read = read(STDIN_FILENO, &c, 1);
+		if (n_read == -1)
+			return (ft_string_destroy(&line), line);
+		if (n_read == 0)
+			return (ft_string_destroy(&line), line);
+		if (c == '\n')
+			return (line);
+		if (!ft_string_ncat(&line, &c, 1))
+			return (ft_string_destroy(&line), line);
+	}
+}
+
+/// errno will only be set on error
 static char	*process_heredoc_delim(char *delim)
 {
 	char		*quote;
@@ -191,60 +233,90 @@ static char	*process_heredoc_delim(char *delim)
 	t_string	out;
 	char		*rec;
 
+	errno = 0;
 	quote = ft_strchr(delim, '"');
 	if (!quote)
 		quote = ft_strchr(delim, '\'');
 	if (!quote)
 		return (NULL);
 	out = ft_string_new();
+	if (!out.content)
+		return (NULL);
 	s = delim;
 	while (*s)
 	{
 		if (*s != *quote)
-			ft_string_ncat(&out, s, 1);
+		{
+			if (!ft_string_ncat(&out, s, 1))
+				return (NULL);
+		}
 		s++;
 	}
 	rec = process_heredoc_delim(out.content);
+	if (errno)
+		return (NULL);
 	if (rec)
 		return (rec);
 	return (out.content);
 }
 
-void	prompt_heredoc(int out, char *delim, t_shell_data *shell_data)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 {
 	char		*no_expand;
 	t_string	line;
 	t_list		*expanded;
+	t_list		*o_expanded;
 
-	if (!delim)
-		return ;
 	no_expand = process_heredoc_delim(delim);
+	if (errno)
+		return (ERR_SYSTEM);
 	if (no_expand)
 		delim = no_expand;
 	while (1)
 	{
-		line = ft_string_from(readline("> "));
+		if (isatty(STDIN_FILENO))
+		{
+			errno = 0;
+			if (USE_READLINE)
+				line = ft_string_from(readline("> "));
+			else
+				line = readline_lite("> ");
+		}
+		else
+			line = readline_lite(NULL);
+		if (errno)
+			return (ERR_SYSTEM);
 		if (!line.content)
 			break ; // TODO error handling
 		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
 					ft_strlen(delim))))
 			break ;
 		if (no_expand)
-			ft_putstr_fd(line.content, out);
+			ft_putstr_fd(line.content, fd_out);
 		else
 		{
-			expanded = expand_arg(&line, shell_data);
+			o_expanded = expand_arg(&line, shell_data, true);
+			if (errno)
+			{
+				if (no_expand)
+					free(delim);
+				return (ERR_SYSTEM);
+			}
+			expanded = o_expanded;
 			while (expanded && expanded->content)
 			{
-				ft_putstr_fd(((t_string *)expanded->content)->content, out);
+				ft_putstr_fd(((t_string *)expanded->content)->content, fd_out);
 				expanded = expanded->next;
 			}
+			ft_lstclear(&o_expanded, lstclear_string);
 		}
-		ft_putstr_fd("\n", out);
+		ft_putstr_fd("\n", fd_out);
 		ft_string_destroy(&line);
 	}
 	if (no_expand)
 		free(delim);
+	return (ERR_OK);
 }
 
 static bool	parse_options(char *arg, int *flags, char *options)
@@ -275,33 +347,49 @@ static bool	parse_options(char *arg, int *flags, char *options)
 	return (true);
 }
 
-int	find_options(int *flags, char **args, size_t *idx, char *options)
+/// Returns ERR_OK or ERR_SYNTAX_ERROR
+t_err	find_options(int *flags, char **args, size_t *idx, char *options)
 {
 	*flags = 0;
 	while (args[*idx] && args[*idx][0] == '-')
 	{
-		if (args[*idx][1] == '-')
-			return (-1);
-		if (!options)
-			return (-1);
+		if (!args[*idx][1])
+			break ;
+		if (args[*idx][1] == '-' || !options)
+			return (ERR_SYNTAX_ERROR);
 		if (!parse_options(args[*idx], flags, options))
-			return (-1);
+			return (ERR_SYNTAX_ERROR);
 		(*idx)++;
 	}
-	return (0);
+	return (ERR_OK);
 }
 
-void	lstadd_back_string(t_list **list, t_string str)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	lstadd_back_string(t_list **list, t_string str)
 {
 	t_string	*cell;
 	t_list		*new;
 
 	cell = (t_string *)malloc(sizeof(t_string));
 	if (!cell)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	*cell = str;
 	new = ft_lstnew(cell);
 	if (!new)
-		exit(MS_ALLOC);
+		return (ERR_SYSTEM);
 	ft_lstadd_back(list, new);
+	return (ERR_OK);
+}
+
+void	free_tab(void ***tab)
+{
+	size_t	idx;
+
+	if (!*tab)
+		return ;
+	idx = 0;
+	while ((*tab)[idx])
+		free((*tab)[idx++]);
+	free(*tab);
+	*tab = NULL;
 }

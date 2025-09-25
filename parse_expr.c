@@ -12,28 +12,35 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 
 static bool	is_op(t_token_type token)
 {
 	return (token == TK_PIPE || token == TK_AND || token == TK_OR);
 }
 
+/// errno will be set on error
 t_expr	*parse_expr(t_list **tokens, t_expr **prev)
 {
 	t_token	*token;
+	t_expr	*expr;
 
+	errno = 0;
 	if (!tokens || !*tokens)
-		return (ft_putstr_fd("minishell: syntax error: unexpected end of file\n",
-				2), NULL);
+		return (print_error_msg("syntax error: unexpected end of file"
+				), NULL);
 	token = (t_token *)(*tokens)->content;
 	if (!token)
 		return (NULL);
 	if (is_op(token->type))
-		return (parse_binop(tokens, prev));
+		expr = parse_binop(tokens, prev);
 	else if (token->type == TK_ARG || token->type == TK_REDIR)
-		return (parse_cmd(tokens));
+		expr = parse_cmd(tokens);
 	else if (token->type == TK_PAROPEN)
-		return (parse_parentheses(tokens));
+		expr = parse_parentheses(tokens);
 	else
 		return (NULL);
+	if (errno)
+		return (free_expr(expr), NULL);
+	return (expr);
 }

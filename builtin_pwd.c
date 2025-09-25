@@ -15,24 +15,21 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 {
 	char	*cwd;
 	int		flags;
 	size_t	idx;
 
+	(void)shell_data;
 	idx = 1;
 	if (find_options(&flags, args, &idx, ""))
-	{
-		shell_data->status = 2;
-		return ;
-	}
+		return (ERR_SYNTAX_ERROR);
 	cwd = getcwd(NULL, 0);
-	if (cwd)
-		ft_setenv(&shell_data->envp, "PWD", cwd, true);
-	else
-		cwd = ft_getenv(shell_data->envp, "PWD");
+	if (!cwd)
+		return (print_error_prefix("pwd: failed to get current directory: getcwd"), ERR_COMMAND_FAILED);
 	ft_putstr_fd(cwd, fd_out);
 	ft_putstr_fd("\n", fd_out);
-	shell_data->status = 0;
+	free(cwd);
+	return (ERR_OK);
 }

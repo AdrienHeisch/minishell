@@ -25,7 +25,7 @@ static void print_redir(t_redir_data *redir)
 	else if (redir->type == REDIR_APPEND)
 		printf(" >> ");
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	printf("%s", redir->file_name.content);
 }
 
@@ -44,7 +44,7 @@ static void	print_expr_rec(t_expr *expr)
 		lst = expr->data.cmd.args;
 		while (lst)
 		{
-			printf("%s", ft_string_get(lst->content));
+			printf("%s", ((t_string *)lst->content)->content);
 			lst = lst->next;
 			if (lst)
 				printf(" ");
@@ -60,7 +60,7 @@ static void	print_expr_rec(t_expr *expr)
 		else if (expr->data.binop.op == OP_OR)
 			printf(" || ");
 		else
-			exit(MS_UNREACHABLE);
+			exit(ERR_UNREACHABLE);
 		print_expr_rec(expr->data.binop.right);
 	}
 	else if (expr->type == EX_PARENTHESES)
@@ -70,7 +70,7 @@ static void	print_expr_rec(t_expr *expr)
 		printf(")");
 	}
 	else
-		exit(MS_UNREACHABLE);
+		exit(ERR_UNREACHABLE);
 	ft_lstiter(expr->redirs, (void (*)(void *))print_redir);
 	printf("]");
 }
