@@ -102,6 +102,7 @@ char				*ft_string_get(t_string *str);
 void				ft_string_set(t_string *str, const char *content);
 t_string			*ft_string_ncat(t_string *str, const char *cat, size_t n);
 t_string			*ft_string_cat(t_string *str, const char *cat);
+t_string			*ft_string_cats(t_string *str, const char **cats);
 t_string			*ft_string_cat_free(t_string *str, char *cat);
 
 int					ft_printf(const char *fmt, ...);

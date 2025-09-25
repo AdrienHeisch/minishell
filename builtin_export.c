@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <stdlib.h>
 
 #define EXPORT_PREFIX "declare -x"
@@ -21,7 +22,8 @@ static int	allowed_char(int c)
 	return (ft_isalnum(c) || c == '_');
 }
 
-static int	is_valid_var(char *name)
+/// Returns ERR_OK or ERR_COMMAND_FAILED
+static t_err	is_valid_var(char *name)
 {
 	if (ft_strlen(name) == 0)
 		return (ERR_COMMAND_FAILED);
@@ -31,10 +33,11 @@ static int	is_valid_var(char *name)
 		return (ERR_COMMAND_FAILED);
 	if (!is_str_all(name, allowed_char))
 		return (ERR_COMMAND_FAILED);
-	return (-1);
+	return (ERR_OK);
 }
 
-void	export_var(char ***exported, const char *name)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	export_var(char ***exported, const char *name)
 {
 	char	**old;
 	char	**new;
@@ -46,17 +49,18 @@ void	export_var(char ***exported, const char *name)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	ft_memcpy(new, old, len * sizeof(char *));
 	new[len] = ft_strdup(name);
 	if (!new[len])
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	new[len + 1] = NULL;
 	free(old);
 	*exported = new;
+	return (ERR_OK);
 }
 
-int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 {
 	size_t	idx;
 	char	**split;
@@ -76,6 +80,7 @@ int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 			ft_putstr_fd(EXPORT_PREFIX, fd_out);
 			ft_putstr_fd(" ", fd_out);
 			ft_putstr_fd(shell_data->exported[idx], fd_out);
+			errno = 0;
 			value = ft_getenv(shell_data->envp, shell_data->exported[idx]);
 			if (value)
 			{
@@ -83,7 +88,6 @@ int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 				ft_putstr_fd(value, fd_out);
 				ft_putstr_fd("\"", fd_out);
 			}
-			// TODO else ?
 			ft_putstr_fd("\n", fd_out);
 			idx++;
 		}
@@ -94,23 +98,26 @@ int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 	{
 		if (ft_strlen(args[idx]) == 0 || ft_strchr(args[idx], '=') == args[idx])
 		{
+			print_error_msg("export: not a valid identifier");
 			status = ERR_COMMAND_FAILED;
 			idx++;
 			continue ;
 		}
 		split = ft_split(args[idx], '=');
 		if (!split)
-			exit(ERR_SYSTEM);
+			return (ERR_SYSTEM);
 		if (!split[0])
 		{
+			print_error_msg("export: not a valid identifier");
 			status = ERR_COMMAND_FAILED;
 			idx++;
 			free_tab((void ***)&split);
 			continue ;
 		}
 		valid_var_code = is_valid_var(split[0]);
-		if (valid_var_code >= 0)
+		if (valid_var_code)
 		{
+			print_error_msg("export: not a valid identifier");
 			status = valid_var_code;
 			idx++;
 			free_tab((void ***)&split);
@@ -121,7 +128,8 @@ int	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 				+ 1, true);
 		else if (ft_strchr(args[idx], '='))
 			ft_setenv(&shell_data->envp, split[0], "", true);
-		export_var(&shell_data->exported, split[0]);
+		if (export_var(&shell_data->exported, split[0]))
+			return (free_tab((void ***)&split), ERR_SYSTEM);
 		free_tab((void ***)&split);
 		idx++;
 	}

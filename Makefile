@@ -42,7 +42,7 @@ SRCS = \
 #	CONFIG
 
 CC = cc
-CFLAGS += -Wall -Wextra -Werror -g3
+CFLAGS += -Wall -Wextra -g3
 OBJS_PATH = objs/
 
 LIBFT_PATH = libft/
@@ -51,6 +51,7 @@ LIBFT = $(LIBFT_PATH)lib$(LIBFT_NAME).a
 IFLAGS += -I$(LIBFT_PATH)
 LFLAGS += -L$(LIBFT_PATH) -l$(LIBFT_NAME)
 
+CFLAGS += -DUSE_READLINE=true
 LFLAGS += -lreadline
 
 #	VARS

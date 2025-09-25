@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <errno.h>
 #include <stdlib.h>
 
 static t_operator	get_op(t_token_type token)
@@ -31,14 +32,16 @@ static int	get_precedence(t_operator op)
 	return (0);
 }
 
+/// errno will be set on error
 t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 {
 	t_expr	*expr;
 	t_list	*token;
 
+	errno = 0;
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(ERR_SYSTEM);
+		return (NULL);
 	expr->type = EX_BINOP;
 	expr->redirs = NULL;
 	token = ft_lstpop_front(tokens);
@@ -52,14 +55,18 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 	if (expr->data.binop.op == OP_PIPE)
 	{
 		expr->data.binop.right = parse_expr(tokens, &expr->data.binop.left);
+		if (errno)
+			return (free_expr(expr), NULL);
 		if (!expr->data.binop.right)
-			return (free_expr(expr), print_error("unexpected token"), NULL);
+			return (print_error_msg("unexpected token"), free_expr(expr), NULL);
 	}
 	else
 	{
 		expr->data.binop.right = parse(tokens);
+		if (errno)
+			return (free_expr(expr), NULL);
 		if (!expr->data.binop.right)
-			return (free_expr(expr), print_error("unexpected token"), NULL);
+			return (print_error_msg("unexpected token"), free_expr(expr), NULL);
 		if (expr->data.binop.right->type == EX_BINOP
 			&& get_precedence(expr->data.binop.right->data.binop.op) <= get_precedence(expr->data.binop.op))
 		{

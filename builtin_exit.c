@@ -35,6 +35,7 @@ static bool	is_fully_numeric(const char *s)
 	return (true);
 }
 
+/// Sets errno to one in case of overflow
 static long	checked_atol(const char *nptr)
 {
 	long	n;
@@ -64,7 +65,7 @@ static long	checked_atol(const char *nptr)
 	return (n);
 }
 
-int	builtin_exit(char **args, t_shell_data *shell_data)
+t_err	builtin_exit(char **args, t_shell_data *shell_data)
 {
 	long		exit_code;
 	t_string	error;
@@ -75,22 +76,24 @@ int	builtin_exit(char **args, t_shell_data *shell_data)
 	if (args[1])
 	{
 		exit_code = checked_atol(args[1]);
-		if (errno != 0 || !is_fully_numeric(args[1]))
+		if (errno || !is_fully_numeric(args[1]))
 		{
 			error = ft_string_new();
+			if (!error.content)
+				return (ERR_SYSTEM);
 			if (!ft_string_cat(&error, "exit: "))
-				exit(ERR_SYSTEM);
+				return (ft_string_destroy(&error), ERR_SYSTEM);
 			if (!ft_string_cat(&error, args[1]))
-				exit(ERR_SYSTEM);
-			if (!ft_string_cat(&error, " numeric argument required"))
-				exit(ERR_SYSTEM);
-			print_error(error.content);
+				return (ft_string_destroy(&error), ERR_SYSTEM);
+			if (!ft_string_cat(&error, ": numeric argument required"))
+				return (ft_string_destroy(&error), ERR_SYSTEM);
+			print_error_msg(error.content);
 			ft_string_destroy(&error);
 			free_shell_data(shell_data);
 			exit(ERR_SYNTAX_ERROR);
 		}
 		if (args[2])
-			return (print_error("exit: too many arguments"),
+			return (print_error_msg("exit: too many arguments"),
 				ERR_COMMAND_FAILED);
 	}
 	free_shell_data(shell_data);

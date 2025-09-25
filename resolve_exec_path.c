@@ -157,6 +157,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 	return (NULL);
 }
 
+// TODO ambiguous return
 int	resolve_exec_path(char **args, t_shell_data *shell_data)
 {
 	DIR		*dir;

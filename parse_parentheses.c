@@ -12,17 +12,20 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+/// errno will be set on error
 t_expr	*parse_parentheses(t_list **tokens)
 {
 	t_list	*token;
 	t_expr	*expr;
 
+	errno = 0;
 	expr = malloc(sizeof(t_expr));
 	if (!expr)
-		exit(ERR_SYSTEM);
+		return (NULL);
 	expr->type = EX_PARENTHESES;
 	expr->fd_in = STDIN_FILENO;
 	expr->fd_out = STDOUT_FILENO;
@@ -36,7 +39,7 @@ t_expr	*parse_parentheses(t_list **tokens)
 	}
 	ft_lstdelone(token, (void (*)(void *))free_token);
 	expr->data.paren.inner = parse(tokens);
-	if (!expr->data.paren.inner)
+	if (errno || !expr->data.paren.inner)
 		return (free_expr(expr), NULL);
 	token = ft_lstpop_front(tokens);
 	if (!token || ((t_token *)token->content)->type != TK_PARCLOSE)
