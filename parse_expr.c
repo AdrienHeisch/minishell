@@ -27,8 +27,7 @@ t_expr	*parse_expr(t_list **tokens, t_expr **prev)
 
 	errno = 0;
 	if (!tokens || !*tokens)
-		return (print_error_msg("syntax error: unexpected end of file"
-				), NULL);
+		return (print_error_msg("syntax error: unexpected end of file"), NULL);
 	token = (t_token *)(*tokens)->content;
 	if (!token)
 		return (NULL);

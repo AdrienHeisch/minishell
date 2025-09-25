@@ -144,6 +144,10 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 	t_list		*out;
 	t_list		*wildcard;
 	char		*pattern;
+	char		*status;
+	t_string	potential_pattern;
+	size_t		pattern_len;
+	t_string	empty;
 
 	errno = 0;
 	out = NULL;
@@ -155,7 +159,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 	has_empty_var = false;
 	while (idx < arg->length && arg->content[idx])
 	{
-		if (!del && (arg->content[idx] == '\'' || (!is_heredoc && arg->content[idx] == '"')))
+		if (!del && (arg->content[idx] == '\'' || (!is_heredoc
+				&& arg->content[idx] == '"')))
 		{
 			del = arg->content[idx];
 			idx++;
@@ -173,7 +178,7 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 			if (arg->content[idx + 1] == '?')
 			{
 				idx += 2;
-				char *status = ft_itoa(shell_data->status);
+				status = ft_itoa(shell_data->status);
 				if (!status)
 					return (NULL);
 				if (!ft_string_cat_free(&exp, status))
@@ -186,8 +191,8 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				has_empty_var = true;
 				continue ;
 			}
-			if (!del && (arg->content[idx + 1] == '\'' || (!is_heredoc && arg->content[idx
-					+ 1] == '"')))
+			if (!del && (arg->content[idx + 1] == '\'' || (!is_heredoc
+					&& arg->content[idx + 1] == '"')))
 			{
 				del = arg->content[idx + 1];
 				idx += 2;
@@ -215,15 +220,15 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				idx += len;
 				if (expand_var(&var, shell_data))
 					return (NULL);
-				t_string potential_pattern = ft_string_new();
+				potential_pattern = ft_string_new();
 				if (!potential_pattern.content)
 					return (NULL);
 				if (!ft_string_cat(&potential_pattern, var.content))
 					return (NULL);
 				if (!ft_string_cat(&potential_pattern, &arg->content[idx]))
 					return (NULL);
-				size_t pattern_len;
-				pattern = get_wildcard_pattern(potential_pattern.content, &pattern_len);
+				pattern = get_wildcard_pattern(potential_pattern.content,
+						&pattern_len);
 				if (errno)
 					return (NULL);
 				ft_string_destroy(&potential_pattern);
@@ -240,7 +245,7 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 							ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
 						ft_string_destroy(&var);
 						free(pattern);
-						continue;
+						continue ;
 					}
 				}
 				free(pattern);
@@ -267,7 +272,6 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				continue ;
 			}
 		}
-		size_t pattern_len;
 		pattern = get_wildcard_pattern(&arg->content[idx], &pattern_len);
 		if (exp.length == 0 && pattern && del == '\0')
 		{
@@ -299,7 +303,7 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 		ft_string_destroy(&exp);
 	if (ft_lstsize(out) == 0 && !has_empty_var)
 	{
-		t_string empty = ft_string_new();
+		empty = ft_string_new();
 		if (!empty.content)
 			return (NULL);
 		if (lstadd_back_string(&out, empty))
@@ -324,8 +328,8 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 	while (arg_list && arg_list->content)
 	{
 		errno = 0;
-		lst = expand_arg(&((t_arg_data *)arg_list->content)->string,
-				shell_data, false);
+		lst = expand_arg(&((t_arg_data *)arg_list->content)->string, shell_data,
+				false);
 		if (errno)
 			return (NULL);
 		while (lst)

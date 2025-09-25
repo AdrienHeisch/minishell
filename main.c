@@ -29,6 +29,7 @@ static char	**dup_env(char **envp)
 	size_t	idx;
 	char	*cwd;
 	char	*shlvl;
+	char	*new_shlvl;
 
 	len = 0;
 	while (envp[len])
@@ -55,11 +56,10 @@ static char	**dup_env(char **envp)
 	shlvl = ft_getenv(dup, "SHLVL");
 	if (shlvl)
 	{
-		char *new_shlvl = ft_itoa(ft_atoi(shlvl) + 1);
+		new_shlvl = ft_itoa(ft_atoi(shlvl) + 1);
 		if (!new_shlvl)
 			return (NULL);
-		if (ft_setenv(&dup, "SHLVL", new_shlvl,
-			true))
+		if (ft_setenv(&dup, "SHLVL", new_shlvl, true))
 			return (NULL);
 		free(new_shlvl);
 	}
@@ -156,7 +156,7 @@ static bool	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*tokens;
 	t_expr	*expr;
-	t_err err;
+	t_err	err;
 
 	if (is_only_whitespace(str))
 		return (data->status = ERR_OK, false);
@@ -165,7 +165,7 @@ static bool	parse_and_exec(t_string *str, t_shell_data *data)
 		return (print_error(), true);
 	if (err == ERR_SYNTAX_ERROR)
 	{
-		ft_lstclear(&tokens, (void(*)(void *))free_token);
+		ft_lstclear(&tokens, (void (*)(void *))free_token);
 		data->status = ERR_SYNTAX_ERROR;
 		return (true);
 	}
@@ -175,7 +175,7 @@ static bool	parse_and_exec(t_string *str, t_shell_data *data)
 		return (print_error(), true);
 	if (tokens)
 	{
-		ft_lstclear(&tokens, (void(*)(void *))free_token);
+		ft_lstclear(&tokens, (void (*)(void *))free_token);
 		data->status = ERR_SYNTAX_ERROR;
 		return (true);
 	}

@@ -27,7 +27,8 @@ t_err	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 		return (ERR_SYNTAX_ERROR);
 	cwd = getcwd(NULL, 0);
 	if (!cwd)
-		return (print_error_prefix("pwd: failed to get current directory: getcwd"), ERR_COMMAND_FAILED);
+		return (print_error_prefix("pwd: failed to get current directory: getcwd"),
+			ERR_COMMAND_FAILED);
 	ft_putstr_fd(cwd, fd_out);
 	ft_putstr_fd("\n", fd_out);
 	free(cwd);

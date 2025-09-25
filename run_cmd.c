@@ -19,6 +19,9 @@
 
 void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 {
+	int	status;
+	int	error;
+
 	if (is_builtin(*cmd.args))
 	{
 		if (exec_builtin(cmd, shell_data))
@@ -27,7 +30,7 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		free_exec_info(&cmd);
-		int status = shell_data->status;
+		status = shell_data->status;
 		free_shell_data(shell_data);
 		exit(status);
 	}
@@ -39,7 +42,7 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 			exit(ERR_SYSTEM);
 		execve(cmd.args[0], cmd.args, shell_data->envp);
 		// TODO shell scripts ?
-		int error = errno;
+		error = errno;
 		print_error_prefix(cmd.args[0]);
 		close_redirections(cmd.fd_in, cmd.fd_out);
 		close(STDIN_FILENO);

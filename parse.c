@@ -21,6 +21,7 @@ t_expr	*parse(t_list **tokens)
 	t_expr	*expr;
 	t_expr	*new;
 
+	errno = 0;
 	expr = NULL;
 	while (*tokens)
 	{

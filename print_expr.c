@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void print_redir(t_redir_data *redir)
+static void	print_redir(t_redir_data *redir)
 {
 	if (redir->type == REDIR_IN)
 		printf(" < ");

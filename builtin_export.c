@@ -124,8 +124,8 @@ t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 			continue ;
 		}
 		if (split[1])
-			ft_setenv(&shell_data->envp, split[0], args[idx] + ft_strlen(split[0])
-				+ 1, true);
+			ft_setenv(&shell_data->envp, split[0], args[idx]
+				+ ft_strlen(split[0]) + 1, true);
 		else if (ft_strchr(args[idx], '='))
 			ft_setenv(&shell_data->envp, split[0], "", true);
 		if (export_var(&shell_data->exported, split[0]))
