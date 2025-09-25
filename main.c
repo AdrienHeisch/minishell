@@ -19,7 +19,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-int			received_signal;
+int			g_received_signal;
 
 /// Will return null and errno will be set on error
 static char	**dup_env(char **envp)
@@ -210,7 +210,7 @@ int	main(int argc, char **argv, char **envp)
 	struct termios	tio;
 	char			*prompt;
 
-	received_signal = 0;
+	g_received_signal = 0;
 	if (init_signals())
 		return (print_error(), ERR_SYSTEM);
 	data.envp = dup_env(envp);
@@ -263,16 +263,16 @@ int	main(int argc, char **argv, char **envp)
 		}
 		else
 			str = readline_lite(NULL);
-		if (received_signal > 0)
+		if (g_received_signal > 0)
 		{
-			data.status = 128 + received_signal;
-			received_signal = 0;
+			data.status = 128 + g_received_signal;
+			g_received_signal = 0;
 		}
 		if (!str.content)
 			break ;
 		if (parse_and_exec(&str, &data) && !isatty(STDIN_FILENO))
 			break ;
-		received_signal = 0;
+		g_received_signal = 0;
 	}
 	ft_string_destroy(&str);
 	if (isatty(STDIN_FILENO))

@@ -20,7 +20,7 @@ static void	handle_sigint(int sig)
 {
 	t_string	str;
 
-	received_signal = sig;
+	g_received_signal = sig;
 	if (USE_READLINE && rl_readline_state & RL_STATE_READCMD)
 	{
 		str = ft_string_new();

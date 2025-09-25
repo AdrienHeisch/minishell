@@ -48,36 +48,36 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 	expr->type = EX_BINOP;
 	expr->redirs = NULL;
 	token = ft_lstpop_front(tokens);
-	expr->data.binop.op = get_op(((t_token *)token->content)->type);
+	expr->u_data.binop.op = get_op(((t_token *)token->content)->type);
 	ft_lstdelone(token, (void (*)(void *))free_token);
 	if (!prev || !*prev)
 		return (free(expr), NULL);
-	expr->data.binop.left = *prev;
+	expr->u_data.binop.left = *prev;
 	*prev = NULL;
 	// TODO use operator precedence here (remove this condition)
-	if (expr->data.binop.op == OP_PIPE)
+	if (expr->u_data.binop.op == OP_PIPE)
 	{
-		expr->data.binop.right = parse_expr(tokens, &expr->data.binop.left);
+		expr->u_data.binop.right = parse_expr(tokens, &expr->u_data.binop.left);
 		if (errno)
 			return (free_expr(expr), NULL);
-		if (!expr->data.binop.right)
+		if (!expr->u_data.binop.right)
 			return (print_error_msg("unexpected token"), free_expr(expr), NULL);
 	}
 	else
 	{
-		expr->data.binop.right = parse(tokens);
+		expr->u_data.binop.right = parse(tokens);
 		if (errno)
 			return (free_expr(expr), NULL);
-		if (!expr->data.binop.right)
+		if (!expr->u_data.binop.right)
 			return (print_error_msg("unexpected token"), free_expr(expr), NULL);
-		if (expr->data.binop.right->type == EX_BINOP
-			&& get_precedence(expr->data.binop.right->data.binop.op) <= get_precedence(expr->data.binop.op))
+		if (expr->u_data.binop.right->type == EX_BINOP
+			&& get_precedence(expr->u_data.binop.right->u_data.binop.op) <= get_precedence(expr->u_data.binop.op))
 		{
 			old = expr;
-			new = old->data.binop.right;
-			tmp = expr->data.binop.right->data.binop.left;
-			old->data.binop.right = tmp;
-			new->data.binop.left = old;
+			new = old->u_data.binop.right;
+			tmp = expr->u_data.binop.right->u_data.binop.left;
+			old->u_data.binop.right = tmp;
+			new->u_data.binop.left = old;
 			expr = new;
 		}
 	}

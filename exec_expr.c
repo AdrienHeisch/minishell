@@ -21,7 +21,7 @@ t_err	exec_expr(t_expr *expr, t_shell_data *shell_data)
 	if (expr->type == EX_CMD)
 		return (exec_cmd(expr, shell_data));
 	else if (expr->type == EX_BINOP)
-		return (exec_binop(expr->data.binop, shell_data));
+		return (exec_binop(expr->u_data.binop, shell_data));
 	else if (expr->type == EX_PARENTHESES)
 		return (exec_parentheses(expr, shell_data));
 	else

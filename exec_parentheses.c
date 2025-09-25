@@ -28,7 +28,7 @@ static t_err	child_process(t_expr *paren, t_shell_data *shell_data)
 		return (print_error(), ERR_COMMAND_FAILED);
 	if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
 		return (print_error(), ERR_COMMAND_FAILED);
-	if (exec_expr(paren->data.paren.inner, shell_data))
+	if (exec_expr(paren->u_data.paren.inner, shell_data))
 		shell_data->status = ERR_SYSTEM;
 	close_redirections(paren->fd_in, paren->fd_out);
 	close(STDIN_FILENO);

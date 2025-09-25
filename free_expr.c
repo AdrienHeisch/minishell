@@ -25,14 +25,14 @@ void	free_expr(t_expr *expr)
 	if (!expr)
 		return ;
 	if (expr->type == EX_CMD)
-		ft_lstclear(&expr->data.cmd.args, lstclear_string);
+		ft_lstclear(&expr->u_data.cmd.args, lstclear_string);
 	else if (expr->type == EX_BINOP)
 	{
-		free_expr(expr->data.binop.left);
-		free_expr(expr->data.binop.right);
+		free_expr(expr->u_data.binop.left);
+		free_expr(expr->u_data.binop.right);
 	}
 	else if (expr->type == EX_PARENTHESES)
-		free_expr(expr->data.paren.inner);
+		free_expr(expr->u_data.paren.inner);
 	else
 		exit(ERR_UNREACHABLE);
 	ft_lstclear(&expr->redirs, (void (*)(void *))free_redir);

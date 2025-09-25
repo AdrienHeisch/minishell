@@ -38,8 +38,8 @@ t_expr	*parse_parentheses(t_list **tokens)
 		token = ft_lstpop_front(tokens);
 	}
 	ft_lstdelone(token, (void (*)(void *))free_token);
-	expr->data.paren.inner = parse(tokens);
-	if (errno || !expr->data.paren.inner)
+	expr->u_data.paren.inner = parse(tokens);
+	if (errno || !expr->u_data.paren.inner)
 		return (free_expr(expr), NULL);
 	token = ft_lstpop_front(tokens);
 	if (!token || ((t_token *)token->content)->type != TK_PARCLOSE)

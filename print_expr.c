@@ -41,7 +41,7 @@ static void	print_expr_rec(t_expr *expr)
 	printf("[");
 	if (expr->type == EX_CMD)
 	{
-		lst = expr->data.cmd.args;
+		lst = expr->u_data.cmd.args;
 		while (lst)
 		{
 			printf("%s", ((t_string *)lst->content)->content);
@@ -52,21 +52,21 @@ static void	print_expr_rec(t_expr *expr)
 	}
 	else if (expr->type == EX_BINOP)
 	{
-		print_expr_rec(expr->data.binop.left);
-		if (expr->data.binop.op == OP_PIPE)
+		print_expr_rec(expr->u_data.binop.left);
+		if (expr->u_data.binop.op == OP_PIPE)
 			printf(" | ");
-		else if (expr->data.binop.op == OP_AND)
+		else if (expr->u_data.binop.op == OP_AND)
 			printf(" && ");
-		else if (expr->data.binop.op == OP_OR)
+		else if (expr->u_data.binop.op == OP_OR)
 			printf(" || ");
 		else
 			exit(ERR_UNREACHABLE);
-		print_expr_rec(expr->data.binop.right);
+		print_expr_rec(expr->u_data.binop.right);
 	}
 	else if (expr->type == EX_PARENTHESES)
 	{
 		printf("(");
-		print_expr_rec(expr->data.paren.inner);
+		print_expr_rec(expr->u_data.paren.inner);
 		printf(")");
 	}
 	else

@@ -29,9 +29,9 @@ t_err	add_redirection(t_list *token, t_list **list)
 	redir = ft_calloc(sizeof(t_redir_data), 1);
 	if (!redir)
 		return (ERR_SYSTEM);
-	redir->fd = ((t_token *)token->content)->data.redir.fd;
-	redir->type = ((t_token *)token->content)->data.redir.type;
-	ft_string_move(&((t_token *)token->content)->data.redir.file_name,
+	redir->fd = ((t_token *)token->content)->u_data.redir.fd;
+	redir->type = ((t_token *)token->content)->u_data.redir.type;
+	ft_string_move(&((t_token *)token->content)->u_data.redir.file_name,
 		&redir->file_name);
 	redir_list = ft_lstnew(redir);
 	if (!redir_list)
@@ -56,7 +56,7 @@ t_expr	*parse_cmd(t_list **tokens)
 	expr->fd_in = STDIN_FILENO;
 	expr->fd_out = STDOUT_FILENO;
 	expr->redirs = NULL;
-	expr->data.cmd.args = NULL;
+	expr->u_data.cmd.args = NULL;
 	while (*tokens && is_cmd(((t_token *)(*tokens)->content)->type))
 	{
 		token = ft_lstpop_front(tokens);
@@ -70,13 +70,13 @@ t_expr	*parse_cmd(t_list **tokens)
 		if (!arg_data)
 			return (ft_lstdelone(token, (void (*)(void *))free_token),
 				free_expr(expr), NULL);
-		ft_string_move(&((t_token *)token->content)->data.arg.string,
+		ft_string_move(&((t_token *)token->content)->u_data.arg.string,
 			&arg_data->string);
 		arg = ft_lstnew(arg_data);
 		if (!arg)
 			return (ft_lstdelone(token, (void (*)(void *))free_token),
 				free_expr(expr), free(arg_data), NULL);
-		ft_lstadd_back(&expr->data.cmd.args, arg);
+		ft_lstadd_back(&expr->u_data.cmd.args, arg);
 		ft_lstdelone(token, (void (*)(void *))free_token);
 	}
 	if (*tokens && ((t_token *)(*tokens)->content)->type == TK_PAROPEN)

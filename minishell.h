@@ -36,7 +36,7 @@
 
 typedef int					t_err;
 
-extern int					received_signal;
+extern int					g_received_signal;
 
 typedef struct s_shell_data
 {
@@ -80,7 +80,7 @@ typedef struct s_token
 			int				fd;
 			t_string		file_name;
 		} redir;
-	} data;
+	} u_data;
 }							t_token;
 
 typedef struct s_arg_data	t_arg_data;
@@ -119,7 +119,7 @@ typedef struct s_expr
 		{
 			struct s_expr	*inner;
 		} paren;
-	} data;
+	} u_data;
 	int						fd_in;
 	int						fd_out;
 	t_list					*redirs;

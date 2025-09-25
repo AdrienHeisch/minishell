@@ -32,7 +32,7 @@ t_err	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 		shell_data->status = ERR_COMMAND_FAILED;
 		return (ERR_OK);
 	}
-	cmd = expr->data.cmd;
+	cmd = expr->u_data.cmd;
 	exec = make_exec_info(cmd, expr->fd_in, expr->fd_out, shell_data);
 	if (!exec.args)
 		return (ERR_SYSTEM);

@@ -17,7 +17,7 @@
 void	print_token(t_token *token)
 {
 	if (token->type == TK_ARG)
-		printf("ARG: |%s|", token->data.arg.string.content);
+		printf("ARG: |%s|", token->u_data.arg.string.content);
 	else if (token->type == TK_PIPE)
 		printf("|");
 	else if (token->type == TK_OR)
@@ -26,17 +26,17 @@ void	print_token(t_token *token)
 		printf("&&");
 	else if (token->type == TK_REDIR)
 	{
-		if (token->data.redir.type == REDIR_IN)
+		if (token->u_data.redir.type == REDIR_IN)
 			printf("< ");
-		else if (token->data.redir.type == REDIR_HEREDOC)
+		else if (token->u_data.redir.type == REDIR_HEREDOC)
 			printf("<< ");
-		else if (token->data.redir.type == REDIR_OUT)
+		else if (token->u_data.redir.type == REDIR_OUT)
 			printf("> ");
-		else if (token->data.redir.type == REDIR_APPEND)
+		else if (token->u_data.redir.type == REDIR_APPEND)
 			printf(">> ");
 		else
 			exit(ERR_UNREACHABLE);
-		printf("%s", token->data.redir.file_name.content);
+		printf("%s", token->u_data.redir.file_name.content);
 	}
 	else if (token->type == TK_PAROPEN)
 		printf("(");

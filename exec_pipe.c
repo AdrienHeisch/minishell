@@ -23,7 +23,7 @@ static void	run_child(t_expr *expr, t_shell_data *shell_data)
 
 	if (expr->type == EX_CMD)
 	{
-		exec = make_exec_info(expr->data.cmd, expr->fd_in, expr->fd_out,
+		exec = make_exec_info(expr->u_data.cmd, expr->fd_in, expr->fd_out,
 				shell_data);
 		if (!exec.args)
 		{
@@ -83,7 +83,7 @@ static t_err	run_last_child(t_expr *expr, t_shell_data *shell_data)
 			print_error();
 		if (err)
 			return (ERR_COMMAND_FAILED);
-		exec = make_exec_info(expr->data.cmd, expr->fd_in, expr->fd_out,
+		exec = make_exec_info(expr->u_data.cmd, expr->fd_in, expr->fd_out,
 				shell_data);
 		if (!exec.args)
 			return (ERR_SYSTEM);
@@ -161,8 +161,8 @@ static t_err	build_pipeline(t_list **pipeline, t_binop pipe)
 
 	if (pipe.left->type == EX_BINOP)
 	{
-		if (pipe.left->data.binop.op == OP_PIPE)
-			build_pipeline(pipeline, pipe.left->data.binop);
+		if (pipe.left->u_data.binop.op == OP_PIPE)
+			build_pipeline(pipeline, pipe.left->u_data.binop);
 		else
 			exit(ERR_LOGIC);
 	}

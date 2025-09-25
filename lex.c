@@ -81,7 +81,7 @@ static t_err	get_token(t_string *str, size_t *idx, t_token **token)
 	if (is_arg(c))
 	{
 		tk.type = TK_ARG;
-		if (parse_arg(str, idx, &tk.data.arg.string))
+		if (parse_arg(str, idx, &tk.u_data.arg.string))
 			return (ERR_SYSTEM);
 	}
 	else if (c == '|')
@@ -108,37 +108,37 @@ static t_err	get_token(t_string *str, size_t *idx, t_token **token)
 	else if (c == '<')
 	{
 		tk.type = TK_REDIR;
-		tk.data.redir.type = REDIR_IN;
-		tk.data.redir.fd = STDIN_FILENO;
+		tk.u_data.redir.type = REDIR_IN;
+		tk.u_data.redir.fd = STDIN_FILENO;
 		(*idx)++;
 		if (str->content[*idx] == '<')
 		{
-			tk.data.redir.type = REDIR_HEREDOC;
+			tk.u_data.redir.type = REDIR_HEREDOC;
 			(*idx)++;
 		}
 		while (is_whitespace(str->content[*idx]))
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
 			return (ERR_SYNTAX_ERROR);
-		if (parse_arg(str, idx, &tk.data.redir.file_name))
+		if (parse_arg(str, idx, &tk.u_data.redir.file_name))
 			return (ERR_SYSTEM);
 	}
 	else if (c == '>')
 	{
 		tk.type = TK_REDIR;
-		tk.data.redir.type = REDIR_OUT;
-		tk.data.redir.fd = STDOUT_FILENO;
+		tk.u_data.redir.type = REDIR_OUT;
+		tk.u_data.redir.fd = STDOUT_FILENO;
 		(*idx)++;
 		if (str->content[*idx] == '>')
 		{
-			tk.data.redir.type = REDIR_APPEND;
+			tk.u_data.redir.type = REDIR_APPEND;
 			(*idx)++;
 		}
 		while (is_whitespace(str->content[*idx]))
 			(*idx)++;
 		if (!is_arg(str->content[*idx]))
 			return (ERR_SYNTAX_ERROR);
-		if (parse_arg(str, idx, &tk.data.redir.file_name))
+		if (parse_arg(str, idx, &tk.u_data.redir.file_name))
 			return (ERR_SYSTEM);
 	}
 	else if (c == '(')
