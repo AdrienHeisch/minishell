@@ -1,6 +1,7 @@
 # TODO
 
 - makefile bonus ?
+- readline redisplay color whitespace
 - error write to /dev/full
 - heredoc: single and double quotes should be inverted in input ??
 - use print_error / normalize error messages / copy bash error messages ?

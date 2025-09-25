@@ -13,6 +13,10 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
+# ifndef USE_READLINE
+#  define USE_READLINE false
+# endif // !USE_READLINE
+
 # include "libft.h"
 # include <stdbool.h>
 # include <stdio.h>
@@ -207,7 +211,7 @@ char						*ft_getenv(char **envp, const char *name);
 t_err						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 t_err						ft_unsetenv(char ***envp, const char *name);
-t_string					readline_lite(void);
+t_string					readline_lite(char *prompt);
 t_err						prompt_heredoc(int out, char *delim,
 								t_shell_data *shell_data);
 t_err						find_options(int *flags, char **args, size_t *idx,

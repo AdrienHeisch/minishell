@@ -199,13 +199,15 @@ static size_t	size_t_max(size_t a, size_t b)
 }
 
 /// errno will only be set on error
-t_string	readline_lite(void)
+t_string	readline_lite(char *prompt)
 {
 	t_string	line;
 	char		c;
 	ssize_t		n_read;
 
 	errno = 0;
+	if (prompt)
+		ft_putstr_fd(prompt, STDERR_FILENO);
 	line = ft_string_new();
 	if (!line.content)
 		return (line);
@@ -276,10 +278,13 @@ t_err	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 		if (isatty(STDIN_FILENO))
 		{
 			errno = 0;
-			line = ft_string_from(readline("> "));
+			if (USE_READLINE)
+				line = ft_string_from(readline("> "));
+			else
+				line = readline_lite("> ");
 		}
 		else
-			line = readline_lite();
+			line = readline_lite(NULL);
 		if (errno)
 			return (ERR_SYSTEM);
 		if (!line.content)

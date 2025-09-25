@@ -112,7 +112,7 @@ static char	*make_prompt(char **envp)
 	prompt = ft_string_new();
 	if (!prompt.content)
 		return (NULL);
-	if (!ft_string_cat(&prompt, "\033[32m"))
+	if (!ft_string_cat(&prompt, "\033[36m"))
 		return (NULL);
 	s = ft_getenv(envp, "USER");
 	if (!s)
@@ -255,9 +255,14 @@ int	main(int argc, char **argv, char **envp)
 		if (!prompt)
 			print_error();
 		if (isatty(STDIN_FILENO))
-			str = ft_string_from(readline(prompt));
+		{
+			if (USE_READLINE)
+				str = ft_string_from(readline(prompt));
+			else
+				str = readline_lite(prompt);
+		}
 		else
-			str = readline_lite();
+			str = readline_lite(NULL);
 		if (received_signal > 0)
 		{
 			data.status = 128 + received_signal;

@@ -21,7 +21,7 @@ static void	handle_sigint(int sig)
 	t_string	str;
 
 	received_signal = sig;
-	if (rl_readline_state & RL_STATE_READCMD)
+	if (USE_READLINE && rl_readline_state & RL_STATE_READCMD)
 	{
 		str = ft_string_new();
 		if (!str.content)
