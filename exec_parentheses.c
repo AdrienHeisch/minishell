@@ -15,7 +15,31 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
+static t_err	child_process(t_expr *paren, t_shell_data *shell_data)
+{
+	t_err	err;
+
+	err = resolve_redirections(paren, shell_data);
+	if (err == ERR_SYSTEM)
+		print_error();
+	if (err)
+		return (ERR_COMMAND_FAILED);
+	if (dup2(paren->fd_in, STDIN_FILENO) == -1)
+		return (print_error(), ERR_COMMAND_FAILED);
+	if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
+		return (print_error(), ERR_COMMAND_FAILED);
+	if (exec_expr(paren->data.paren.inner, shell_data))
+		shell_data->status = ERR_SYSTEM;
+	close_redirections(paren->fd_in, paren->fd_out);
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	free_expr(paren);
+	free_shell_data(shell_data);
+	return (shell_data->status);
+}
+
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 {
 	int	pid;
 	int	status_location;
@@ -23,28 +47,16 @@ void	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 	pid = fork();
 	if (pid == -1)
 	{
-		print_error_system(NULL);
-		exit(ERR_SYSTEM);
+		print_error();
+		return (ERR_SYSTEM);
 	}
 	if (pid == 0)
-	{
-		if (resolve_redirections(paren, shell_data))
-			exit(ERR_COMMAND_FAILED);
-		if (dup2(paren->fd_in, STDIN_FILENO) == -1)
-			exit(ERR_COMMAND_FAILED);
-		if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
-			exit(ERR_COMMAND_FAILED);
-		exec_expr(paren->data.paren.inner, shell_data);
-		close_redirections(paren->fd_in, paren->fd_out);
-		close(STDIN_FILENO);
-		close(STDOUT_FILENO);
-		free_expr(paren);
-		free_shell_data(shell_data);
-		exit(shell_data->status);
-	}
-	waitpid(pid, &status_location, 0);
+		exit(child_process(paren, shell_data));
+	if (waitpid(pid, &status_location, 0) == -1)
+		return (ERR_SYSTEM);
 	if (WIFEXITED(status_location))
 		shell_data->status = WEXITSTATUS(status_location);
 	else
 		shell_data->status = ERR_OK;
+	return (ERR_OK);
 }

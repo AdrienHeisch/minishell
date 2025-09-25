@@ -12,11 +12,13 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-static void	expand_var(t_string *var, t_shell_data *shell_data)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	expand_var(t_string *var, t_shell_data *shell_data)
 {
 	t_string	var_name;
 	char		*value;
@@ -24,13 +26,14 @@ static void	expand_var(t_string *var, t_shell_data *shell_data)
 	ft_string_move(var, &var_name);
 	*var = ft_string_new();
 	if (!var->content)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	value = ft_getenv(shell_data->envp, var_name.content);
 	if (!value)
 		value = "";
 	if (!ft_string_cat(var, value))
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	ft_string_destroy(&var_name);
+	return (ERR_OK);
 }
 
 static bool	is_var_name_start_char(char c)
@@ -43,7 +46,8 @@ static bool	is_var_name_char(char c)
 	return (ft_isalnum(c) || c == '_');
 }
 
-static void	split_var(t_string *var, t_string *exp, t_list **out)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	split_var(t_string *var, t_string *exp, t_list **out)
 {
 	char	*var_from;
 	char	*var_to;
@@ -64,21 +68,24 @@ static void	split_var(t_string *var, t_string *exp, t_list **out)
 		if (!var_to)
 		{
 			if (!ft_string_cat(exp, var_from))
-				exit(ERR_SYSTEM);
+				return (ERR_SYSTEM);
 			break ;
 		}
 		if (!ft_string_ncat(exp, var_from, var_to - var_from))
-			exit(ERR_SYSTEM);
-		lstadd_back_string(out, *exp);
+			return (ERR_SYSTEM);
+		if (lstadd_back_string(out, *exp))
+			return (ERR_SYSTEM);
 		*exp = ft_string_new();
 		if (!exp->content)
-			exit(ERR_SYSTEM);
+			return (ERR_SYSTEM);
 		var_from = var_to;
 		while (is_whitespace(*var_from))
 			var_from++;
 	}
+	return (ERR_OK);
 }
 
+/// errno will be set on error
 static char	*get_wildcard_pattern(char *s, size_t *len)
 {
 	bool		is_pattern;
@@ -89,7 +96,7 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 	is_pattern = false;
 	pattern = ft_string_new();
 	if (!pattern.content)
-		exit(ERR_SYSTEM);
+		return (NULL);
 	del = '\0';
 	idx = 0;
 	while (s[idx])
@@ -108,7 +115,7 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 		if (s[idx] != del)
 		{
 			if (!ft_string_ncat(&pattern, &s[idx], 1))
-				exit(ERR_SYSTEM);
+				return (NULL);
 		}
 		else if (del)
 			del = '\0';
@@ -123,6 +130,9 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 	return (NULL);
 }
 
+/// TODO free all relevant variables on error return
+///
+/// errno will only be set on error
 t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 {
 	size_t		idx;
@@ -135,10 +145,11 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 	t_list		*wildcard;
 	char		*pattern;
 
+	errno = 0;
 	out = NULL;
 	exp = ft_string_new();
 	if (!exp.content)
-		exit(ERR_SYSTEM);
+		return (NULL);
 	del = '\0';
 	idx = 0;
 	has_empty_var = false;
@@ -164,9 +175,9 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				idx += 2;
 				char *status = ft_itoa(shell_data->status);
 				if (!status)
-					exit(ERR_SYSTEM);
+					return (NULL);
 				if (!ft_string_cat_free(&exp, status))
-					exit(ERR_SYSTEM);
+					return (NULL);
 				continue ;
 			}
 			if (arg->content[idx + 1] == '*')
@@ -185,7 +196,7 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 					+ len] != del)
 					len++;
 				if (!ft_string_ncat(&exp, &arg->content[idx], len))
-					exit(ERR_SYSTEM);
+					return (NULL);
 				idx += len;
 				continue ;
 			}
@@ -195,28 +206,34 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				len = 0;
 				var = ft_string_new();
 				if (!var.content)
-					exit(ERR_SYSTEM);
+					return (NULL);
 				while (idx + len < arg->length
 					&& is_var_name_char(arg->content[idx + len]))
 					len++;
 				if (!ft_string_ncat(&var, &arg->content[idx], len))
-					exit(ERR_SYSTEM);
+					return (NULL);
 				idx += len;
-				expand_var(&var, shell_data);
+				if (expand_var(&var, shell_data))
+					return (NULL);
 				t_string potential_pattern = ft_string_new();
 				if (!potential_pattern.content)
-					exit(ERR_SYSTEM);
+					return (NULL);
 				if (!ft_string_cat(&potential_pattern, var.content))
-					exit(ERR_SYSTEM);
+					return (NULL);
 				if (!ft_string_cat(&potential_pattern, &arg->content[idx]))
-					exit(ERR_SYSTEM);
+					return (NULL);
 				size_t pattern_len;
 				pattern = get_wildcard_pattern(potential_pattern.content, &pattern_len);
+				if (errno)
+					return (NULL);
 				ft_string_destroy(&potential_pattern);
 				if (pattern && del == '\0')
 				{
 					idx += pattern_len - var.length;
+					errno = 0;
 					wildcard = expand_wildcards(pattern);
+					if (errno)
+						return (NULL);
 					if (wildcard)
 					{
 						while (wildcard)
@@ -230,11 +247,14 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 				if (var.length == 0)
 					has_empty_var = true;
 				else if (del == '\0')
-					split_var(&var, &exp, &out);
+				{
+					if (split_var(&var, &exp, &out))
+						return (NULL);
+				}
 				else
 				{
 					if (!ft_string_cat(&exp, var.content))
-						exit(ERR_SYSTEM);
+						return (NULL);
 				}
 				ft_string_destroy(&var);
 				continue ;
@@ -252,11 +272,14 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 		if (exp.length == 0 && pattern && del == '\0')
 		{
 			idx += pattern_len;
+			errno = 0;
 			wildcard = expand_wildcards(pattern);
+			if (errno)
+				return (NULL);
 			if (!wildcard)
 			{
 				if (!ft_string_cat_free(&exp, pattern))
-					exit(ERR_SYSTEM);
+					return (NULL);
 			}
 			while (wildcard)
 				ft_lstadd_back(&out, ft_lstpop_front(&wildcard));
@@ -264,23 +287,30 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 		}
 		free(pattern);
 		if (!ft_string_ncat(&exp, &arg->content[idx], 1))
-			exit(ERR_SYSTEM);
+			return (NULL);
 		idx++;
 	}
 	if (exp.length > 0)
-		lstadd_back_string(&out, exp);
+	{
+		if (lstadd_back_string(&out, exp))
+			return (NULL);
+	}
 	else
 		ft_string_destroy(&exp);
 	if (ft_lstsize(out) == 0 && !has_empty_var)
 	{
 		t_string empty = ft_string_new();
 		if (!empty.content)
-			exit(ERR_SYSTEM);
-		lstadd_back_string(&out, empty);
+			return (NULL);
+		if (lstadd_back_string(&out, empty))
+			return (NULL);
 	}
 	return (out);
 }
 
+/// TODO free all relevant variables on error return
+///
+/// Will return null and errno will be set on error
 char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 {
 	char	**args;
@@ -293,22 +323,25 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 	arg_list = cmd.args;
 	while (arg_list && arg_list->content)
 	{
+		errno = 0;
 		lst = expand_arg(&((t_arg_data *)arg_list->content)->string,
 				shell_data, false);
+		if (errno)
+			return (NULL);
 		while (lst)
 			ft_lstadd_back(&expanded, ft_lstpop_front(&lst));
 		arg_list = arg_list->next;
 	}
 	args = ft_calloc((ft_lstsize(expanded) + 1), sizeof(char *));
 	if (!args)
-		exit(ERR_SYSTEM);
+		return (NULL);
 	idx = 0;
 	arg_list = expanded;
 	while (arg_list && arg_list->content)
 	{
 		args[idx] = ft_strdup(((t_arg_data *)arg_list->content)->string.content);
 		if (!args[idx])
-			exit (ERR_SYSTEM);
+			return (free_tab((void ***)&args), NULL);
 		idx++;
 		arg_list = arg_list->next;
 	}

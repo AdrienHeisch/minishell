@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-int	builtin_env(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_env(char **args, t_shell_data *shell_data, int fd_out)
 {
 	size_t	env_idx;
 	int		flags;

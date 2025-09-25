@@ -59,3 +59,13 @@ t_string	*ft_string_cat_free(t_string *str, char *cat)
 	free(cat);
 	return (str);
 }
+
+t_string	*ft_string_cats(t_string *str, const char **cats)
+{
+	size_t	idx;
+
+	idx = 0;
+	while (str && cats[idx])
+		str = ft_string_cat(str, cats[idx++]);
+	return (str);
+}

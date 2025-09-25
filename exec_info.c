@@ -11,34 +11,45 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
-static void	set_last_arg(char **args, t_shell_data *shell_data)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	set_last_arg(char **args, t_shell_data *shell_data)
 {
 	size_t	idx;
 
 	idx = 0;
 	while (args[idx] && args[idx + 1])
 		idx++;
-	if (args[idx])
-		ft_setenv(&shell_data->envp, "_", args[idx], true);
+	if (args[idx] && ft_setenv(&shell_data->envp, "_", args[idx], true))
+		return (ERR_SYSTEM);
+	return (ERR_OK);
 }
 
-t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out, t_shell_data *shell_data)
+// TODO make error handling clearer (-1 should not be OK !)
+
+/// .args will be null and errno will be set on execution error.
+/// .error will be -1 if there is no command resolution error
+t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out,
+		t_shell_data *shell_data)
 {
 	t_exec_info	exec;
 	char		*path;
 
 	exec.args = make_arg_list(cmd, shell_data);
+	if (!exec.args)
+		return (exec);
 	path = exec.args[0];
 	if (is_builtin(exec.args[0]))
 		exec.error = -1;
 	else
 		exec.error = resolve_exec_path(exec.args, shell_data);
-	if (exec.error >= 0)
+	if (exec.error > 0)
 		print_error_code(path, exec.error);
 	exec.fd_in = fd_in;
 	exec.fd_out = fd_out;
-	set_last_arg(exec.args, shell_data);
+	if (set_last_arg(exec.args, shell_data))
+		return (print_error(), exec.error = ERR_SYSTEM, exec); // FIXME ERR_SYSTEM is ok for exec.error !
 	return (exec);
 }
 

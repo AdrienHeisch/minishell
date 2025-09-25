@@ -2,3 +2,6 @@ minishell
 objs/
 vgcore.*
 maxitest
+.cache/
+compile_commands.json
+allowed_functions.txt

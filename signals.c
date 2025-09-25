@@ -14,7 +14,6 @@
 #include "minishell.h"
 #include <readline/readline.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 static void	handle_sigint(int sig)
@@ -26,11 +25,11 @@ static void	handle_sigint(int sig)
 	{
 		str = ft_string_new();
 		if (!str.content)
-			exit(ERR_SYSTEM);
+			return (print_error(), (void)0);
 		if (!ft_string_cat(&str, rl_line_buffer))
-			exit(ERR_SYSTEM);
+			return (print_error(), (void)0);
 		if (!ft_string_cat(&str, "^C"))
-			exit(ERR_SYSTEM);
+			return (print_error(), (void)0);
 		rl_replace_line(str.content, false);
 		rl_redisplay();
 		rl_on_new_line();
@@ -47,14 +46,19 @@ static void	handle_sigquit(int sig)
 		rl_redisplay();
 }
 
-void	init_signals(void)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	init_signals(void)
 {
 	struct sigaction	sig;
 
-	sigemptyset(&sig.sa_mask);
+	if (sigemptyset(&sig.sa_mask))
+		return (ERR_SYSTEM);
 	sig.sa_flags = 0;
 	sig.sa_handler = handle_sigint;
-	sigaction(SIGINT, &sig, NULL);
+	if (sigaction(SIGINT, &sig, NULL))
+		return (ERR_SYSTEM);
 	sig.sa_handler = handle_sigquit;
-	sigaction(SIGQUIT, &sig, NULL);
+	if (sigaction(SIGQUIT, &sig, NULL))
+		return (ERR_SYSTEM);
+	return (ERR_OK);
 }

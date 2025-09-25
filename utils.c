@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <readline/readline.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -65,24 +66,20 @@ char	*ft_getenv(char **envp, const char *name)
 {
 	int		idx;
 	size_t	len;
-	char	*name_suffix;
 
-	name_suffix = ft_strjoin(name, "=");
-	if (!name_suffix)
-		exit(ERR_SYSTEM);
-	len = ft_strlen(name_suffix);
+	len = ft_strlen(name);
 	idx = 0;
 	while (envp[idx])
 	{
-		if (ft_strncmp(envp[idx], name_suffix, len) == 0)
-			return (free(name_suffix), envp[idx] + len);
+		if (ft_strncmp(envp[idx], name, len) == 0 && envp[idx][len] == '=')
+			return (envp[idx] + len + 1);
 		idx++;
 	}
-	free(name_suffix);
 	return (NULL);
 }
 
-static void	add_to_env(char ***envp, const char *name, const char *value)
+/// Returns ERR_OK or ERR_SYSTEM
+static t_err	add_to_env(char ***envp, const char *name, const char *value)
 {
 	char	**old;
 	char	**new;
@@ -95,24 +92,27 @@ static void	add_to_env(char ***envp, const char *name, const char *value)
 		len++;
 	new = malloc((len + 2) * sizeof(char *));
 	if (!new)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	ft_memcpy(new, old, len * sizeof(char *));
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	new[len] = ft_strjoin(name_suffix, value);
 	if (!new[len])
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	new[len + 1] = NULL;
 	free(name_suffix);
 	free(old);
 	*envp = new;
+	return (ERR_OK);
 }
 
-void	ft_setenv(char ***envp, const char *name, const char *value,
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	ft_setenv(char ***envp, const char *name, const char *value,
 		int overwrite)
 {
 	char	*name_suffix;
+	char	*name_new;
 	size_t	len;
 	size_t	idx;
 
@@ -121,31 +121,34 @@ void	ft_setenv(char ***envp, const char *name, const char *value,
 	if (!ft_getenv(*envp, name))
 	{
 		add_to_env(envp, name, value);
-		return ;
+		return (ERR_OK);
 	}
 	if (!overwrite)
-		return ;
+		return (ERR_OK);
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	len = ft_strlen(name_suffix);
 	idx = 0;
 	while ((*envp)[idx])
 	{
 		if (ft_strncmp((*envp)[idx], name_suffix, len) == 0)
 		{
+			name_new = ft_strjoin(name_suffix, value);
+			if (!name_new)
+				return (free(name_suffix), ERR_SYSTEM);
 			free((*envp)[idx]);
-			(*envp)[idx] = ft_strjoin(name_suffix, value);
-			if (!(*envp)[idx])
-				exit(ERR_OK);
+			(*envp)[idx] = name_new;
 			break ;
 		}
 		idx++;
 	}
 	free(name_suffix);
+	return (ERR_OK);
 }
 
-void	ft_unsetenv(char ***envp, const char *name)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	ft_unsetenv(char ***envp, const char *name)
 {
 	char	**old;
 	char	**new;
@@ -155,17 +158,17 @@ void	ft_unsetenv(char ***envp, const char *name)
 	size_t	n_skipped;
 
 	if (!ft_getenv(*envp, name))
-		return ;
+		return (ERR_OK);
 	old = *envp;
 	len = 0;
 	while (old[len])
 		len++;
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	new = malloc(len * sizeof(char *));
 	if (!new)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	idx = 0;
 	n_skipped = 0;
 	while (idx + n_skipped < len)
@@ -184,6 +187,7 @@ void	ft_unsetenv(char ***envp, const char *name)
 	free(name_suffix);
 	free(old);
 	*envp = new;
+	return (ERR_OK);
 }
 
 static size_t	size_t_max(size_t a, size_t b)
@@ -194,46 +198,17 @@ static size_t	size_t_max(size_t a, size_t b)
 		return (b);
 }
 
-static char	*process_heredoc_delim(char *delim)
-{
-	char		*quote;
-	char		*s;
-	t_string	out;
-	char		*rec;
-
-	quote = ft_strchr(delim, '"');
-	if (!quote)
-		quote = ft_strchr(delim, '\'');
-	if (!quote)
-		return (NULL);
-	out = ft_string_new();
-	if (!out.content)
-		exit(ERR_SYSTEM);
-	s = delim;
-	while (*s)
-	{
-		if (*s != *quote)
-		{
-			if (!ft_string_ncat(&out, s, 1))
-				exit(ERR_SYSTEM);
-		}
-		s++;
-	}
-	rec = process_heredoc_delim(out.content);
-	if (rec)
-		return (rec);
-	return (out.content);
-}
-
+/// errno will only be set on error
 t_string	readline_lite(void)
 {
 	t_string	line;
 	char		c;
 	ssize_t		n_read;
 
+	errno = 0;
 	line = ft_string_new();
 	if (!line.content)
-		exit(ERR_SYSTEM);
+		return (line);
 	while (1)
 	{
 		n_read = read(STDIN_FILENO, &c, 1);
@@ -248,24 +223,65 @@ t_string	readline_lite(void)
 	}
 }
 
-void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
+/// errno will only be set on error
+static char	*process_heredoc_delim(char *delim)
+{
+	char		*quote;
+	char		*s;
+	t_string	out;
+	char		*rec;
+
+	errno = 0;
+	quote = ft_strchr(delim, '"');
+	if (!quote)
+		quote = ft_strchr(delim, '\'');
+	if (!quote)
+		return (NULL);
+	out = ft_string_new();
+	if (!out.content)
+		return (NULL);
+	s = delim;
+	while (*s)
+	{
+		if (*s != *quote)
+		{
+			if (!ft_string_ncat(&out, s, 1))
+				return (NULL);
+		}
+		s++;
+	}
+	rec = process_heredoc_delim(out.content);
+	if (errno)
+		return (NULL);
+	if (rec)
+		return (rec);
+	return (out.content);
+}
+
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 {
 	char		*no_expand;
 	t_string	line;
 	t_list		*expanded;
 	t_list		*o_expanded;
 
-	if (!delim)
-		return ;
 	no_expand = process_heredoc_delim(delim);
+	if (errno)
+		return (ERR_SYSTEM);
 	if (no_expand)
 		delim = no_expand;
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
+		{
+			errno = 0;
 			line = ft_string_from(readline("> "));
+		}
 		else
 			line = readline_lite();
+		if (errno)
+			return (ERR_SYSTEM);
 		if (!line.content)
 			break ; // TODO error handling
 		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
@@ -276,6 +292,12 @@ void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 		else
 		{
 			o_expanded = expand_arg(&line, shell_data, true);
+			if (errno)
+			{
+				if (no_expand)
+					free(delim);
+				return (ERR_SYSTEM);
+			}
 			expanded = o_expanded;
 			while (expanded && expanded->content)
 			{
@@ -289,6 +311,7 @@ void	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 	}
 	if (no_expand)
 		free(delim);
+	return (ERR_OK);
 }
 
 static bool	parse_options(char *arg, int *flags, char *options)
@@ -319,7 +342,8 @@ static bool	parse_options(char *arg, int *flags, char *options)
 	return (true);
 }
 
-int	find_options(int *flags, char **args, size_t *idx, char *options)
+/// Returns ERR_OK or ERR_SYNTAX_ERROR
+t_err	find_options(int *flags, char **args, size_t *idx, char *options)
 {
 	*flags = 0;
 	while (args[*idx] && args[*idx][0] == '-')
@@ -327,27 +351,29 @@ int	find_options(int *flags, char **args, size_t *idx, char *options)
 		if (!args[*idx][1])
 			break ;
 		if (args[*idx][1] == '-' || !options)
-			return (-1);
+			return (ERR_SYNTAX_ERROR);
 		if (!parse_options(args[*idx], flags, options))
-			return (-1);
+			return (ERR_SYNTAX_ERROR);
 		(*idx)++;
 	}
-	return (0);
+	return (ERR_OK);
 }
 
-void	lstadd_back_string(t_list **list, t_string str)
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	lstadd_back_string(t_list **list, t_string str)
 {
 	t_string	*cell;
 	t_list		*new;
 
 	cell = (t_string *)malloc(sizeof(t_string));
 	if (!cell)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	*cell = str;
 	new = ft_lstnew(cell);
 	if (!new)
-		exit(ERR_SYSTEM);
+		return (ERR_SYSTEM);
 	ft_lstadd_back(list, new);
+	return (ERR_OK);
 }
 
 void	free_tab(void ***tab)

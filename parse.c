@@ -12,8 +12,10 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <errno.h>
 #include <stdlib.h>
 
+/// errno will only be set on error
 t_expr	*parse(t_list **tokens)
 {
 	t_expr	*expr;
@@ -23,9 +25,9 @@ t_expr	*parse(t_list **tokens)
 	while (*tokens)
 	{
 		if (((t_token *)(*tokens)->content)->type == TK_PARCLOSE)
-			return (print_error("unexpected token ')'"), expr);
+			return (print_error_msg("unexpected token ')'"), expr);
 		new = parse_expr(tokens, &expr);
-		if (!new || expr)
+		if (errno || !new || expr)
 			return (free_expr(new), free_expr(expr), NULL);
 		expr = new;
 	}
