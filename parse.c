@@ -32,6 +32,5 @@ t_expr	*parse(t_list **tokens)
 			return (free_expr(new), free_expr(expr), NULL);
 		expr = new;
 	}
-	// print_expr(expr);
 	return (expr);
 }

@@ -153,7 +153,6 @@ static t_err	get_token(t_string *str, size_t *idx, t_token **token)
 	}
 	else
 		return (ERR_OK);
-	;
 	*token = malloc(sizeof(t_token));
 	if (!*token)
 		return (ERR_SYSTEM);

@@ -169,7 +169,6 @@ static bool	parse_and_exec(t_string *str, t_shell_data *data)
 		data->status = ERR_SYNTAX_ERROR;
 		return (true);
 	}
-	// ft_lstiter(tokens, (void (*)(void *))print_token);
 	expr = parse(&tokens);
 	if (errno)
 		return (print_error(), true);

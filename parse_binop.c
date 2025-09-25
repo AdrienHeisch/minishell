@@ -54,7 +54,6 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 		return (free(expr), NULL);
 	expr->u_data.binop.left = *prev;
 	*prev = NULL;
-	// TODO use operator precedence here (remove this condition)
 	if (expr->u_data.binop.op == OP_PIPE)
 	{
 		expr->u_data.binop.right = parse_expr(tokens, &expr->u_data.binop.left);
