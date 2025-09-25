@@ -288,7 +288,7 @@ t_err	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 		if (errno)
 			return (ERR_SYSTEM);
 		if (!line.content)
-			break ; // TODO error handling
+			break ;
 		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
 					ft_strlen(delim))))
 			break ;

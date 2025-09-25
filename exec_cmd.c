@@ -43,7 +43,7 @@ t_err	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 		close_redirections(expr->fd_in, expr->fd_out);
 		return (ERR_OK);
 	}
-	if (is_builtin(exec.args[0])) // DESIGN also checked in run_cmd
+	if (is_builtin(exec.args[0]))
 	{
 		if (exec_builtin(exec, shell_data))
 		{

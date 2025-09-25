@@ -49,7 +49,7 @@ t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out,
 	exec.fd_in = fd_in;
 	exec.fd_out = fd_out;
 	if (set_last_arg(exec.args, shell_data))
-		return (print_error(), exec.error = ERR_SYSTEM, exec); // FIXME ERR_SYSTEM is ok for exec.error !
+		return (free_tab((void ***)&exec.args), exec);
 	return (exec);
 }
 

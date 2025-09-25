@@ -41,7 +41,6 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
 			exit(ERR_SYSTEM);
 		execve(cmd.args[0], cmd.args, shell_data->envp);
-		// TODO shell scripts ?
 		error = errno;
 		print_error_prefix(cmd.args[0]);
 		close_redirections(cmd.fd_in, cmd.fd_out);
