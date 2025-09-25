@@ -42,7 +42,7 @@ SRCS = \
 #	CONFIG
 
 CC = cc
-CFLAGS += -Wall -Wextra -g3
+CFLAGS += -Wall -Wextra -Werror -g3
 OBJS_PATH = objs/
 
 LIBFT_PATH = libft/
