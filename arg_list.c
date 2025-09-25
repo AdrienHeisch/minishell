@@ -312,8 +312,6 @@ t_list	*expand_arg(t_string *arg, t_shell_data *shell_data, bool is_heredoc)
 	return (out);
 }
 
-/// TODO free all relevant variables on error return
-///
 /// Will return null and errno will be set on error
 char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 {
@@ -331,21 +329,23 @@ char	**make_arg_list(t_cmd cmd, t_shell_data *shell_data)
 		lst = expand_arg(&((t_arg_data *)arg_list->content)->string, shell_data,
 				false);
 		if (errno)
-			return (NULL);
+			return (ft_lstclear(&expanded, lstclear_string), ft_lstclear(&lst,
+					lstclear_string), NULL);
 		while (lst)
 			ft_lstadd_back(&expanded, ft_lstpop_front(&lst));
 		arg_list = arg_list->next;
 	}
 	args = ft_calloc((ft_lstsize(expanded) + 1), sizeof(char *));
 	if (!args)
-		return (NULL);
+		return (ft_lstclear(&expanded, lstclear_string), NULL);
 	idx = 0;
 	arg_list = expanded;
 	while (arg_list && arg_list->content)
 	{
 		args[idx] = ft_strdup(((t_arg_data *)arg_list->content)->string.content);
 		if (!args[idx])
-			return (free_tab((void ***)&args), NULL);
+			return (ft_lstclear(&expanded, lstclear_string),
+				free_tab((void ***)&args), NULL);
 		idx++;
 		arg_list = arg_list->next;
 	}
