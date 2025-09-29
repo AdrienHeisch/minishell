@@ -22,7 +22,7 @@
 # include <stdio.h>
 
 // If a function returns ERR_SYSTEM, errno will always be set
-# define ERR_SYSTEM -1
+# define ERR_SYSTEM 255
 
 # define ERR_OK 0
 # define ERR_COMMAND_FAILED 1

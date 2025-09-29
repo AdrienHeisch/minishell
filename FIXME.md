@@ -1,5 +1,6 @@
 # FIXME
 
+- (cat << eof) complains about unexpected ')'
 - prompt overwrites itself on small terminal
 - readline redisplay color whitespace
 
