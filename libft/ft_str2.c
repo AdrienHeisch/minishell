@@ -32,3 +32,19 @@ char	*ft_strncpy(char *dest, const char *src, int n)
 	}
 	return (dest);
 }
+
+char	*ft_strnchr(const char *s, int c, size_t n)
+{
+	size_t	idx;
+
+	idx = 0;
+	while (idx++ < n)
+	{
+		if (*s == (char)c)
+			return ((char *)s);
+		if (*s == '\0')
+			return (NULL);
+		s++;
+	}
+	return (NULL);
+}

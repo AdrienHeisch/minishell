@@ -139,6 +139,8 @@ typedef struct s_exec_info
 
 void						free_shell_data(t_shell_data *shell_data);
 
+char						*make_prompt(char **envp);
+
 t_err						init_signals(void);
 
 struct termios				set_terminal_attributes(void);
