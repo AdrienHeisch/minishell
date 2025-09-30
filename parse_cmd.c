@@ -40,13 +40,38 @@ t_err	add_redirection(t_list *token, t_list **list)
 	return (ERR_OK);
 }
 
+static t_expr	*process_token(t_list **tokens, t_expr *expr)
+{
+	t_list		*token;
+	t_arg_data	*arg_data;
+	t_list		*arg;
+
+	token = ft_lstpop_front(tokens);
+	if (((t_token *)token->content)->type == TK_REDIR)
+	{
+		add_redirection(token, &expr->redirs);
+		ft_lstdelone(token, (void (*)(void *))free_token);
+		return (expr);
+	}
+	arg_data = malloc(sizeof(t_arg_data));
+	if (!arg_data)
+		return (ft_lstdelone(token, (void (*)(void *))free_token),
+			free_expr(expr), NULL);
+	ft_string_move(&((t_token *)token->content)->u_data.arg.string,
+		&arg_data->string);
+	arg = ft_lstnew(arg_data);
+	if (!arg)
+		return (ft_lstdelone(token, (void (*)(void *))free_token),
+			free_expr(expr), free(arg_data), NULL);
+	ft_lstadd_back(&expr->u_data.cmd.args, arg);
+	ft_lstdelone(token, (void (*)(void *))free_token);
+	return (expr);
+}
+
 /// errno will be set on error
 t_expr	*parse_cmd(t_list **tokens)
 {
 	t_expr		*expr;
-	t_list		*token;
-	t_arg_data	*arg_data;
-	t_list		*arg;
 
 	errno = 0;
 	expr = malloc(sizeof(t_expr));
@@ -59,25 +84,8 @@ t_expr	*parse_cmd(t_list **tokens)
 	expr->u_data.cmd.args = NULL;
 	while (*tokens && is_cmd(((t_token *)(*tokens)->content)->type))
 	{
-		token = ft_lstpop_front(tokens);
-		if (((t_token *)token->content)->type == TK_REDIR)
-		{
-			add_redirection(token, &expr->redirs);
-			ft_lstdelone(token, (void (*)(void *))free_token);
-			continue ;
-		}
-		arg_data = malloc(sizeof(t_arg_data));
-		if (!arg_data)
-			return (ft_lstdelone(token, (void (*)(void *))free_token),
-				free_expr(expr), NULL);
-		ft_string_move(&((t_token *)token->content)->u_data.arg.string,
-			&arg_data->string);
-		arg = ft_lstnew(arg_data);
-		if (!arg)
-			return (ft_lstdelone(token, (void (*)(void *))free_token),
-				free_expr(expr), free(arg_data), NULL);
-		ft_lstadd_back(&expr->u_data.cmd.args, arg);
-		ft_lstdelone(token, (void (*)(void *))free_token);
+		if (process_token(tokens, expr) == NULL)
+			return (NULL);
 	}
 	if (*tokens && ((t_token *)(*tokens)->content)->type == TK_PAROPEN)
 		return (free_expr(expr), NULL);
