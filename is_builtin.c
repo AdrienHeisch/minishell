@@ -16,7 +16,7 @@
 bool	is_builtin(char *name)
 {
 	static const char	*list[] = {"cd", "echo", "env", "exit", "export", "pwd",
-			"unset", 0};
+		"unset", 0};
 	size_t				len;
 	size_t				idx;
 

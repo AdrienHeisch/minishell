@@ -17,25 +17,6 @@
 
 #define EXPORT_PREFIX "declare -x"
 
-static int	allowed_char(int c)
-{
-	return (ft_isalnum(c) || c == '_');
-}
-
-/// Returns ERR_OK or ERR_COMMAND_FAILED
-static t_err	is_valid_var(char *name)
-{
-	if (ft_strlen(name) == 0)
-		return (ERR_COMMAND_FAILED);
-	if (ft_strchr(name, '!'))
-		return (ERR_COMMAND_FAILED);
-	if (ft_isdigit(name[0]))
-		return (ERR_COMMAND_FAILED);
-	if (!is_str_all(name, allowed_char))
-		return (ERR_COMMAND_FAILED);
-	return (ERR_OK);
-}
-
 /// Returns ERR_OK or ERR_SYSTEM
 t_err	export_var(char ***exported, const char *name)
 {
@@ -60,28 +41,21 @@ t_err	export_var(char ***exported, const char *name)
 	return (ERR_OK);
 }
 
-t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
+t_err	print_shelldata(char **args, t_shell_data *shell_data,
+	int fd_out, size_t *idx)
 {
-	size_t	idx;
-	char	**split;
 	char	*value;
-	int		valid_var_code;
-	int		flags;
-	int		status;
 
-	idx = 1;
-	if (find_options(&flags, args, &idx, NULL))
-		return (ERR_SYNTAX_ERROR);
-	if (!args[idx])
+	if (!args[*idx])
 	{
-		idx = 0;
-		while (shell_data->exported[idx])
+		*idx = 0;
+		while (shell_data->exported[*idx])
 		{
 			ft_putstr_fd(EXPORT_PREFIX, fd_out);
 			ft_putstr_fd(" ", fd_out);
-			ft_putstr_fd(shell_data->exported[idx], fd_out);
+			ft_putstr_fd(shell_data->exported[*idx], fd_out);
 			errno = 0;
-			value = ft_getenv(shell_data->envp, shell_data->exported[idx]);
+			value = ft_getenv(shell_data->envp, shell_data->exported[*idx]);
 			if (value)
 			{
 				ft_putstr_fd("=\"", fd_out);
@@ -89,10 +63,72 @@ t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 				ft_putstr_fd("\"", fd_out);
 			}
 			ft_putstr_fd("\n", fd_out);
-			idx++;
+			(*idx)++;
 		}
 		return (ERR_OK);
 	}
+	return (111999);
+}
+
+t_err	split_export(char ***split, int *status, char **args, size_t *idx)
+{
+	int		valid_var_code;
+
+	*split = ft_split(args[*idx], '=');
+	if (!*split)
+		return (ERR_SYSTEM);
+	if ((*split)[0] == NULL)
+	{
+		print_error_msg("export: not a valid identifier");
+		*status = ERR_COMMAND_FAILED;
+		(*idx)++;
+		free_tab((void ***)split);
+		return (111999);
+	}
+	valid_var_code = is_valid_var((*split)[0]);
+	if (valid_var_code)
+	{
+		print_error_msg("export: not a valid identifier");
+		*status = valid_var_code;
+		(*idx)++;
+		free_tab((void ***)split);
+		return (111999);
+	}
+	return (0);
+}
+
+t_err	export_details_check(int *status, char **args,
+	t_shell_data *shell_data, size_t *idx)
+{
+	char	**split;
+	int		ret;
+
+	split = ft_split(args[*idx], '=');
+	ret = split_export(&split, status, args, idx);
+	if (ret == 111999 || ret == ERR_SYSTEM)
+		return (111999);
+	if (split[1])
+		ft_setenv(&shell_data->envp, split[0], args[*idx]
+			+ ft_strlen(split[0]) + 1, true);
+	else if (ft_strchr(args[*idx], '='))
+		ft_setenv(&shell_data->envp, split[0], "", true);
+	if (export_var(&shell_data->exported, split[0]))
+		return (free_tab((void ***)&split), ERR_SYSTEM);
+	free_tab((void ***)&split);
+	return (ERR_OK);
+}
+
+t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
+{
+	size_t	idx;
+	int		flags;
+	int		status;
+
+	idx = 1;
+	if (find_options(&flags, args, &idx, NULL))
+		return (ERR_SYNTAX_ERROR);
+	if (print_shelldata(args, shell_data, fd_out, &idx) == ERR_OK)
+		return (ERR_OK);
 	status = ERR_OK;
 	while (args[idx])
 	{
@@ -103,35 +139,8 @@ t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
 			idx++;
 			continue ;
 		}
-		split = ft_split(args[idx], '=');
-		if (!split)
-			return (ERR_SYSTEM);
-		if (!split[0])
-		{
-			print_error_msg("export: not a valid identifier");
-			status = ERR_COMMAND_FAILED;
+		if (export_details_check(&status, args, shell_data, &idx) == ERR_OK)
 			idx++;
-			free_tab((void ***)&split);
-			continue ;
-		}
-		valid_var_code = is_valid_var(split[0]);
-		if (valid_var_code)
-		{
-			print_error_msg("export: not a valid identifier");
-			status = valid_var_code;
-			idx++;
-			free_tab((void ***)&split);
-			continue ;
-		}
-		if (split[1])
-			ft_setenv(&shell_data->envp, split[0], args[idx]
-				+ ft_strlen(split[0]) + 1, true);
-		else if (ft_strchr(args[idx], '='))
-			ft_setenv(&shell_data->envp, split[0], "", true);
-		if (export_var(&shell_data->exported, split[0]))
-			return (free_tab((void ***)&split), ERR_SYSTEM);
-		free_tab((void ***)&split);
-		idx++;
 	}
 	return (status);
 }

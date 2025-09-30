@@ -144,6 +144,10 @@ t_err						init_signals(void);
 struct termios				set_terminal_attributes(void);
 void						restore_terminal_attributes(struct termios *original_tio);
 
+t_list						*expand_arg(t_string *arg, t_shell_data *shell_data,
+								bool is_heredoc);
+
+
 void						print_token(t_token *token);
 void						free_token(t_token *token);
 void						print_expr(t_expr *expr);
@@ -175,14 +179,17 @@ t_err						builtin_env(char **args, t_shell_data *shell_data,
 t_err						builtin_exit(char **args, t_shell_data *shell_data);
 t_err						builtin_export(char **args,
 								t_shell_data *shell_data, int fd_out);
+int							allowed_char(int c);
+t_err						is_valid_var(char *name);
+
+char						*make_prompt(char **envp);
+
 t_err						builtin_unset(char **args,
 								t_shell_data *shell_data);
 t_err						builtin_pwd(char **args, t_shell_data *shell_data,
 								int fd_out);
 t_err						export_var(char ***exported, const char *name);
 
-t_list						*expand_arg(t_string *arg, t_shell_data *shell_data,
-								bool is_heredoc);
 char						**make_arg_list(t_cmd cmd,
 								t_shell_data *shell_data);
 
