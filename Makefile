@@ -93,8 +93,8 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
-	rm debug
-	rm leaks
+	rm -f debug
+	rm -f leaks
 	$(MAKE) -C $(LIBFT_PATH) fclean
 
 re: fclean all
