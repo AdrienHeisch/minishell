@@ -29,28 +29,11 @@ static void	print_redir(t_redir_data *redir)
 	printf("%s", redir->file_name.content);
 }
 
-static void	print_expr_rec(t_expr *expr)
-{
-	t_list	*lst;
+static void	print_expr_rec(t_expr *expr);
 
-	if (!expr)
-	{
-		printf("(null)");
-		return ;
-	}
-	printf("[");
-	if (expr->type == EX_CMD)
-	{
-		lst = expr->u_data.cmd.args;
-		while (lst)
-		{
-			printf("%s", ((t_string *)lst->content)->content);
-			lst = lst->next;
-			if (lst)
-				printf(" ");
-		}
-	}
-	else if (expr->type == EX_BINOP)
+static void	print_expr_binop(t_expr *expr)
+{
+	if (expr->type == EX_BINOP)
 	{
 		print_expr_rec(expr->u_data.binop.left);
 		if (expr->u_data.binop.op == OP_PIPE)
@@ -73,6 +56,31 @@ static void	print_expr_rec(t_expr *expr)
 		exit(ERR_UNREACHABLE);
 	ft_lstiter(expr->redirs, (void (*)(void *))print_redir);
 	printf("]");
+}
+
+static void	print_expr_rec(t_expr *expr)
+{
+	t_list	*lst;
+
+	if (!expr)
+	{
+		printf("(null)");
+		return ;
+	}
+	printf("[");
+	if (expr->type == EX_CMD)
+	{
+		lst = expr->u_data.cmd.args;
+		while (lst)
+		{
+			printf("%s", ((t_string *)lst->content)->content);
+			lst = lst->next;
+			if (lst)
+				printf(" ");
+		}
+	}
+	else
+		print_expr_binop(expr);
 }
 
 void	print_expr(t_expr *expr)

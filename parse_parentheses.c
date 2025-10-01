@@ -16,21 +16,29 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+static t_list	*init_parse_parentheses(t_expr **expr, t_list **tokens)
+{
+	t_list	*token;
+
+	errno = 0;
+	*expr = malloc(sizeof(t_expr));
+	if (!*expr)
+		return (NULL);
+	(*expr)->type = EX_PARENTHESES;
+	(*expr)->fd_in = STDIN_FILENO;
+	(*expr)->fd_out = STDOUT_FILENO;
+	(*expr)->redirs = NULL;
+	token = ft_lstpop_front(tokens);
+	return (token);
+}
+
 /// errno will be set on error
 t_expr	*parse_parentheses(t_list **tokens)
 {
 	t_list	*token;
 	t_expr	*expr;
 
-	errno = 0;
-	expr = malloc(sizeof(t_expr));
-	if (!expr)
-		return (NULL);
-	expr->type = EX_PARENTHESES;
-	expr->fd_in = STDIN_FILENO;
-	expr->fd_out = STDOUT_FILENO;
-	expr->redirs = NULL;
-	token = ft_lstpop_front(tokens);
+	token = init_parse_parentheses(&expr, tokens);
 	while (((t_token *)token->content)->type == TK_REDIR)
 	{
 		add_redirection(token, &expr->redirs);

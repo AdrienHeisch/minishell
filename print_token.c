@@ -14,6 +14,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static void	redir_case(t_token *token)
+{
+	if (token->u_data.redir.type == REDIR_IN)
+		printf("< ");
+	else if (token->u_data.redir.type == REDIR_HEREDOC)
+		printf("<< ");
+	else if (token->u_data.redir.type == REDIR_OUT)
+		printf("> ");
+	else if (token->u_data.redir.type == REDIR_APPEND)
+		printf(">> ");
+	else
+		exit(ERR_UNREACHABLE);
+	printf("%s", token->u_data.redir.file_name.content);
+}
+
 void	print_token(t_token *token)
 {
 	if (token->type == TK_ARG)
@@ -26,17 +41,7 @@ void	print_token(t_token *token)
 		printf("&&");
 	else if (token->type == TK_REDIR)
 	{
-		if (token->u_data.redir.type == REDIR_IN)
-			printf("< ");
-		else if (token->u_data.redir.type == REDIR_HEREDOC)
-			printf("<< ");
-		else if (token->u_data.redir.type == REDIR_OUT)
-			printf("> ");
-		else if (token->u_data.redir.type == REDIR_APPEND)
-			printf(">> ");
-		else
-			exit(ERR_UNREACHABLE);
-		printf("%s", token->u_data.redir.file_name.content);
+		redir_case(token);
 	}
 	else if (token->type == TK_PAROPEN)
 		printf("(");
