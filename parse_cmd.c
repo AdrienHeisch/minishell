@@ -40,7 +40,7 @@ t_err	add_redirection(t_list *token, t_list **list)
 	return (ERR_OK);
 }
 
-static int	*process_token(t_list **tokens, t_expr *expr)
+static int	process_token(t_list **tokens, t_expr *expr)
 {
 	t_list		*token;
 	t_arg_data	*arg_data;
