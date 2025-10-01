@@ -107,7 +107,9 @@ static t_err	last_child_cases(t_expr *expr, t_shell_data *shell_data)
 static t_err	run_last_child(t_expr *expr, t_shell_data *shell_data)
 {
 	if (expr->type == EX_CMD)
-		last_child_cases(expr, shell_data);
+	{
+		return (last_child_cases(expr, shell_data));
+	}
 	else if (expr->type == EX_PARENTHESES)
 	{
 		if (exec_parentheses(expr, shell_data))
@@ -200,13 +202,13 @@ static t_err	build_pipeline(t_list **pipeline, t_binop pipe)
 	return (ERR_OK);
 }
 
-void	do_for_each(t_list *el, t_shell_data *shell_data,
+void	do_for_each(t_list **el, t_shell_data *shell_data,
 			int *prev_fd, int next_fd[2])
 {
-	while (el->next != NULL)
+	while ((*el)->next != NULL)
 	{
-		fork_and_pipe(((t_expr *)el->content), shell_data, prev_fd, next_fd);
-		el = el->next;
+		fork_and_pipe(((t_expr *)(*el)->content), shell_data, prev_fd, next_fd);
+		*el =  (*el)->next;
 	}
 }
 
@@ -225,7 +227,7 @@ t_err	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 		return (ERR_SYSTEM);
 	el = pipeline;
 	prev_fd = ((t_expr *)el->content)->fd_in;
-	do_for_each(el, shell_data, &prev_fd, next_fd);
+	do_for_each(&el, shell_data, &prev_fd, next_fd);
 	if (((t_expr *)el->content)->fd_in == STDIN_FILENO)
 		((t_expr *)el->content)->fd_in = prev_fd;
 	err = run_last_child(el->content, shell_data);

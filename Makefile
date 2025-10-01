@@ -78,7 +78,7 @@ debug: $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) $(FSNTZ) -o $@ $(OBJS) $(LFLAGS)
 
 leaks: $(NAME) $(LIBFT)
-	$(VLGRD) ./$@
+	$(VLGRD) ./$(NAME)
 
 $(OBJS_PATH)%.o: %.c
 	@mkdir -p $(dir $@)
