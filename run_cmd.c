@@ -44,9 +44,12 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 		error = errno;
 		print_error_prefix(cmd.args[0]);
 		close_redirections(cmd.fd_in, cmd.fd_out);
-		close(STDIN_FILENO);
-		close(STDOUT_FILENO);
+		if (close(STDIN_FILENO))
+			(print_error(), exit(ERR_SYSTEM));
+		// if (close(STDOUT_FILENO))
+		// 	(print_error(), exit(ERR_SYSTEM));
 		free_exec_info(&cmd);
+		free_shell_data(shell_data);
 		if (error == EACCES)
 			exit(ERR_PERMISSION);
 		else
