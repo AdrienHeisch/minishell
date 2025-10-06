@@ -10,7 +10,6 @@ SRCS = \
 	builtin_exit.c \
 	builtin_export.c \
 	export_utils.c \
-	expand_arg.c \
 	builtin_pwd.c \
 	builtin_unset.c \
 	exec_expr.c \
