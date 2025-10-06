@@ -201,15 +201,23 @@ static t_err	get_token(t_string *str, size_t *idx, t_token **token)
 	*token = NULL;
 	c = str->content[*idx];
 	ret = is_pipe_or_arg(&tk, c, idx, str);
+	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
+		return (ret);
 	if (ret != 111999)
 		return (add_token(&tk, token));
 	ret = is_redir_in(&tk, c, idx, str);
+	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
+		return (ret);
 	if (ret != 111999)
 		return (add_token(&tk, token));
 	ret = is_redir_out(&tk, c, idx, str);
+	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
+		return (ret);
 	if (ret != 111999)
 		return (add_token(&tk, token));
 	ret = is_parenthesis_or_nothing(&tk, c, idx, str);
+	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
+		return (ret);
 	if (ret != 111999)
 		return (add_token(&tk, token));
 	return (ERR_OK);
