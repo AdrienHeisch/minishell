@@ -112,7 +112,7 @@ static char	*make_prompt(char **envp)
 	prompt = ft_string_new();
 	if (!prompt.content)
 		return (NULL);
-	if (!ft_string_cat(&prompt, "\033[36m"))
+	if (!ft_string_cat(&prompt, "\001\033[36m\002"))
 		return (NULL);
 	s = ft_getenv(envp, "USER");
 	if (!s)
@@ -144,7 +144,7 @@ static char	*make_prompt(char **envp)
 		if (!ft_string_cat(&prompt, s))
 			return (NULL);
 	}
-	if (!ft_string_cat(&prompt, "\033[0m"))
+	if (!ft_string_cat(&prompt, "\001\033[0m\002"))
 		return (NULL);
 	if (!ft_string_cat(&prompt, "$ "))
 		return (NULL);

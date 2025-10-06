@@ -33,7 +33,7 @@ static void	handle_sigint(int sig)
 		rl_replace_line(str.content, false);
 		rl_redisplay();
 		rl_on_new_line();
-		ft_putstr_fd("\n", STDOUT_FILENO);
+		ft_putstr_fd("\n", STDERR_FILENO);
 		rl_replace_line("", false);
 		rl_redisplay();
 	}
