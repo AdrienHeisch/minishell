@@ -22,7 +22,7 @@
 # include <stdio.h>
 
 // If a function returns ERR_SYSTEM, errno will always be set
-# define ERR_SYSTEM -1
+# define ERR_SYSTEM 255
 
 # define ERR_OK 0
 # define ERR_COMMAND_FAILED 1
@@ -138,6 +138,8 @@ typedef struct s_exec_info
 }							t_exec_info;
 
 void						free_shell_data(t_shell_data *shell_data);
+
+char						*make_prompt(char **envp);
 
 t_err						init_signals(void);
 

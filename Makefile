@@ -20,6 +20,7 @@ SRCS = \
 	exec_info.c \
 	exec_parentheses.c \
 	exec_pipe.c \
+	expand_arg.c \
 	free_expr.c \
 	free_token.c \
 	is_builtin.c \
