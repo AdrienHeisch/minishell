@@ -271,7 +271,11 @@ int	main(int argc, char **argv, char **envp)
 			break ;
 		if (parse_and_exec(&str, &data) && !isatty(STDIN_FILENO))
 			break ;
-		g_received_signal = 0;
+		if (g_received_signal > 0)
+		{
+			data.status = 128 + g_received_signal;
+			g_received_signal = 0;
+		}
 	}
 	ft_string_destroy(&str);
 	if (isatty(STDIN_FILENO))

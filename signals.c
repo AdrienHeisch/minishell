@@ -41,6 +41,7 @@ static void	handle_sigint(int sig)
 
 static void	handle_sigquit(int sig)
 {
+	g_received_signal = sig;
 	(void)sig;
 	if (rl_readline_state & RL_STATE_READCMD)
 		rl_redisplay();
