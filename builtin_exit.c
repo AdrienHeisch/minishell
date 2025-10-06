@@ -65,27 +65,27 @@ static long	checked_atol(const char *nptr)
 	return (n);
 }
 
-t_err	concat_exit_error_string(t_string *error, char **args)
+t_err	concat_exit_error_string(char **args)
 {
-	*error = ft_string_new();
-	if (!error->content)
+	t_string	error;
+
+	error = ft_string_new();
+	if (!error.content)
 		return (ERR_SYSTEM);
-	if (!ft_string_cat(error, "exit: "))
-		return (ft_string_destroy(error), ERR_SYSTEM);
-	if (!ft_string_cat(error, args[1]))
-		return (ft_string_destroy(error), ERR_SYSTEM);
-	if (!ft_string_cat(error, ": numeric argument required"))
-		return (ft_string_destroy(error), ERR_SYSTEM);
-	print_error_msg(error->content);
-	ft_string_destroy(error);
+	if (!ft_string_cat(&error, "exit: "))
+		return (ft_string_destroy(&error), ERR_SYSTEM);
+	if (!ft_string_cat(&error, args[1]))
+		return (ft_string_destroy(&error), ERR_SYSTEM);
+	if (!ft_string_cat(&error, ": numeric argument required"))
+		return (ft_string_destroy(&error), ERR_SYSTEM);
+	print_error_msg(error.content);
+	ft_string_destroy(&error);
 	return (ERR_OK);
 }
 
 t_err	builtin_exit(char **args, t_shell_data *shell_data)
 {
 	long		exit_code;
-	t_string	error;
-	int			ret;
 
 	if (isatty(STDERR_FILENO))
 		ft_putstr_fd("exit\n", STDERR_FILENO);
@@ -95,9 +95,8 @@ t_err	builtin_exit(char **args, t_shell_data *shell_data)
 		exit_code = checked_atol(args[1]);
 		if (errno || !is_fully_numeric(args[1]))
 		{
-			ret = concat_exit_error_string(&error, args);
-			if (!error.content)
-				return (ret);
+			if (concat_exit_error_string(args))
+				return (ERR_SYSTEM);
 			free_shell_data(shell_data);
 			exit(ERR_SYNTAX_ERROR);
 		}
