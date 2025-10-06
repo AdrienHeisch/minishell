@@ -33,7 +33,8 @@ static t_err	expand_redir(t_string *file_name, t_shell_data *shell_data)
 	return (ERR_OK);
 }
 
-static t_err	redirin_or_heredoc(t_expr *expr, t_shell_data *shell_data, t_redir_data	*redir, int	pipe_fds[2])
+static t_err	redirin_or_heredoc(t_expr *expr, t_shell_data *shell_data,
+		t_redir_data *redir, int pipe_fds[2])
 {
 	if (redir->type == REDIR_HEREDOC)
 	{
@@ -43,8 +44,7 @@ static t_err	redirin_or_heredoc(t_expr *expr, t_shell_data *shell_data, t_redir_
 			return (close_redirections(expr->fd_in, expr->fd_out),
 				ERR_COMMAND_FAILED);
 		}
-		if (prompt_heredoc(pipe_fds[1], redir->file_name.content,
-				shell_data))
+		if (prompt_heredoc(pipe_fds[1], redir->file_name.content, shell_data))
 			return (ERR_SYSTEM);
 		close(pipe_fds[1]);
 		expr->fd_in = pipe_fds[0];
@@ -64,7 +64,7 @@ static t_err	redirin_or_heredoc(t_expr *expr, t_shell_data *shell_data, t_redir_
 
 static t_err	redirout_or_append(t_expr *expr, t_redir_data *redir)
 {
-	int				oflag;
+	int	oflag;
 
 	if (expr->fd_out != STDOUT_FILENO && expr->fd_out != STDERR_FILENO)
 		close(expr->fd_out);
@@ -84,9 +84,10 @@ static t_err	redirout_or_append(t_expr *expr, t_redir_data *redir)
 	return (ERR_OK);
 }
 
-t_err	do_one_redir(t_redir_data *redir, t_shell_data *shell_data, t_expr *expr, int pipe_fds[2])
+t_err	do_one_redir(t_redir_data *redir, t_shell_data *shell_data,
+		t_expr *expr, int pipe_fds[2])
 {
-	t_err			err;
+	t_err	err;
 
 	if (redir->type != REDIR_HEREDOC)
 	{

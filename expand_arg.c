@@ -106,17 +106,8 @@ static char	*get_wildcard_pattern(char *s, size_t *len)
 	return (ft_string_destroy(&pattern), NULL);
 }
 
-struct						s_expand
-{
-	t_list					*out;
-	t_string				exp;
-	char					del;
-	size_t					idx;
-	bool					has_empty_var;
-};
-
 static t_err				expand_var1(struct s_expand *expand, t_string var,
-								char *pattern, size_t pattern_len);
+					char *pattern, size_t pattern_len);
 
 static t_err	expand_var(t_string *arg, t_shell_data *shell_data,
 		struct s_expand *expand)
@@ -195,13 +186,6 @@ static void	expand_free(struct s_expand expand)
 	ft_string_destroy(&expand.exp);
 }
 
-enum						e_control_flow
-{
-	CF_NONE,
-	CF_CONTINUE,
-	CF_RETURN_ERR,
-};
-
 static t_list				*expand_arg1(struct s_expand expand);
 
 static enum e_control_flow	expand_dollar1(t_string *arg,
@@ -240,13 +224,13 @@ static enum e_control_flow	expand_dollar2(t_string *arg,
 	size_t	len;
 
 	if (!expand->del && (arg->content[expand->idx + 1] == '\'' || (!is_heredoc
-			&& arg->content[expand->idx + 1] == '"')))
+				&& arg->content[expand->idx + 1] == '"')))
 	{
 		expand->del = arg->content[expand->idx + 1];
 		expand->idx += 2;
 		len = 0;
 		while (expand->idx + len < arg->length && arg->content[expand->idx
-			+ len] != expand->del)
+				+ len] != expand->del)
 			len++;
 		if (!ft_string_ncat(&expand->exp, &arg->content[expand->idx], len))
 			return (CF_RETURN_ERR);
@@ -269,7 +253,7 @@ static enum e_control_flow	do_expand(t_string *arg, t_shell_data *shell_data,
 	enum e_control_flow	cf;
 
 	if (!expand->del && (arg->content[expand->idx] == '\'' || (!is_heredoc
-			&& arg->content[expand->idx] == '"')))
+				&& arg->content[expand->idx] == '"')))
 	{
 		expand->del = arg->content[expand->idx++];
 		return (CF_CONTINUE);

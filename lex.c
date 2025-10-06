@@ -154,7 +154,7 @@ t_err	is_redir_out(t_token *tk, char c, size_t *idx, t_string *str)
 }
 
 t_err	is_parenthesis_or_nothing(t_token *tk, char c, size_t *idx,
-	t_string *str)
+		t_string *str)
 {
 	if (c == '(')
 	{
@@ -195,30 +195,28 @@ static t_err	add_token(t_token *tk, t_token **token)
 static t_err	get_token(t_string *str, size_t *idx, t_token **token)
 {
 	t_token	tk;
-	char	c;
 	int		ret;
 
 	*token = NULL;
-	c = str->content[*idx];
-	ret = is_pipe_or_arg(&tk, c, idx, str);
+	ret = is_pipe_or_arg(&tk, str->content[*idx], idx, str);
 	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
 		return (ret);
-	if (ret != 111999)
+	if (ret == ERR_OK)
 		return (add_token(&tk, token));
-	ret = is_redir_in(&tk, c, idx, str);
+	ret = is_redir_in(&tk, str->content[*idx], idx, str);
 	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
 		return (ret);
-	if (ret != 111999)
+	if (ret == ERR_OK)
 		return (add_token(&tk, token));
-	ret = is_redir_out(&tk, c, idx, str);
+	ret = is_redir_out(&tk, str->content[*idx], idx, str);
 	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
 		return (ret);
-	if (ret != 111999)
+	if (ret == ERR_OK)
 		return (add_token(&tk, token));
-	ret = is_parenthesis_or_nothing(&tk, c, idx, str);
+	ret = is_parenthesis_or_nothing(&tk, str->content[*idx], idx, str);
 	if (ret == ERR_SYSTEM || ret == ERR_SYNTAX_ERROR)
 		return (ret);
-	if (ret != 111999)
+	if (ret == ERR_OK)
 		return (add_token(&tk, token));
 	return (ERR_OK);
 }

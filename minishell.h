@@ -137,6 +137,22 @@ typedef struct s_exec_info
 	t_err					error;
 }							t_exec_info;
 
+enum						e_control_flow
+{
+	CF_NONE,
+	CF_CONTINUE,
+	CF_RETURN_ERR,
+};
+
+struct						s_expand
+{
+	t_list					*out;
+	t_string				exp;
+	char					del;
+	size_t					idx;
+	bool					has_empty_var;
+};
+
 void						free_shell_data(t_shell_data *shell_data);
 
 char						*make_prompt(char **envp);
@@ -144,11 +160,10 @@ char						*make_prompt(char **envp);
 t_err						init_signals(void);
 
 struct termios				set_terminal_attributes(void);
-void						restore_terminal_attributes(struct termios *original_tio);
+void						restore_terminal_attributes(struct termios *og_tio);
 
 t_list						*expand_arg(t_string *arg, t_shell_data *shell_data,
 								bool is_heredoc);
-
 
 void						print_token(t_token *token);
 void						free_token(t_token *token);

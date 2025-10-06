@@ -121,8 +121,8 @@ static t_err	run_last_child(t_expr *expr, t_shell_data *shell_data)
 	return (ERR_OK);
 }
 
-static void	child_pipe_linking(t_expr *expr, int redir_res,
-		int *prev_fd, int next_fd[2])
+static void	child_pipe_linking(t_expr *expr, int redir_res, int *prev_fd,
+		int next_fd[2])
 {
 	if (redir_res)
 		exit(ERR_COMMAND_FAILED);
@@ -202,13 +202,13 @@ static t_err	build_pipeline(t_list **pipeline, t_binop pipe)
 	return (ERR_OK);
 }
 
-void	do_for_each(t_list **el, t_shell_data *shell_data,
-			int *prev_fd, int next_fd[2])
+void	do_for_each(t_list **el, t_shell_data *shell_data, int *prev_fd,
+		int next_fd[2])
 {
 	while ((*el)->next != NULL)
 	{
 		fork_and_pipe(((t_expr *)(*el)->content), shell_data, prev_fd, next_fd);
-		*el =  (*el)->next;
+		*el = (*el)->next;
 	}
 }
 
