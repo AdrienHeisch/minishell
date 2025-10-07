@@ -17,18 +17,46 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+static int	verification_de_la_validite_du_pattern_en_cours(char *name,
+	char *pattern, int *p_idx, int *n_idx)
+{
+	int		len;
+	char	*target;
+	char	*found;
+
+	if (pattern[*p_idx] == '*')
+	{
+		len = 0;
+		while (pattern[*p_idx + 1 + len] && pattern[*p_idx + 1 + len] != '*')
+			len++;
+		target = ft_substr(pattern, *p_idx + 1, len);
+		if (!target)
+			return (-1);
+		if (*target)
+		{
+			found = ft_strnstr(name + *n_idx, target, ft_strlen(name) + 1);
+			free(target);
+			if (!found)
+				return (-1);
+			*n_idx = found - name + len;
+		}
+		else
+			return (free(target), 1);
+		*p_idx += len;
+	}
+	return (0);
+}
+
 /// errno will be set on error
 static bool	is_correct_pattern(char *name, char *pattern)
 {
 	int		n_idx;
 	int		p_idx;
-	int		len;
-	char	*target;
-	char	*found;
+	t_err	err;
 
-	p_idx = 0;
+	p_idx = -1;
 	n_idx = 0;
-	while (pattern[p_idx])
+	while (pattern[++p_idx])
 	{
 		while (name[n_idx] == pattern[p_idx])
 		{
@@ -39,29 +67,22 @@ static bool	is_correct_pattern(char *name, char *pattern)
 		}
 		if (name[n_idx] != pattern[p_idx] && pattern[p_idx] != '*')
 			return (false);
-		if (pattern[p_idx] == '*')
-		{
-			len = 0;
-			while (pattern[p_idx + 1 + len] && pattern[p_idx + 1 + len] != '*')
-				len++;
-			target = ft_substr(pattern, p_idx + 1, len);
-			if (!target)
-				return (false);
-			if (*target)
-			{
-				found = ft_strnstr(name + n_idx, target, ft_strlen(name) + 1);
-				free(target);
-				if (!found)
-					return (false);
-				n_idx = found - name + len;
-			}
-			else
-				return (free(target), true);
-			p_idx += len;
-		}
-		++p_idx;
+		err = verification_de_la_validite_du_pattern_en_cours(
+				name, pattern, &p_idx, &n_idx);
+		if (err == 1)
+			return (true);
+		else if (err == -1)
+			return (false);
 	}
 	return (true);
+}
+
+void	list_rewire(t_list **swap, t_list **lst)
+{
+	*swap = (*lst)->next->next;
+	(*lst)->next->next = *lst;
+	(*lst)->next = *swap;
+	*lst = NULL;
 }
 
 static void	sort_list(t_list **list)
@@ -82,10 +103,7 @@ static void	sort_list(t_list **list)
 				prev->next = lst->next;
 			else
 				*list = lst->next;
-			swap = lst->next->next;
-			lst->next->next = lst;
-			lst->next = swap;
-			lst = NULL;
+			list_rewire(&swap, &lst);
 		}
 		prev = lst;
 		if (!lst)
@@ -95,24 +113,11 @@ static void	sort_list(t_list **list)
 	}
 }
 
-/// Will return null and errno will be set on error
-t_list	*expand_wildcards(char *pattern)
+int	while_cards(DIR *dir, t_list **ret, char *pattern)
 {
-	DIR				*dir;
 	struct dirent	*ent;
-	t_list			*ret;
 	t_string		name;
-	char			*cwd;
 
-	ret = NULL;
-	cwd = getcwd(NULL, 0);
-	if (!cwd)
-		return (print_error_prefix("error retrieving current directory: getcwd"),
-			NULL);
-	dir = opendir(cwd);
-	free(cwd);
-	if (dir == NULL)
-		return (print_error(), NULL);
 	while (1)
 	{
 		ent = readdir(dir);
@@ -124,17 +129,39 @@ t_list	*expand_wildcards(char *pattern)
 		{
 			name = ft_string_new();
 			if (!name.content)
-				return (closedir(dir), ft_lstclear(&ret, free), NULL);
+				return (closedir(dir), ft_lstclear(ret, free), 1);
 			if (!ft_string_cat(&name, ent->d_name))
-				return (closedir(dir), ft_lstclear(&ret, free), NULL);
-			if (lstadd_back_string(&ret, name))
-				return (closedir(dir), ft_lstclear(&ret, free), NULL);
+				return (closedir(dir), ft_lstclear(ret, free), 1);
+			if (lstadd_back_string(ret, name))
+				return (closedir(dir), ft_lstclear(ret, free), 1);
 		}
 		else if (errno)
-			return (closedir(dir), ft_lstclear(&ret, free), NULL);
+			return (closedir(dir), ft_lstclear(ret, free), 1);
 	}
+	return (0);
+}
+
+/// Will return null and errno will be set on error
+t_list	*expand_wildcards(char *pattern)
+{
+	DIR				*dir;
+	t_list			*ret;
+	char			*cwd;
+	int				err;
+
+	ret = NULL;
+	cwd = getcwd(NULL, 0);
+	if (!cwd)
+		return (print_error_prefix("error retrieving current\
+ directory: getcwd"), NULL);
+	dir = opendir(cwd);
+	free(cwd);
+	if (dir == NULL)
+		return (print_error(), NULL);
+	err = while_cards(dir, &ret, pattern);
+	if (err)
+		return (NULL);
 	if (closedir(dir))
 		return (ft_lstclear(&ret, free), NULL);
-	sort_list(&ret);
-	return (ret);
+	return (sort_list(&ret), ret);
 }

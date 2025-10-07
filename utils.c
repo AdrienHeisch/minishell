@@ -107,28 +107,12 @@ static t_err	add_to_env(char ***envp, const char *name, const char *value)
 	return (ERR_OK);
 }
 
-/// Returns ERR_OK or ERR_SYSTEM
-t_err	ft_setenv(char ***envp, const char *name, const char *value,
-		int overwrite)
+t_err	do_all_vars(char ***envp, char *name_suffix,
+	const char *value, size_t len)
 {
-	char	*name_suffix;
 	char	*name_new;
-	size_t	len;
 	size_t	idx;
 
-	if (!value)
-		ft_unsetenv(envp, name);
-	if (!ft_getenv(*envp, name))
-	{
-		add_to_env(envp, name, value);
-		return (ERR_OK);
-	}
-	if (!overwrite)
-		return (ERR_OK);
-	name_suffix = ft_strjoin(name, "=");
-	if (!name_suffix)
-		return (ERR_SYSTEM);
-	len = ft_strlen(name_suffix);
 	idx = 0;
 	while ((*envp)[idx])
 	{
@@ -143,32 +127,42 @@ t_err	ft_setenv(char ***envp, const char *name, const char *value,
 		}
 		idx++;
 	}
-	free(name_suffix);
 	return (ERR_OK);
 }
 
 /// Returns ERR_OK or ERR_SYSTEM
-t_err	ft_unsetenv(char ***envp, const char *name)
+t_err	ft_setenv(char ***envp, const char *name, const char *value,
+		int overwrite)
 {
-	char	**old;
-	char	**new;
 	char	*name_suffix;
+	t_err	err;
 	size_t	len;
-	size_t	idx;
-	size_t	n_skipped;
 
+	if (!value)
+		ft_unsetenv(envp, name);
 	if (!ft_getenv(*envp, name))
+	{
+		add_to_env(envp, name, value);
 		return (ERR_OK);
-	old = *envp;
-	len = 0;
-	while (old[len])
-		len++;
+	}
+	if (!overwrite)
+		return (ERR_OK);
 	name_suffix = ft_strjoin(name, "=");
 	if (!name_suffix)
 		return (ERR_SYSTEM);
-	new = malloc(len * sizeof(char *));
-	if (!new)
+	len = ft_strlen(name_suffix);
+	err = do_all_vars(envp, name_suffix, value, len);
+	if (err == ERR_SYSTEM)
 		return (ERR_SYSTEM);
+	free(name_suffix);
+	return (ERR_OK);
+}
+
+void	unsetenv_loop(size_t len, char *name_suffix, char **new, char **old)
+{
+	size_t	idx;
+	size_t	n_skipped;
+
 	idx = 0;
 	n_skipped = 0;
 	while (idx + n_skipped < len)
@@ -184,6 +178,29 @@ t_err	ft_unsetenv(char ***envp, const char *name)
 		idx++;
 	}
 	new[idx] = NULL;
+}
+
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	ft_unsetenv(char ***envp, const char *name)
+{
+	char	**old;
+	char	**new;
+	char	*name_suffix;
+	size_t	len;
+
+	if (!ft_getenv(*envp, name))
+		return (ERR_OK);
+	old = *envp;
+	len = 0;
+	while (old[len])
+		len++;
+	name_suffix = ft_strjoin(name, "=");
+	if (!name_suffix)
+		return (ERR_SYSTEM);
+	new = malloc(len * sizeof(char *));
+	if (!new)
+		return (ERR_SYSTEM);
+	unsetenv_loop(len, name_suffix, new, old);
 	free(name_suffix);
 	free(old);
 	*envp = new;
@@ -225,6 +242,21 @@ t_string	readline_lite(char *prompt)
 	}
 }
 
+static char	*init_process_heredoc_delim(char *delim, char **quote,
+	t_string *out)
+{
+	errno = 0;
+	*quote = ft_strchr(delim, '"');
+	if (!*quote)
+		*quote = ft_strchr(delim, '\'');
+	if (!*quote)
+		return (NULL);
+	*out = ft_string_new();
+	if (!out->content)
+		return (NULL);
+	return (delim);
+}
+
 /// errno will only be set on error
 static char	*process_heredoc_delim(char *delim)
 {
@@ -233,16 +265,10 @@ static char	*process_heredoc_delim(char *delim)
 	t_string	out;
 	char		*rec;
 
-	errno = 0;
-	quote = ft_strchr(delim, '"');
-	if (!quote)
-		quote = ft_strchr(delim, '\'');
-	if (!quote)
+	quote = NULL;
+	s = init_process_heredoc_delim(delim, &quote, &out);
+	if (!s)
 		return (NULL);
-	out = ft_string_new();
-	if (!out.content)
-		return (NULL);
-	s = delim;
 	while (*s)
 	{
 		if (*s != *quote)
@@ -260,14 +286,63 @@ static char	*process_heredoc_delim(char *delim)
 	return (out.content);
 }
 
+t_err	expand_it_then(t_string *line, int fd_out, t_shell_data *shell_data)
+{
+	t_list		*expanded;
+	t_list		*o_expanded;
+
+	o_expanded = expand_arg(line, shell_data, true);
+	if (errno)
+	{
+		return (ERR_SYSTEM);
+	}
+	expanded = o_expanded;
+	while (expanded && expanded->content)
+	{
+		ft_putstr_fd(((t_string *)expanded->content)->content, fd_out);
+		expanded = expanded->next;
+	}
+	ft_lstclear(&o_expanded, lstclear_string);
+	return (ERR_OK);
+}
+
+t_err	while_heredoc(char *no_expand, int fd_out, char *delim,
+	t_shell_data *shell_data)
+{
+	t_string	line;
+
+	if (isatty(STDIN_FILENO))
+	{
+		errno = 0;
+		if (USE_READLINE)
+			line = ft_string_from(readline("> "));
+		else
+			line = readline_lite("> ");
+	}
+	else
+		line = readline_lite(NULL);
+	if (errno)
+		return (ERR_SYSTEM);
+	if (!line.content)
+		return (111999);
+	if (!ft_strncmp(line.content, delim, size_t_max(line.length,
+				ft_strlen(delim))))
+		return (111999);
+	if (no_expand)
+		ft_putstr_fd(line.content, fd_out);
+	else if (expand_it_then(&line, fd_out, shell_data))
+		return (ERR_SYSTEM);
+	ft_putstr_fd("\n", fd_out);
+	return (ft_string_destroy(&line), ERR_OK);
+}
+
 /// Returns ERR_OK or ERR_SYSTEM
 t_err	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 {
 	char		*no_expand;
-	t_string	line;
-	t_list		*expanded;
-	t_list		*o_expanded;
+	t_err		err;
 
+	err = ERR_OK;
 	no_expand = process_heredoc_delim(delim);
 	if (errno)
 		return (ERR_SYSTEM);
@@ -275,44 +350,11 @@ t_err	prompt_heredoc(int fd_out, char *delim, t_shell_data *shell_data)
 		delim = no_expand;
 	while (1)
 	{
-		if (isatty(STDIN_FILENO))
-		{
-			errno = 0;
-			if (USE_READLINE)
-				line = ft_string_from(readline("> "));
-			else
-				line = readline_lite("> ");
-		}
-		else
-			line = readline_lite(NULL);
-		if (errno)
-			return (ERR_SYSTEM);
-		if (!line.content)
+		err = while_heredoc(no_expand, fd_out, delim, shell_data);
+		if (err == 111999)
 			break ;
-		if (!ft_strncmp(line.content, delim, size_t_max(line.length,
-					ft_strlen(delim))))
-			break ;
-		if (no_expand)
-			ft_putstr_fd(line.content, fd_out);
-		else
-		{
-			o_expanded = expand_arg(&line, shell_data, true);
-			if (errno)
-			{
-				if (no_expand)
-					free(delim);
-				return (ERR_SYSTEM);
-			}
-			expanded = o_expanded;
-			while (expanded && expanded->content)
-			{
-				ft_putstr_fd(((t_string *)expanded->content)->content, fd_out);
-				expanded = expanded->next;
-			}
-			ft_lstclear(&o_expanded, lstclear_string);
-		}
-		ft_putstr_fd("\n", fd_out);
-		ft_string_destroy(&line);
+		else if (err)
+			return (err);
 	}
 	if (no_expand)
 		free(delim);

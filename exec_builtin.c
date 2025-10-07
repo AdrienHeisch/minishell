@@ -14,18 +14,9 @@
 #include "minishell.h"
 #include <stdlib.h>
 
-/// Always use is_builtin before calling
-///
-/// Returns ERR_OK or ERR_SYSTEM
-t_err	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
+void	find_and_launch_builtin(t_exec_info cmd, t_shell_data *shell_data,
+	size_t len, char *name)
 {
-	char	*name;
-	size_t	len;
-
-	name = cmd.args[0];
-	len = ft_strlen(name) + 1;
-	if (len <= 1)
-		return (ERR_OK);
 	if (ft_strncmp("cd", name, len) == 0)
 		shell_data->status = builtin_cd(cmd.args, shell_data);
 	else if (ft_strncmp("echo", name, len) == 0)
@@ -42,6 +33,21 @@ t_err	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
 		shell_data->status = builtin_unset(cmd.args, shell_data);
 	else
 		exit(ERR_LOGIC);
+}
+
+/// Always use is_builtin before calling
+///
+/// Returns ERR_OK or ERR_SYSTEM
+t_err	exec_builtin(t_exec_info cmd, t_shell_data *shell_data)
+{
+	char	*name;
+	size_t	len;
+
+	name = cmd.args[0];
+	len = ft_strlen(name) + 1;
+	if (len <= 1)
+		return (ERR_OK);
+	find_and_launch_builtin(cmd, shell_data, len, name);
 	if (shell_data->status == ERR_SYSTEM)
 		return (ERR_SYSTEM);
 	return (ERR_OK);

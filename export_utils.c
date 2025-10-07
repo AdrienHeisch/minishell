@@ -1,34 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   is_builtin.c                                       :+:      :+:    :+:   */
+/*   export_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/11 21:18:18 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/11 21:18:18 by aheisch          ###   ########.fr       */
+/*   Created: 2025/10/06 19:18:03 by aheisch           #+#    #+#             */
+/*   Updated: 2025/10/06 19:18:03 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
 
-bool	is_builtin(char *name)
+int	allowed_char(int c)
 {
-	static const char	*list[] = {"cd", "echo", "env", "exit", "export", "pwd",
-		"unset", 0};
-	size_t				len;
-	size_t				idx;
+	return (ft_isalnum(c) || c == '_');
+}
 
-	if (!name)
-		return (false);
-	len = ft_strlen(name);
-	idx = 0;
-	while (list[idx])
-	{
-		if (ft_strncmp(list[idx], name, len + 1) == 0)
-			return (true);
-		idx++;
-	}
-	return (false);
+/// Returns ERR_OK or ERR_COMMAND_FAILED
+t_err	is_valid_var(char *name)
+{
+	if (ft_strlen(name) == 0)
+		return (ERR_COMMAND_FAILED);
+	if (ft_strchr(name, '!'))
+		return (ERR_COMMAND_FAILED);
+	if (ft_isdigit(name[0]))
+		return (ERR_COMMAND_FAILED);
+	if (!is_str_all(name, allowed_char))
+		return (ERR_COMMAND_FAILED);
+	return (ERR_OK);
 }

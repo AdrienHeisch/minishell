@@ -66,11 +66,10 @@ static void	free_tab_and_null(char ***tab)
 	}
 }
 
-static char	**split_path(const char *s)
+static char	**split_path(const char *s, int start)
 {
 	char	**dirs;
 	int		i;
-	int		start;
 	int		j;
 
 	dirs = malloc(sizeof(char *) * (count_paths(s) + 1));
@@ -78,7 +77,6 @@ static char	**split_path(const char *s)
 		return (NULL);
 	i = 0;
 	j = 0;
-	start = 0;
 	while (s[i++])
 	{
 		if (s[i] == ':' || s[i + 1] == '\0')
@@ -137,7 +135,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 		path = ft_getenv(envp, "PWD");
 	if (!path || !*path)
 		return (NULL);
-	dirs = split_path(path);
+	dirs = split_path(path, 0);
 	if (!dirs)
 		return (NULL);
 	i = -1;
@@ -147,10 +145,7 @@ static char	*find_cmd_path(char *cmd, char **envp)
 		if (!path)
 			return (free_tab_and_null(&dirs), NULL);
 		if (access(path, F_OK) == 0)
-		{
-			free_tab_and_null(&dirs);
-			return (path);
-		}
+			return (free_tab_and_null(&dirs), path);
 		free(path);
 	}
 	free_tab_and_null(&dirs);

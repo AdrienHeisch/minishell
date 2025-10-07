@@ -17,10 +17,31 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+void	not_a_builtin_i_guess(t_exec_info cmd, t_shell_data *shell_data)
+{
+	int	error;
+
+	if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
+		exit(ERR_SYSTEM);
+	if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
+		exit(ERR_SYSTEM);
+	execve(cmd.args[0], cmd.args, shell_data->envp);
+	error = errno;
+	print_error_prefix(cmd.args[0]);
+	close_redirections(cmd.fd_in, cmd.fd_out);
+	if (close(STDIN_FILENO))
+		(print_error(), exit(ERR_SYSTEM));
+	free_exec_info(&cmd);
+	free_shell_data(shell_data);
+	if (error == EACCES)
+		exit(ERR_PERMISSION);
+	else
+		exit(ERR_COMMAND_NOT_FOUND);
+}
+
 void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 {
 	int	status;
-	int	error;
 
 	if (is_builtin(*cmd.args))
 	{
@@ -36,24 +57,7 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 	}
 	else
 	{
-		if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
-			exit(ERR_SYSTEM);
-		if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
-			exit(ERR_SYSTEM);
-		execve(cmd.args[0], cmd.args, shell_data->envp);
-		error = errno;
-		print_error_prefix(cmd.args[0]);
-		close_redirections(cmd.fd_in, cmd.fd_out);
-		if (close(STDIN_FILENO))
-			(print_error(), exit(ERR_SYSTEM));
-		// if (close(STDOUT_FILENO))
-		// 	(print_error(), exit(ERR_SYSTEM));
-		free_exec_info(&cmd);
-		free_shell_data(shell_data);
-		if (error == EACCES)
-			exit(ERR_PERMISSION);
-		else
-			exit(ERR_COMMAND_NOT_FOUND);
+		not_a_builtin_i_guess(cmd, shell_data);
 	}
 }
 

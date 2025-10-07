@@ -9,6 +9,7 @@ SRCS = \
 	builtin_env.c \
 	builtin_exit.c \
 	builtin_export.c \
+	export_utils.c \
 	builtin_pwd.c \
 	builtin_unset.c \
 	exec_expr.c \
@@ -18,11 +19,13 @@ SRCS = \
 	exec_info.c \
 	exec_parentheses.c \
 	exec_pipe.c \
+	expand_arg.c \
 	free_expr.c \
 	free_token.c \
 	is_builtin.c \
 	lex.c \
 	main.c \
+	make_prompt.c \
 	parse_cmd.c \
 	parse.c \
 	parse_expr.c \
@@ -43,6 +46,8 @@ SRCS = \
 
 CC = cc
 CFLAGS += -Wall -Wextra -Werror -g3
+FSNTZ += -fsanitize=address
+VLGRD += valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose
 OBJS_PATH = objs/
 
 LIBFT_PATH = libft/
@@ -67,6 +72,14 @@ bonus: all
 $(NAME): $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LFLAGS)
 
+d: debug | leaks
+
+debug: $(OBJS) $(LIBFT)
+	$(CC) $(CFLAGS) $(FSNTZ) -o $@ $(OBJS) $(LFLAGS)
+
+leaks: $(NAME) $(LIBFT)
+	$(VLGRD) ./$(NAME)
+
 $(OBJS_PATH)%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(IFLAGS) -c -o $@ $?
@@ -80,6 +93,8 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
+	rm -f debug
+	rm -f leaks
 	$(MAKE) -C $(LIBFT_PATH) fclean
 
 re: fclean all

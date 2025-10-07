@@ -32,14 +32,36 @@ static int	get_precedence(t_operator op)
 	return (0);
 }
 
+t_expr	*not_a_pipe(t_expr *expr, t_list **tokens)
+{
+	t_expr	*old;
+	t_expr	*new;
+	t_expr	*tmp;
+
+	expr->u_data.binop.right = parse(tokens);
+	if (errno)
+		return (free_expr(expr), NULL);
+	if (!expr->u_data.binop.right)
+		return (print_error_msg("unexpected token"), free_expr(expr), NULL);
+	if (expr->u_data.binop.right->type == EX_BINOP
+		&& get_precedence(expr->u_data.binop.right->u_data.binop.op)
+		<= get_precedence(expr->u_data.binop.op))
+	{
+		old = expr;
+		new = old->u_data.binop.right;
+		tmp = expr->u_data.binop.right->u_data.binop.left;
+		old->u_data.binop.right = tmp;
+		new->u_data.binop.left = old;
+		expr = new;
+	}
+	return (expr);
+}
+
 /// errno will be set on error
 t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 {
 	t_expr	*expr;
 	t_list	*token;
-	t_expr	*old;
-	t_expr	*new;
-	t_expr	*tmp;
 
 	errno = 0;
 	expr = malloc(sizeof(t_expr));
@@ -54,31 +76,12 @@ t_expr	*parse_binop(t_list **tokens, t_expr **prev)
 		return (free(expr), NULL);
 	expr->u_data.binop.left = *prev;
 	*prev = NULL;
-	if (expr->u_data.binop.op == OP_PIPE)
-	{
-		expr->u_data.binop.right = parse_expr(tokens, &expr->u_data.binop.left);
-		if (errno)
-			return (free_expr(expr), NULL);
-		if (!expr->u_data.binop.right)
-			return (print_error_msg("unexpected token"), free_expr(expr), NULL);
-	}
-	else
-	{
-		expr->u_data.binop.right = parse(tokens);
-		if (errno)
-			return (free_expr(expr), NULL);
-		if (!expr->u_data.binop.right)
-			return (print_error_msg("unexpected token"), free_expr(expr), NULL);
-		if (expr->u_data.binop.right->type == EX_BINOP
-			&& get_precedence(expr->u_data.binop.right->u_data.binop.op) <= get_precedence(expr->u_data.binop.op))
-		{
-			old = expr;
-			new = old->u_data.binop.right;
-			tmp = expr->u_data.binop.right->u_data.binop.left;
-			old->u_data.binop.right = tmp;
-			new->u_data.binop.left = old;
-			expr = new;
-		}
-	}
+	if (expr->u_data.binop.op != OP_PIPE)
+		return (not_a_pipe(expr, tokens));
+	expr->u_data.binop.right = parse_expr(tokens, &expr->u_data.binop.left);
+	if (errno)
+		return (free_expr(expr), NULL);
+	if (!expr->u_data.binop.right)
+		return (print_error_msg("unexpected token"), free_expr(expr), NULL);
 	return (expr);
 }

@@ -1,0 +1,44 @@
+$ hola | salut | mauis nan
+minishell: hola: command not found
+minishell: mauis: command not found
+$ minishell: salut: command not found
+hola | salut | mauis nan)
+minishell: unexpected token ')'
+$ hola | salut | (mauis nan
+minishell: unexpected token
+$ hola | salut | (mauis nan)
+minishell: unexpected token ')'
+minishell: hola: command not found
+minishell: salut: command not found
+minishell: mauis: command not found
+
+=================================================================
+
+=================================================================
+==7311==ERROR: LeakSanitizer: detected memory leaks
+
+==7310==ERROR: LeakSanitizer: detected memory leaks
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x70b80c0fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x58a167dd804e in parse_binop /root/Projects Code/42_Projects/minishell/parse_binop.c:67
+    #2 0x58a167dd7e52 in parse_expr /root/Projects Code/42_Projects/minishell/parse_expr.c:35
+    #3 0x58a167dd7d26 in parse /root/Projects Code/42_Projects/minishell/parse.c:30
+    #4 0x58a167dd7001 in parse_and_exec /root/Projects Code/42_Projects/minishell/main.c:118
+    #5 0x58a167dd7475 in run /root/Projects Code/42_Projects/minishell/main.c:197
+    #6 0x58a167dd764e in main /root/Projects Code/42_Projects/minishell/main.c:230
+    #7 0x70b80bc2a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #8 0x70b80bc2a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #9 0x58a167dd2494 in _start (/root/Projects Code/42_Projects/minishell/debug+0x1494) (BuildId: 5dcc676a6271b3aa94d26c83f270b5d31185b669)
+
+    #0 0x70b80c0fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x58a167dd804e in parse_binop /root/Projects Code/42_Projects/minishell/parse_binop.c:67
+    #2 0x58a167dd7e52 in parse_expr /root/Projects Code/42_Projects/minishell/parse_expr.c:35
+    #3 0x58a167dd7d26 in parse /root/Projects Code/42_Projects/minishell/parse.c:30
+    #4 0x58a167dd7001 in parse_and_exec /root/Projects Code/42_Projects/minishell/main.c:118
+    #5 0x58a167dd7475 in run /root/Projects Code/42_Projects/minishell/main.c:197
+    #6 0x58a167dd764e in main /root/Projects Code/42_Projects/minishell/main.c:230
+    #7 0x70b80bc2a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #8 0x70b80bc2a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #9 0x58a167dd2494 in _start (/root/Projects Code/42_Projects/minishell/debug+0x1494) (BuildId: 5dcc676a6271b3aa94d26c83f270b5d31185b669)
