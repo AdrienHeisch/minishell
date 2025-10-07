@@ -50,7 +50,7 @@ char	*make_prompt(char **envp)
 	t_err		err;
 
 	prompt = ft_string_new();
-	if (!prompt.content || !ft_string_cat(&prompt, "\033[36m"))
+	if (!prompt.content || !ft_string_cat(&prompt, "\001\033[36m\002"))
 		return (ft_string_destroy(&prompt), NULL);
 	s = ft_getenv(envp, "USER");
 	if (!s)
@@ -62,7 +62,7 @@ char	*make_prompt(char **envp)
 		return (ft_string_destroy(&prompt), NULL);
 	if (err)
 		return (ft_string_destroy(&prompt), "$ ");
-	if (!ft_string_cat(&prompt, "\033[0m") || !ft_string_cat(&prompt, "$ "))
+	if (!ft_string_cat(&prompt, "\001\033[0m\002") || !ft_string_cat(&prompt, "$ "))
 		return (ft_string_destroy(&prompt), NULL);
 	return (prompt.content);
 }

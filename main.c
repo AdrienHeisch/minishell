@@ -196,7 +196,11 @@ static void	run(t_shell_data *data)
 		}
 		if (!str.content || (parse_and_exec(&str, data) && !isatty(0)))
 			break ;
-		g_received_signal = 0;
+		if (g_received_signal > 0)
+		{
+			data->status = 128 + g_received_signal;
+			g_received_signal = 0;
+		}
 	}
 	if (isatty(STDIN_FILENO))
 		(restore_terminal_attributes(&tio), ft_putstr_fd("exit\n", 2));

@@ -25,22 +25,26 @@ static void	handle_sigint(int sig)
 	{
 		str = ft_string_new();
 		if (!str.content)
-			return (print_error(), (void)0);
+			return (ft_string_destroy(&str), print_error(), (void)0);
+		if (!ft_string_cat(&str, rl_prompt))
+			return (ft_string_destroy(&str), print_error(), (void)0);
 		if (!ft_string_cat(&str, rl_line_buffer))
-			return (print_error(), (void)0);
+			return (ft_string_destroy(&str), print_error(), (void)0);
 		if (!ft_string_cat(&str, "^C"))
-			return (print_error(), (void)0);
+			return (ft_string_destroy(&str), print_error(), (void)0);
 		rl_replace_line(str.content, false);
 		rl_redisplay();
 		rl_on_new_line();
-		ft_putstr_fd("\n", STDOUT_FILENO);
+		ft_putstr_fd("\n", STDERR_FILENO);
 		rl_replace_line("", false);
 		rl_redisplay();
+		ft_string_destroy(&str);
 	}
 }
 
 static void	handle_sigquit(int sig)
 {
+	g_received_signal = sig;
 	(void)sig;
 	if (rl_readline_state & RL_STATE_READCMD)
 		rl_redisplay();
