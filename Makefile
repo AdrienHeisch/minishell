@@ -41,6 +41,20 @@ SRCS = \
 	termios.c \
 	utils.c \
 	wildcards.c \
+	list_utils.c \
+	wait_all.c \
+	get_env.c \
+	options.c \
+	heredoc_utils.c \
+	readline_utils.c \
+	set_unset_env.c \
+	token_utils.c \
+	main_utils.c \
+	var.c \
+	var_utils.c \
+	expand_utils.c \
+	path_utils.c \
+	fork_and_pipe.c
 
 #	CONFIG
 

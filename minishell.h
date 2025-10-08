@@ -181,6 +181,10 @@ t_err						exec_cmd(t_expr *expr, t_shell_data *shell_data);
 t_err						exec_parentheses(t_expr *expr,
 								t_shell_data *shell_data);
 t_err						exec_pipe(t_binop pipe, t_shell_data *shell_data);
+t_err						fork_and_pipe(t_expr *expr,
+								t_shell_data *shell_data, int *prev_fd,
+								int next_fd[2]);
+
 void						run_cmd(t_exec_info cmd, t_shell_data *shell_data);
 int							fork_run_cmd(t_exec_info exec,
 								t_shell_data *shell_data);
@@ -244,5 +248,36 @@ t_err						lstadd_back_string(t_list **list, t_string str);
 void						free_tab(void ***tab);
 
 t_list						*expand_wildcards(char *pattern);
+
+t_err						wait_all(int last_pid);
+void						list_rewire(t_list **swap, t_list **lst);
+size_t						size_t_max(size_t a, size_t b);
+t_err						get_token(t_string *str, size_t *idx,
+								t_token **token);
+t_err						parse_arg(t_string *str, size_t *idx,
+								t_string *arg);
+t_err						is_pipe_or_arg(t_token *tk, char c, size_t *idx,
+								t_string *str);
+bool						is_arg(char c);
+
+char						**dup_env(char **envp);
+char						**make_export_list(char **envp);
+void						free_shell_data(t_shell_data *shell_data);
+t_err						argument_mode(char **argv, t_shell_data *data);
+bool						parse_and_exec(t_string *str, t_shell_data *data);
+enum e_control_flow			catch_wildcard(t_string *arg, struct s_expand
+								*expand);
+t_err						expand_var(t_string *arg, t_shell_data *shell_data,
+								struct s_expand *expand);
+t_err						replace_var(t_string *var,
+								t_shell_data *shell_data);
+bool						is_var_name_start_char(char c);
+bool						is_var_name_char(char c);
+t_err						split_var(char *from, t_string *exp, t_list **out);
+t_err						expand_init(struct s_expand *expand);
+t_err						expand_redir(t_string *file_name,
+								t_shell_data *shell_data);
+char						**split_path(const char *s, int start);
+void						free_tab_and_null(char ***tab);
 
 #endif // !MINISHELL_H

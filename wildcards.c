@@ -77,14 +77,6 @@ static bool	is_correct_pattern(char *name, char *pattern)
 	return (true);
 }
 
-void	list_rewire(t_list **swap, t_list **lst)
-{
-	*swap = (*lst)->next->next;
-	(*lst)->next->next = *lst;
-	(*lst)->next = *swap;
-	*lst = NULL;
-}
-
 static void	sort_list(t_list **list)
 {
 	t_list	*lst;
@@ -113,7 +105,7 @@ static void	sort_list(t_list **list)
 	}
 }
 
-int	while_cards(DIR *dir, t_list **ret, char *pattern)
+static int	while_cards(DIR *dir, t_list **ret, char *pattern)
 {
 	struct dirent	*ent;
 	t_string		name;
