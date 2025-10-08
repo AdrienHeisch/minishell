@@ -1,8 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   readline_utils.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/08 23:58:48 by aheisch           #+#    #+#             */
+/*   Updated: 2025/10/08 23:58:48 by aheisch          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 #include <errno.h>
 #include <readline/readline.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 t_string	readline_lite(char *prompt)
 {

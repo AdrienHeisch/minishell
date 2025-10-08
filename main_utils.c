@@ -1,5 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main_utils.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/08 23:58:37 by aheisch           #+#    #+#             */
+/*   Updated: 2025/10/08 23:58:37 by aheisch          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-#include <errno.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdlib.h>
