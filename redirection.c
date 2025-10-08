@@ -17,22 +17,6 @@
 #include <unistd.h>
 
 /// Returns ERR_OK, ERR_COMMAND_FAILED or ERR_SYSTEM
-static t_err	expand_redir(t_string *file_name, t_shell_data *shell_data)
-{
-	t_list	*lst;
-
-	errno = 0;
-	lst = expand_arg(file_name, shell_data, false);
-	if (errno)
-		return (ft_lstclear(&lst, lstclear_string), ERR_SYSTEM);
-	if (!lst || !lst->content || ft_lstsize(lst) > 1)
-		return (ft_lstclear(&lst, lstclear_string), ERR_COMMAND_FAILED);
-	ft_string_destroy(file_name);
-	ft_string_move((t_string *)lst->content, file_name);
-	ft_lstclear(&lst, lstclear_string);
-	return (ERR_OK);
-}
-
 static t_err	redirin_or_heredoc(t_expr *expr, t_shell_data *shell_data,
 		t_redir_data *redir, int pipe_fds[2])
 {
