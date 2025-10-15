@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <readline/history.h>
 #include <readline/readline.h>
-#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 

@@ -25,8 +25,6 @@ t_expr	*parse(t_list **tokens)
 	expr = NULL;
 	while (*tokens)
 	{
-		if (((t_token *)(*tokens)->content)->type == TK_PARCLOSE)
-			return (print_error_msg("unexpected token ')'"), expr);
 		new = parse_expr(tokens, &expr);
 		if (errno || !new || expr)
 			return (free_expr(new), free_expr(expr), NULL);
