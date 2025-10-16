@@ -67,6 +67,10 @@ int	fork_run_cmd(t_exec_info exec, t_shell_data *shell_data)
 
 	pid = fork();
 	if (pid == 0)
+	{
+		signal(SIGTERM, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
 		run_cmd(exec, shell_data);
+	}
 	return (pid);
 }

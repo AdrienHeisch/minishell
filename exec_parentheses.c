@@ -54,9 +54,6 @@ t_err	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 		exit(child_process(paren, shell_data));
 	if (waitpid(pid, &status_location, 0) == -1)
 		return (ERR_SYSTEM);
-	if (WIFEXITED(status_location))
-		shell_data->status = WEXITSTATUS(status_location);
-	else
-		shell_data->status = ERR_OK;
+	shell_data->status = handle_exit_status(status_location);
 	return (ERR_OK);
 }

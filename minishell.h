@@ -36,8 +36,6 @@
 
 typedef int					t_err;
 
-extern int					g_received_signal;
-
 typedef enum s_token_type
 {
 	TK_INVALID,
@@ -157,6 +155,7 @@ typedef struct s_shell_data
 char						*make_prompt(char **envp);
 
 t_err						init_signals(void);
+int							handle_exit_status(int status_location);
 
 struct termios				set_terminal_attributes(void);
 void						restore_terminal_attributes(struct termios *og_tio);

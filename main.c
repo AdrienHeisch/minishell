@@ -18,8 +18,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-int				g_received_signal;
-
 bool	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*tokens;
@@ -68,15 +66,6 @@ static t_string	read_input(t_shell_data *data)
 	return (str);
 }
 
-static void	check_and_ajust_signals(t_shell_data *data)
-{
-	if (g_received_signal > 0)
-	{
-		data->status = 128 + g_received_signal;
-		g_received_signal = 0;
-	}
-}
-
 static void	run(t_shell_data *data)
 {
 	t_string		str;
@@ -92,10 +81,8 @@ static void	run(t_shell_data *data)
 		str = read_input(data);
 		if (errno)
 			print_error();
-		check_and_ajust_signals(data);
 		if (!str.content || (parse_and_exec(&str, data) && !isatty(0)))
 			break ;
-		check_and_ajust_signals(data);
 	}
 	if (isatty(STDIN_FILENO))
 		(restore_terminal_attributes(&tio), ft_putstr_fd("exit\n", 2));
@@ -106,7 +93,6 @@ int	main(int argc, char **argv, char **envp)
 {
 	t_shell_data	data;
 
-	g_received_signal = 0;
 	if (init_signals())
 		return (print_error(), ERR_SYSTEM);
 	data.envp = dup_env(envp);

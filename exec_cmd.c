@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -30,10 +29,7 @@ t_err	not_a_builtin(t_expr *expr, t_shell_data *shell_data, t_exec_info *exec)
 	}
 	if (waitpid(pid, &status_location, 0) == -1)
 		return (ERR_SYSTEM);
-	if (WIFEXITED(status_location))
-		shell_data->status = WEXITSTATUS(status_location);
-	else
-		shell_data->status = ERR_OK;
+	shell_data->status = handle_exit_status(status_location);
 	return (ERR_OK);
 }
 

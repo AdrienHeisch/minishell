@@ -20,7 +20,7 @@ static void	handle_sigint(int sig)
 {
 	t_string	str;
 
-	g_received_signal = sig;
+	(void)sig;
 	if (USE_READLINE && rl_readline_state & RL_STATE_READCMD)
 	{
 		str = ft_string_new();
@@ -42,14 +42,6 @@ static void	handle_sigint(int sig)
 	}
 }
 
-static void	handle_sigquit(int sig)
-{
-	g_received_signal = sig;
-	(void)sig;
-	if (rl_readline_state & RL_STATE_READCMD)
-		rl_redisplay();
-}
-
 /// Returns ERR_OK or ERR_SYSTEM
 t_err	init_signals(void)
 {
@@ -58,11 +50,9 @@ t_err	init_signals(void)
 	if (sigemptyset(&sig.sa_mask))
 		return (ERR_SYSTEM);
 	sig.sa_flags = 0;
-	sig.sa_handler = handle_sigint;
-	if (sigaction(SIGINT, &sig, NULL))
+	if (signal(SIGINT, handle_sigint) == SIG_ERR)
 		return (ERR_SYSTEM);
-	sig.sa_handler = handle_sigquit;
-	if (sigaction(SIGQUIT, &sig, NULL))
+	if (signal(SIGQUIT, SIG_IGN) == SIG_ERR)
 		return (ERR_SYSTEM);
 	return (ERR_OK);
 }

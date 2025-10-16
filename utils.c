@@ -12,7 +12,6 @@
 
 #include "libft.h"
 #include "minishell.h"
-#include <errno.h>
 #include <readline/readline.h>
 #include <stdbool.h>
 #include <stdlib.h>

@@ -1,34 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   wait_all.c                                         :+:      :+:    :+:   */
+/*   handle_exit_status.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/08 23:59:14 by aheisch           #+#    #+#             */
-/*   Updated: 2025/10/08 23:59:14 by aheisch          ###   ########.fr       */
+/*   Created: 2025/10/16 16:29:37 by aheisch           #+#    #+#             */
+/*   Updated: 2025/10/16 16:29:37 by aheisch          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <sys/wait.h>
-#include <unistd.h>
+#include <stdlib.h>
 
-t_err	wait_all(int last_pid)
-
+int	handle_exit_status(int status_location)
 {
-	int		status_location;
-	t_err	exit_code;
-
-	status_location = -1;
-	exit_code = ERR_COMMAND_FAILED;
-	if (last_pid != 0)
-	{
-		if (waitpid(last_pid, &status_location, 0) == -1)
-			exit_code = ERR_SYSTEM;
-		exit_code = handle_exit_status(status_location);
-	}
-	while (waitpid(0, &status_location, 0) > 0)
-		;
-	return (exit_code);
+	if (WIFEXITED(status_location))
+		return (WEXITSTATUS(status_location));
+	else if (WIFSIGNALED(status_location))
+		return (128 + WTERMSIG(status_location));
+	else
+		return (ERR_SYSTEM);
 }

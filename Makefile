@@ -22,6 +22,7 @@ SRCS = \
 	expand_arg.c \
 	free_expr.c \
 	free_token.c \
+	handle_exit_status.c \
 	is_builtin.c \
 	lex.c \
 	main.c \
