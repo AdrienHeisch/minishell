@@ -19,6 +19,13 @@
 #include <termios.h>
 #include <unistd.h>
 
+static void	on_syntax_error(t_list **tokens, t_shell_data *data)
+{
+	ft_lstclear(tokens, (void (*)(void *))free_token);
+	print_error_msg("syntax error");
+	data->status = ERR_SYNTAX_ERROR;
+}
+
 bool	parse_and_exec(t_string *str, t_shell_data *data)
 {
 	t_list	*tokens;
@@ -31,22 +38,21 @@ bool	parse_and_exec(t_string *str, t_shell_data *data)
 	if (err == ERR_SYSTEM)
 		return (print_error(), true);
 	if (err == ERR_SYNTAX_ERROR)
-		return (ft_lstclear(&tokens, (void (*)(void *))free_token),
-			print_error_msg("syntax error"), data->status = ERR_SYNTAX_ERROR, true);
+		return (on_syntax_error(&tokens, data), true);
 	expr = parse(&tokens);
 	if (errno)
 		return (print_error(), true);
 	if (tokens)
-		return (ft_lstclear(&tokens, (void (*)(void *))free_token),
-			print_error_msg("syntax error"), data->status = ERR_SYNTAX_ERROR, true);
+		return (on_syntax_error(&tokens, data), true);
 	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
-		return (print_error_msg("syntax error"), data->status = ERR_SYNTAX_ERROR, true);
+		return (on_syntax_error(&tokens, data), true);
 	data->ast_root = expr;
 	err = exec_expr(expr, data);
 	if (err)
 		(print_error(), data->status = err);
-	return (add_history(str->content), free_expr(expr), data->ast_root = NULL, false);
+	return (add_history(str->content), free_expr(expr),
+		data->ast_root = NULL, false);
 }
 
 static t_string	read_input(t_shell_data *data)
