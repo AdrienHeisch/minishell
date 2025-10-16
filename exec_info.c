@@ -39,7 +39,9 @@ t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out,
 	exec.args = make_arg_list(cmd, shell_data);
 	if (!exec.args)
 		return (exec);
-	path = ft_strdup(exec.args[0]);
+	path = NULL;
+	if (exec.args[0])
+		path = ft_strdup(exec.args[0]);
 	if (is_builtin(exec.args[0]))
 		exec.error = -1;
 	else
