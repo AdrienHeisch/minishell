@@ -12,17 +12,17 @@
 
 #include "minishell.h"
 
-t_err	builtin_unset(char **args, t_shell_data *shell_data)
+t_err	builtin_unset(t_exec_info *cmd, t_shell_data *shell_data)
 {
 	int		flags;
 	size_t	idx;
 
 	idx = 1;
-	if (find_options(&flags, args, &idx, ""))
+	if (find_options(&flags, cmd->args, &idx, ""))
 		return (ERR_SYNTAX_ERROR);
-	while (args[idx])
+	while (cmd->args[idx])
 	{
-		if (ft_unsetenv(&shell_data->envp, args[idx]))
+		if (ft_unsetenv(&shell_data->envp, cmd->args[idx]))
 			return (ERR_SYSTEM);
 		idx++;
 	}

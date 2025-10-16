@@ -13,7 +13,7 @@
 #include "libft.h"
 #include "minishell.h"
 
-t_err	builtin_echo(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_echo(t_exec_info *cmd, t_shell_data *shell_data)
 {
 	int		flags;
 	size_t	idx;
@@ -22,14 +22,14 @@ t_err	builtin_echo(char **args, t_shell_data *shell_data, int fd_out)
 	(void)shell_data;
 	options = "n";
 	idx = 1;
-	find_options(&flags, args, &idx, options);
-	while (args[idx])
+	find_options(&flags, cmd->args, &idx, options);
+	while (cmd->args[idx])
 	{
-		ft_putstr_fd(args[idx++], fd_out);
-		if (args[idx])
-			ft_putstr_fd(" ", fd_out);
+		ft_putstr_fd(cmd->args[idx++], cmd->fd_out);
+		if (cmd->args[idx])
+			ft_putstr_fd(" ", cmd->fd_out);
 	}
 	if (!(flags & (ft_strchr(options, 'n') - options + 1)))
-		ft_putstr_fd("\n", fd_out);
+		ft_putstr_fd("\n", cmd->fd_out);
 	return (ERR_OK);
 }

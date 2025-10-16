@@ -45,7 +45,7 @@ void	run_cmd(t_exec_info cmd, t_shell_data *shell_data)
 
 	if (is_builtin(*cmd.args))
 	{
-		if (exec_builtin(cmd, shell_data))
+		if (exec_builtin(&cmd, shell_data))
 			print_error();
 		close_redirections(cmd.fd_in, cmd.fd_out);
 		close(STDIN_FILENO);

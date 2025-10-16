@@ -118,28 +118,28 @@ t_err	export_details_check(int *status, char **args,
 	return (ERR_OK);
 }
 
-t_err	builtin_export(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_export(t_exec_info *cmd, t_shell_data *shell_data)
 {
 	size_t	idx;
 	int		flags;
 	int		status;
 
 	idx = 1;
-	if (find_options(&flags, args, &idx, NULL))
+	if (find_options(&flags, cmd->args, &idx, NULL))
 		return (ERR_SYNTAX_ERROR);
-	if (print_shelldata(args, shell_data, fd_out, &idx) == ERR_OK)
+	if (print_shelldata(cmd->args, shell_data, cmd->fd_out, &idx) == ERR_OK)
 		return (ERR_OK);
 	status = ERR_OK;
-	while (args[idx])
+	while (cmd->args[idx])
 	{
-		if (ft_strlen(args[idx]) == 0 || ft_strchr(args[idx], '=') == args[idx])
+		if (ft_strlen(cmd->args[idx]) == 0 || ft_strchr(cmd->args[idx], '=') == cmd->args[idx])
 		{
 			print_error_msg("export: not a valid identifier");
 			status = ERR_COMMAND_FAILED;
 			idx++;
 			continue ;
 		}
-		if (export_details_check(&status, args, shell_data, &idx) == ERR_OK)
+		if (export_details_check(&status, cmd->args, shell_data, &idx) == ERR_OK)
 			idx++;
 	}
 	return (status);

@@ -189,25 +189,20 @@ int							fork_run_cmd(t_exec_info exec,
 								t_shell_data *shell_data);
 
 bool						is_builtin(char *name);
-t_err						exec_builtin(t_exec_info args,
+t_err						exec_builtin(t_exec_info *args,
 								t_shell_data *shell_data);
-t_err						builtin_cd(char **args, t_shell_data *shell_data);
-t_err						builtin_echo(char **args, t_shell_data *shell_data,
-								int fd_out);
-t_err						builtin_env(char **args, t_shell_data *shell_data,
-								int fd_out);
-t_err						builtin_exit(char **args, t_shell_data *shell_data);
-t_err						builtin_export(char **args,
-								t_shell_data *shell_data, int fd_out);
+t_err						builtin_cd(t_exec_info *cmd, t_shell_data *shell_data);
+t_err						builtin_echo(t_exec_info *cmd, t_shell_data *shell_data);
+t_err						builtin_env(t_exec_info *cmd, t_shell_data *shell_data);
+t_err						builtin_exit(t_exec_info *cmd, t_shell_data *shell_data);
+t_err						builtin_export(t_exec_info *cmd, t_shell_data *shell_data);
 int							allowed_char(int c);
 t_err						is_valid_var(char *name);
 
 char						*make_prompt(char **envp);
 
-t_err						builtin_unset(char **args,
-								t_shell_data *shell_data);
-t_err						builtin_pwd(char **args, t_shell_data *shell_data,
-								int fd_out);
+t_err						builtin_unset(t_exec_info *cmd, t_shell_data *shell_data);
+t_err						builtin_pwd(t_exec_info *cmd, t_shell_data *shell_data);
 t_err						export_var(char ***exported, const char *name);
 
 char						**make_arg_list(t_cmd cmd,

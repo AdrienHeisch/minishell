@@ -76,7 +76,7 @@ t_err	exec_cmd(t_expr *expr, t_shell_data *shell_data)
 		return (ret);
 	if (is_builtin(exec.args[0]))
 	{
-		if (exec_builtin(exec, shell_data))
+		if (exec_builtin(&exec, shell_data))
 		{
 			free_exec_info(&exec);
 			close_redirections(expr->fd_in, expr->fd_out);

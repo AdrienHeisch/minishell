@@ -42,7 +42,7 @@ directory: getcwd"), ERR_COMMAND_FAILED);
 	return (111999);
 }
 
-t_err	builtin_cd(char **args, t_shell_data *shell_data)
+t_err	builtin_cd(t_exec_info *cmd, t_shell_data *shell_data)
 {
 	char	*path;
 	char	*old_cwd;
@@ -50,7 +50,7 @@ t_err	builtin_cd(char **args, t_shell_data *shell_data)
 	int		ret;
 
 	old_cwd = getcwd(NULL, 0);
-	ret = cd_check(old_cwd, args, &path, shell_data);
+	ret = cd_check(old_cwd, cmd->args, &path, shell_data);
 	if (ret != 111999)
 		return (ret);
 	if (*path && chdir(path))

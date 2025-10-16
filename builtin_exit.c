@@ -83,27 +83,29 @@ t_err	concat_exit_error_string(char **args)
 	return (ERR_OK);
 }
 
-t_err	builtin_exit(char **args, t_shell_data *shell_data)
+t_err	builtin_exit(t_exec_info *cmd, t_shell_data *shell_data)
 {
 	long		exit_code;
 
 	if (isatty(STDERR_FILENO))
 		ft_putstr_fd("exit\n", STDERR_FILENO);
 	exit_code = 0;
-	if (args[1])
+	if (cmd->args[1])
 	{
-		exit_code = checked_atol(args[1]);
-		if (errno || !is_fully_numeric(args[1]))
+		exit_code = checked_atol(cmd->args[1]);
+		if (errno || !is_fully_numeric(cmd->args[1]))
 		{
-			if (concat_exit_error_string(args))
+			if (concat_exit_error_string(cmd->args))
 				return (ERR_SYSTEM);
 			free_shell_data(shell_data);
+			free_exec_info(cmd);
 			exit(ERR_SYNTAX_ERROR);
 		}
-		if (args[2])
+		if (cmd->args[2])
 			return (print_error_msg("exit: too many arguments"),
 				ERR_COMMAND_FAILED);
 	}
 	free_shell_data(shell_data);
+	free_exec_info(cmd);
 	exit(exit_code);
 }

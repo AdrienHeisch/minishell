@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-t_err	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
+t_err	builtin_pwd(t_exec_info *cmd, t_shell_data *shell_data)
 {
 	char	*cwd;
 	int		flags;
@@ -23,14 +23,14 @@ t_err	builtin_pwd(char **args, t_shell_data *shell_data, int fd_out)
 
 	(void)shell_data;
 	idx = 1;
-	if (find_options(&flags, args, &idx, ""))
+	if (find_options(&flags, cmd->args, &idx, ""))
 		return (ERR_SYNTAX_ERROR);
 	cwd = getcwd(NULL, 0);
 	if (!cwd)
 		return (print_error_prefix("pwd: failed to get current directory: \
 getcwd"), ERR_COMMAND_FAILED);
-	ft_putstr_fd(cwd, fd_out);
-	ft_putstr_fd("\n", fd_out);
+	ft_putstr_fd(cwd, cmd->fd_out);
+	ft_putstr_fd("\n", cmd->fd_out);
 	free(cwd);
 	return (ERR_OK);
 }
