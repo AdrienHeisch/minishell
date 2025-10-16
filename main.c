@@ -26,15 +26,17 @@ static void	on_syntax_error(t_list **tokens, t_shell_data *data)
 	data->status = ERR_SYNTAX_ERROR;
 }
 
-bool	parse_and_exec(t_string *str, t_shell_data *data)
+bool	parse_and_exec(t_string str, t_shell_data *data)
 {
 	t_list	*tokens;
 	t_expr	*expr;
 	t_err	err;
 
-	if (is_only_whitespace(str))
-		return (data->status = ERR_OK, false);
-	err = lex(str, &tokens);
+	if (is_only_whitespace(&str))
+		return (ft_string_destroy(&str), data->status = ERR_OK, false);
+	add_history(str.content);
+	err = lex(&str, &tokens);
+	ft_string_destroy(&str);
 	if (err == ERR_SYSTEM)
 		return (print_error(), true);
 	if (err == ERR_SYNTAX_ERROR)
@@ -51,8 +53,7 @@ bool	parse_and_exec(t_string *str, t_shell_data *data)
 	err = exec_expr(expr, data);
 	if (err)
 		(print_error(), data->status = err);
-	return (add_history(str->content), free_expr(expr),
-		data->ast_root = NULL, false);
+	return (free_expr(expr), data->ast_root = NULL, false);
 }
 
 static t_string	read_input(t_shell_data *data)
@@ -88,16 +89,14 @@ static void	run(t_shell_data *data)
 	str = (t_string){0};
 	while (true)
 	{
-		ft_string_destroy(&str);
 		str = read_input(data);
 		if (errno)
 			print_error();
-		if (!str.content || (parse_and_exec(&str, data) && !isatty(0)))
+		if (!str.content || (parse_and_exec(str, data) && !isatty(0)))
 			break ;
 	}
 	if (isatty(STDIN_FILENO))
 		(restore_terminal_attributes(&tio), ft_putstr_fd("exit\n", 2));
-	ft_string_destroy(&str);
 }
 
 int	main(int argc, char **argv, char **envp)

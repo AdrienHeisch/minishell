@@ -81,12 +81,14 @@ static t_err	fork_error(int *prev_fd, int next_fd[2])
 }
 
 /// Returns ERR_OK or ERR_SYSTEM
-t_err	fork_and_pipe(t_expr *expr, t_shell_data *shell_data,
+t_err	fork_and_pipe(t_list *el, t_shell_data *shell_data,
 		int *prev_fd, int next_fd[2])
 {
 	pid_t	pid;
 	int		redir_res;
+	t_expr	*expr;
 
+	expr = ((t_expr *)el->content);
 	if (pipe(next_fd) == -1)
 		return (ERR_SYSTEM);
 	redir_res = resolve_redirections(expr, shell_data);
@@ -97,6 +99,7 @@ t_err	fork_and_pipe(t_expr *expr, t_shell_data *shell_data,
 		return (fork_error(prev_fd, next_fd));
 	if (pid == 0)
 	{
+		ft_lstclear(&el, no_op);
 		child_pipe_linking(expr, redir_res, prev_fd, next_fd);
 		run_child(expr, shell_data);
 		exit(ERR_UNREACHABLE);

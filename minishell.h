@@ -179,7 +179,7 @@ t_err						exec_cmd(t_expr *expr, t_shell_data *shell_data);
 t_err						exec_parentheses(t_expr *expr,
 								t_shell_data *shell_data);
 t_err						exec_pipe(t_binop pipe, t_shell_data *shell_data);
-t_err						fork_and_pipe(t_expr *expr,
+t_err						fork_and_pipe(t_list *expr,
 								t_shell_data *shell_data, int *prev_fd,
 								int next_fd[2]);
 
@@ -264,7 +264,7 @@ char						**dup_env(char **envp);
 char						**make_export_list(char **envp);
 void						free_shell_data(t_shell_data *shell_data);
 t_err						argument_mode(char **argv, t_shell_data *data);
-bool						parse_and_exec(t_string *str, t_shell_data *data);
+bool						parse_and_exec(t_string str, t_shell_data *data);
 enum e_control_flow			catch_wildcard(t_string *arg, struct s_expand
 								*expand);
 t_err						expand_var(t_string *arg, t_shell_data *shell_data,

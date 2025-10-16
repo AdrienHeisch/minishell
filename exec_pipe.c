@@ -45,8 +45,12 @@ static t_err	last_child_cases(t_expr *expr, t_shell_data *shell_data)
 }
 
 /// Returns ERR_OK, ERR_COMMAND_FAILED or ERR_SYSTEM
-static t_err	run_last_child(t_expr *expr, t_shell_data *shell_data)
+static t_err	run_last_child(t_list *el, t_shell_data *shell_data)
 {
+	t_expr	*expr;
+
+	expr = el->content;
+	ft_lstclear(&el, no_op);
 	if (expr->type == EX_CMD)
 	{
 		return (last_child_cases(expr, shell_data));
@@ -94,10 +98,13 @@ static t_err	build_pipeline(t_list **pipeline, t_binop pipe)
 void	do_for_each(t_list **el, t_shell_data *shell_data, int *prev_fd,
 		int next_fd[2])
 {
+	t_list	*next;
 	while ((*el)->next != NULL)
 	{
-		fork_and_pipe(((t_expr *)(*el)->content), shell_data, prev_fd, next_fd);
-		*el = (*el)->next;
+		fork_and_pipe(*el, shell_data, prev_fd, next_fd);
+		next = (*el)->next;
+		ft_lstdelone(*el, no_op);
+		*el = next;
 	}
 }
 
@@ -105,7 +112,6 @@ void	do_for_each(t_list **el, t_shell_data *shell_data, int *prev_fd,
 t_err	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 {
 	t_list	*pipeline;
-	t_list	*el;
 	int		prev_fd;
 	int		next_fd[2];
 	t_err	err;
@@ -114,16 +120,14 @@ t_err	exec_pipe(t_binop pipe, t_shell_data *shell_data)
 	build_pipeline(&pipeline, pipe);
 	if (!pipeline)
 		return (ERR_SYSTEM);
-	el = pipeline;
-	prev_fd = ((t_expr *)el->content)->fd_in;
-	do_for_each(&el, shell_data, &prev_fd, next_fd);
-	if (((t_expr *)el->content)->fd_in == STDIN_FILENO)
-		((t_expr *)el->content)->fd_in = prev_fd;
-	err = run_last_child(el->content, shell_data);
+	prev_fd = ((t_expr *)pipeline->content)->fd_in;
+	do_for_each(&pipeline, shell_data, &prev_fd, next_fd);
+	if (((t_expr *)pipeline->content)->fd_in == STDIN_FILENO)
+		((t_expr *)pipeline->content)->fd_in = prev_fd;
+	err = run_last_child(pipeline, shell_data);
 	if (err == ERR_SYSTEM)
 		return (ERR_SYSTEM);
 	if (err)
 		shell_data->status = err;
-	ft_lstclear(&pipeline, no_op);
 	return (ERR_OK);
 }

@@ -115,9 +115,8 @@ t_err	argument_mode(char **argv, t_shell_data *data)
 	while (tab[idx])
 	{
 		str = ft_string_from(tab[idx++]);
-		if (parse_and_exec(&str, data))
+		if (parse_and_exec(str, data))
 			break ;
-		ft_string_destroy(&str);
 	}
-	return (free(tab), ft_string_destroy(&str), ERR_OK);
+	return (free(tab), ERR_OK);
 }
