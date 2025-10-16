@@ -6,7 +6,7 @@
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 13:01:13 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/11 19:59:12 by aheisch          ###   ########.fr       */
+/*   Updated: 2025/10/16 12:46:58 by galauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ t_expr	*parse(t_list **tokens)
 	expr = NULL;
 	while (*tokens)
 	{
+		if (((t_token *)(*tokens)->content)->type == TK_PARCLOSE)
+			return (expr);
 		new = parse_expr(tokens, &expr);
 		if (errno || !new || expr)
 			return (free_expr(new), free_expr(expr), NULL);
