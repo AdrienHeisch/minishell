@@ -55,14 +55,14 @@ char	*make_prompt(char **envp)
 		return (ft_string_destroy(&prompt), NULL);
 	s = ft_getenv(envp, "USER");
 	if (!s)
-		return (ft_string_destroy(&prompt), "$ ");
+		return (ft_string_destroy(&prompt), ft_strdup("$ "));
 	if (!ft_string_cat(&prompt, s) || !ft_string_cat(&prompt, "@"))
 		return (ft_string_destroy(&prompt), NULL);
 	err = add_hostname_and_cwd(&prompt, envp);
 	if (err == ERR_SYSTEM)
 		return (ft_string_destroy(&prompt), NULL);
 	if (err)
-		return (ft_string_destroy(&prompt), "$ ");
+		return (ft_string_destroy(&prompt), ft_strdup("$ "));
 	if (!ft_string_cat(&prompt, "$ "))
 		return (ft_string_destroy(&prompt), NULL);
 	return (prompt.content);
