@@ -20,10 +20,11 @@ static t_err	add_hostname_and_cwd(t_string *prompt, char **envp)
 	char	*h;
 
 	s = ft_getenv(envp, "HOSTNAME");
-	if (!s)
-		return (ERR_COMMAND_FAILED);
-	if (!ft_string_cat(prompt, s))
-		return (ERR_SYSTEM);
+	if (s)
+	{
+		if (!ft_string_cat(prompt, s))
+			return (ERR_SYSTEM);
+	}
 	if (!ft_string_cat(prompt, ":"))
 		return (ERR_SYSTEM);
 	s = ft_getenv(envp, "PWD");
