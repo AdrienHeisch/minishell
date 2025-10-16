@@ -1,6 +1,7 @@
 minishell
 objs/
 vgcore.*
+leaking tests
 maxitest
 .cache/
 compile_commands.json
