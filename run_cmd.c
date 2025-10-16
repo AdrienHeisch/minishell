@@ -22,9 +22,13 @@ void	not_a_builtin_i_guess(t_exec_info cmd, t_shell_data *shell_data)
 	int	error;
 
 	if (dup2(cmd.fd_in, STDIN_FILENO) == -1)
-		exit(ERR_SYSTEM);
+		(print_error(), exit(ERR_SYSTEM));
 	if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
-		exit(ERR_SYSTEM);
+		(print_error(), exit(ERR_SYSTEM));
+	if (cmd.fd_in != -1 && cmd.fd_in != STDIN_FILENO && close(cmd.fd_in))
+		(print_error(), exit(ERR_SYSTEM));
+	if (cmd.fd_out != -1 && cmd.fd_out != STDOUT_FILENO && close(cmd.fd_out))
+		(print_error(), exit(ERR_SYSTEM));
 	execve(cmd.args[0], cmd.args, shell_data->envp);
 	error = errno;
 	print_error_prefix(cmd.args[0]);
