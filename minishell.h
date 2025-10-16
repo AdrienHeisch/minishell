@@ -6,7 +6,7 @@
 /*   By: aheisch <aheisch@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 16:00:59 by aheisch           #+#    #+#             */
-/*   Updated: 2025/08/27 14:58:03 by galauren         ###   ########.fr       */
+/*   Updated: 2025/10/16 12:11:19 by galauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 # define MINISHELL_H
 
 # ifndef USE_READLINE
-#  define USE_READLINE false
+#  define USE_READLINE 0
 # endif // !USE_READLINE
 
 # include "libft.h"
