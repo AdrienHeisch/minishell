@@ -10,9 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include "minishell.h"
 #include <asm-generic/errno-base.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -25,14 +27,10 @@ void	not_a_builtin_i_guess(t_exec_info cmd, t_shell_data *shell_data)
 		(print_error(), exit(ERR_SYSTEM));
 	if (dup2(cmd.fd_out, STDOUT_FILENO) == -1)
 		(print_error(), exit(ERR_SYSTEM));
-	if (cmd.fd_in != -1 && cmd.fd_in != STDIN_FILENO && close(cmd.fd_in))
-		(print_error(), exit(ERR_SYSTEM));
-	if (cmd.fd_out != -1 && cmd.fd_out != STDOUT_FILENO && close(cmd.fd_out))
-		(print_error(), exit(ERR_SYSTEM));
+	close_redirections(cmd.fd_in, cmd.fd_out);
 	execve(cmd.args[0], cmd.args, shell_data->envp);
 	error = errno;
 	print_error_prefix(cmd.args[0]);
-	close_redirections(cmd.fd_in, cmd.fd_out);
 	if (close(STDIN_FILENO))
 		(print_error(), exit(ERR_SYSTEM));
 	free_exec_info(&cmd);

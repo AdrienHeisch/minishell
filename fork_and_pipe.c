@@ -39,6 +39,7 @@ static void	run_child(t_expr *expr, t_shell_data *shell_data)
 		if (!exec.args)
 		{
 			print_error();
+			close_redirections(expr->fd_in, expr->fd_out);
 			exit(ERR_SYSTEM);
 		}
 		if (exec.error >= 0)

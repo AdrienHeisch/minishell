@@ -99,6 +99,7 @@ t_err	builtin_exit(t_exec_info *cmd, t_shell_data *shell_data)
 				return (ERR_SYSTEM);
 			free_shell_data(shell_data);
 			free_exec_info(cmd);
+			close_redirections(cmd->fd_in, cmd->fd_out);
 			exit(ERR_SYNTAX_ERROR);
 		}
 		if (cmd->args[2])
@@ -107,5 +108,6 @@ t_err	builtin_exit(t_exec_info *cmd, t_shell_data *shell_data)
 	}
 	free_shell_data(shell_data);
 	free_exec_info(cmd);
+	close_redirections(cmd->fd_in, cmd->fd_out);
 	exit(exit_code);
 }

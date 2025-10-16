@@ -28,16 +28,17 @@ static t_err	last_child_cases(t_expr *expr, t_shell_data *shell_data)
 	exec = make_exec_info(expr->u_data.cmd, expr->fd_in, expr->fd_out,
 			shell_data);
 	if (!exec.args)
-		return (ERR_SYSTEM);
+		return (close_redirections(expr->fd_in, expr->fd_out), ERR_SYSTEM);
 	if (exec.error >= 0)
 	{
 		shell_data->status = exec.error;
 		free_exec_info(&exec);
+		close_redirections(expr->fd_in, expr->fd_out);
 		return (ERR_OK);
 	}
 	pid = fork_run_cmd(exec, shell_data);
 	if (pid == -1)
-		return (ERR_SYSTEM);
+		return (close_redirections(expr->fd_in, expr->fd_out), ERR_SYSTEM);
 	close_redirections(expr->fd_in, expr->fd_out);
 	shell_data->status = wait_all(pid);
 	free_exec_info(&exec);

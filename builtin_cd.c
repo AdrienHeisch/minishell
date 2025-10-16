@@ -36,10 +36,10 @@ directory: getcwd"), ERR_COMMAND_FAILED);
 		errno = 0;
 		*path = ft_getenv(shell_data->envp, "HOME");
 		if (!(*path))
-			return (print_error_msg("cd: HOME not set"), free(old_cwd),
+			return (print_error_msg("cd: HOME not set"),
 				ERR_COMMAND_FAILED);
 	}
-	return (111999);
+	return (ERR_OK);
 }
 
 t_err	builtin_cd(t_exec_info *cmd, t_shell_data *shell_data)
@@ -51,14 +51,14 @@ t_err	builtin_cd(t_exec_info *cmd, t_shell_data *shell_data)
 
 	old_cwd = getcwd(NULL, 0);
 	ret = cd_check(old_cwd, cmd->args, &path, shell_data);
-	if (ret != 111999)
-		return (ret);
+	if (ret != ERR_OK)
+		return (free(old_cwd), ret);
 	if (*path && chdir(path))
 		return (print_error_prefix("cd"), free(old_cwd), ERR_COMMAND_FAILED);
 	cwd = getcwd(NULL, 0);
 	if (!cwd)
 		return (print_error_prefix("cd: error retrieving current \
-directory: getcwd"), ERR_COMMAND_FAILED);
+directory: getcwd"), free(old_cwd), ERR_COMMAND_FAILED);
 	ft_setenv(&(shell_data->envp), "OLDPWD", old_cwd, true);
 	free(old_cwd);
 	ft_setenv(&shell_data->envp, "PWD", cwd, true);
