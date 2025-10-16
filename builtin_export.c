@@ -41,8 +41,8 @@ t_err	export_var(char ***exported, const char *name)
 	return (ERR_OK);
 }
 
-t_err	print_shelldata(char **args, t_shell_data *shell_data,
-	int fd_out, size_t *idx)
+t_err	print_shelldata(char **args, t_shell_data *shell_data, int fd_out,
+		size_t *idx)
 {
 	char	*value;
 
@@ -70,19 +70,15 @@ t_err	print_shelldata(char **args, t_shell_data *shell_data,
 	return (111999);
 }
 
-t_err	split_export(char ***split, int *status, char **args, size_t *idx)
+t_err	split_export(char ***split, int *status, size_t *idx)
 {
 	int		valid_var_code;
 
-	*split = ft_split(args[*idx], '=');
-	if (!*split)
-		return (ERR_SYSTEM);
 	if ((*split)[0] == NULL)
 	{
 		print_error_msg("export: not a valid identifier");
 		*status = ERR_COMMAND_FAILED;
 		(*idx)++;
-		free_tab((void ***)split);
 		return (111999);
 	}
 	valid_var_code = is_valid_var((*split)[0]);
@@ -91,7 +87,6 @@ t_err	split_export(char ***split, int *status, char **args, size_t *idx)
 		print_error_msg("export: not a valid identifier");
 		*status = valid_var_code;
 		(*idx)++;
-		free_tab((void ***)split);
 		return (111999);
 	}
 	return (0);
@@ -104,9 +99,11 @@ t_err	export_details_check(int *status, char **args,
 	int		ret;
 
 	split = ft_split(args[*idx], '=');
-	ret = split_export(&split, status, args, idx);
+	if (!*split)
+		return (ERR_SYSTEM);
+	ret = split_export(&split, status, idx);
 	if (ret == 111999 || ret == ERR_SYSTEM)
-		return (111999);
+		return (free_tab((void ***)&split), 111999);
 	if (split[1])
 		ft_setenv(&shell_data->envp, split[0], args[*idx]
 			+ ft_strlen(split[0]) + 1, true);
@@ -132,14 +129,16 @@ t_err	builtin_export(t_exec_info *cmd, t_shell_data *shell_data)
 	status = ERR_OK;
 	while (cmd->args[idx])
 	{
-		if (ft_strlen(cmd->args[idx]) == 0 || ft_strchr(cmd->args[idx], '=') == cmd->args[idx])
+		if (ft_strlen(cmd->args[idx]) == 0 || ft_strchr(cmd->args[idx],
+				'=') == cmd->args[idx])
 		{
 			print_error_msg("export: not a valid identifier");
 			status = ERR_COMMAND_FAILED;
 			idx++;
 			continue ;
 		}
-		if (export_details_check(&status, cmd->args, shell_data, &idx) == ERR_OK)
+		if (export_details_check(&status, cmd->args, shell_data,
+				&idx) == ERR_OK)
 			idx++;
 	}
 	return (status);
