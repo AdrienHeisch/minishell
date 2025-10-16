@@ -101,11 +101,11 @@ t_err	while_heredoc(char *no_expand, int fd_out, char *delim,
 		return (111999);
 	if (!ft_strncmp(line.content, delim, size_t_max(line.length,
 				ft_strlen(delim))))
-		return (111999);
+		return (ft_string_destroy(&line), 111999);
 	if (no_expand)
 		ft_putstr_fd(line.content, fd_out);
 	else if (expand_it_then(&line, fd_out, shell_data))
-		return (ERR_SYSTEM);
+		return (ft_string_destroy(&line), ERR_SYSTEM);
 	ft_putstr_fd("\n", fd_out);
 	return (ft_string_destroy(&line), ERR_OK);
 }
