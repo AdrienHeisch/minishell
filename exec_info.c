@@ -39,13 +39,14 @@ t_exec_info	make_exec_info(t_cmd cmd, int fd_in, int fd_out,
 	exec.args = make_arg_list(cmd, shell_data);
 	if (!exec.args)
 		return (exec);
-	path = exec.args[0];
+	path = ft_strdup(exec.args[0]);
 	if (is_builtin(exec.args[0]))
 		exec.error = -1;
 	else
 		exec.error = resolve_exec_path(exec.args, shell_data);
 	if (exec.error > 0)
 		print_error_code(path, exec.error);
+	free(path);
 	exec.fd_in = fd_in;
 	exec.fd_out = fd_out;
 	if (set_last_arg(exec.args, shell_data))
