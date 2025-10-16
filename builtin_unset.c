@@ -35,12 +35,28 @@ static void	remove_export_loop(size_t len, char *name, char **new, char **old)
 	new[idx] = NULL;
 }
 
-static t_err remove_export(char ***exported, char *name)
+static bool contains(char **exported, char *name)
+{
+	size_t	idx;
+
+	idx = 0;
+	while (exported[idx])
+	{
+		if (exported[idx] == name)
+			return (true);
+		idx++;
+	}
+	return (false);
+}
+
+static t_err	remove_export(char ***exported, char *name)
 {
 	char	**old;
 	char	**new;
 	size_t	len;
 
+	if (!contains(*exported, name))
+		return (ERR_OK);
 	old = *exported;
 	len = 0;
 	while (old[len])
