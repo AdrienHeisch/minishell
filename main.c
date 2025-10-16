@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -57,12 +58,16 @@ static t_string	read_input(t_shell_data *data)
 	if (!prompt)
 		print_error();
 	errno = 0;
-	if (isatty(STDIN_FILENO) && USE_READLINE)
-		str = ft_string_from(readline(prompt));
-	if (isatty(STDIN_FILENO) && !USE_READLINE)
-		str = readline_lite(prompt);
-	if (!isatty(STDIN_FILENO))
+	if (isatty(STDIN_FILENO))
+	{
+		if (USE_READLINE)
+			str = ft_string_from(readline(prompt));
+		else
+			str = readline_lite(prompt);
+	}
+	else
 		str = readline_lite(NULL);
+	free(prompt);
 	return (str);
 }
 
@@ -104,6 +109,7 @@ int	main(int argc, char **argv, char **envp)
 	if (argc >= 1)
 		ft_setenv(&data.envp, "_", argv[0], true);
 	data.status = 0;
+	data.ast_root = NULL;
 	if (argc == 3 && ft_strncmp("-c", argv[1], 3) == 0)
 	{
 		if (argument_mode(argv, &data))
