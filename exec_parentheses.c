@@ -33,7 +33,6 @@ static t_err	child_process(t_expr *paren, t_shell_data *shell_data)
 	close_redirections(paren->fd_in, paren->fd_out);
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
-	free_expr(paren);
 	free_shell_data(shell_data);
 	return (shell_data->status);
 }
