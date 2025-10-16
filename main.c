@@ -32,16 +32,16 @@ bool	parse_and_exec(t_string *str, t_shell_data *data)
 		return (print_error(), true);
 	if (err == ERR_SYNTAX_ERROR)
 		return (ft_lstclear(&tokens, (void (*)(void *))free_token),
-			data->status = ERR_SYNTAX_ERROR, true);
+			print_error_msg("syntax error"), data->status = ERR_SYNTAX_ERROR, true);
 	expr = parse(&tokens);
 	if (errno)
 		return (print_error(), true);
 	if (tokens)
 		return (ft_lstclear(&tokens, (void (*)(void *))free_token),
-			data->status = ERR_SYNTAX_ERROR, true);
+			print_error_msg("syntax error"), data->status = ERR_SYNTAX_ERROR, true);
 	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
-		return (data->status = ERR_SYNTAX_ERROR, true);
+		return (print_error_msg("syntax error"), data->status = ERR_SYNTAX_ERROR, true);
 	data->ast_root = expr;
 	err = exec_expr(expr, data);
 	if (err)
