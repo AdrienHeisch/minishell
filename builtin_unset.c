@@ -35,7 +35,7 @@ static void	remove_export_loop(size_t len, char *name, char **new, char **old)
 	new[idx] = NULL;
 }
 
-static bool contains(char **exported, char *name)
+static bool	contains(char **exported, char *name)
 {
 	size_t	idx;
 
