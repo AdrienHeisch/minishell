@@ -38,13 +38,6 @@ typedef int					t_err;
 
 extern int					g_received_signal;
 
-typedef struct s_shell_data
-{
-	char					**envp;
-	char					**exported;
-	t_err					status;
-}							t_shell_data;
-
 typedef enum s_token_type
 {
 	TK_INVALID,
@@ -153,7 +146,13 @@ struct						s_expand
 	bool					has_empty_var;
 };
 
-void						free_shell_data(t_shell_data *shell_data);
+typedef struct s_shell_data
+{
+	char					**envp;
+	char					**exported;
+	t_err					status;
+	t_expr					*ast_root;
+}							t_shell_data;
 
 char						*make_prompt(char **envp);
 

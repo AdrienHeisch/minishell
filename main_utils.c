@@ -99,6 +99,7 @@ void	free_shell_data(t_shell_data *shell_data)
 {
 	free_tab((void ***)&shell_data->envp);
 	free_tab((void ***)&shell_data->exported);
+	free_expr(shell_data->ast_root);
 }
 
 t_err	argument_mode(char **argv, t_shell_data *data)

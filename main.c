@@ -43,10 +43,11 @@ bool	parse_and_exec(t_string *str, t_shell_data *data)
 	ft_lstclear(&tokens, (void (*)(void *))free_token);
 	if (!expr)
 		return (data->status = ERR_SYNTAX_ERROR, true);
+	data->ast_root = expr;
 	err = exec_expr(expr, data);
 	if (err)
 		(print_error(), data->status = err);
-	return (add_history(str->content), free_expr(expr), false);
+	return (add_history(str->content), free_expr(expr), data->ast_root = NULL, false);
 }
 
 static t_string	read_input(t_shell_data *data)
