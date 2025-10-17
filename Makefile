@@ -37,6 +37,7 @@ SRCS = \
 	print_token.c \
 	redirection.c \
 	resolve_exec_path.c \
+	run_child.c \
 	run_cmd.c \
 	signals.c \
 	termios.c \

@@ -100,6 +100,7 @@ void	do_for_each(t_list **el, t_shell_data *shell_data, int *prev_fd,
 		int next_fd[2])
 {
 	t_list	*next;
+
 	while ((*el)->next != NULL)
 	{
 		fork_and_pipe(*el, shell_data, prev_fd, next_fd);

@@ -28,20 +28,20 @@ static t_err	child_process(t_expr *paren, t_shell_data *shell_data)
 		return (print_error(), ERR_COMMAND_FAILED);
 	if (dup2(paren->fd_out, STDOUT_FILENO) == -1)
 		return (print_error(), ERR_COMMAND_FAILED);
+	close_redirections(paren->fd_in, paren->fd_out);
 	if (exec_expr(paren->u_data.paren.inner, shell_data))
 		shell_data->status = ERR_SYSTEM;
-	close_redirections(paren->fd_in, paren->fd_out);
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
-	free_shell_data(shell_data);
 	return (shell_data->status);
 }
 
 /// Returns ERR_OK or ERR_SYSTEM
 t_err	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 {
-	int	pid;
-	int	status_location;
+	int		pid;
+	int		status_location;
+	t_err	res;
 
 	pid = fork();
 	if (pid == -1)
@@ -50,7 +50,11 @@ t_err	exec_parentheses(t_expr *paren, t_shell_data *shell_data)
 		return (ERR_SYSTEM);
 	}
 	if (pid == 0)
-		exit(child_process(paren, shell_data));
+	{
+		res = child_process(paren, shell_data);
+		free_shell_data(shell_data);
+		exit(res);
+	}
 	if (waitpid(pid, &status_location, 0) == -1)
 		return (ERR_SYSTEM);
 	shell_data->status = handle_exit_status(status_location);

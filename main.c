@@ -34,8 +34,7 @@ bool	parse_and_exec(t_string str, t_shell_data *data)
 
 	if (is_only_whitespace(&str))
 		return (ft_string_destroy(&str), data->status = ERR_OK, false);
-	add_history(str.content);
-	err = lex(&str, &tokens);
+	(add_history(str.content), err = lex(&str, &tokens));
 	ft_string_destroy(&str);
 	if (err == ERR_SYSTEM)
 		return (print_error(), true);

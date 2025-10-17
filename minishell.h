@@ -186,6 +186,7 @@ t_err						fork_and_pipe(t_list *expr,
 void						run_cmd(t_exec_info cmd, t_shell_data *shell_data);
 int							fork_run_cmd(t_exec_info exec,
 								t_shell_data *shell_data);
+void						run_child(t_expr *expr, t_shell_data *shell_data);
 
 bool						is_builtin(char *name);
 t_err						exec_builtin(t_exec_info *args,
@@ -265,8 +266,8 @@ char						**make_export_list(char **envp);
 void						free_shell_data(t_shell_data *shell_data);
 t_err						argument_mode(char **argv, t_shell_data *data);
 bool						parse_and_exec(t_string str, t_shell_data *data);
-enum e_control_flow			catch_wildcard(t_string *arg, struct s_expand
-								*expand);
+enum e_control_flow			catch_wildcard(t_string *arg,
+								struct s_expand *expand);
 t_err						expand_var(t_string *arg, t_shell_data *shell_data,
 								struct s_expand *expand);
 t_err						replace_var(t_string *var,

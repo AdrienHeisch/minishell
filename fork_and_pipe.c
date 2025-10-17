@@ -11,50 +11,10 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <fcntl.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-static void	other_child_cases(t_expr *expr, t_shell_data *shell_data)
-{
-	if (expr->type == EX_PARENTHESES)
-	{
-		if (exec_parentheses(expr, shell_data))
-			exit(ERR_SYSTEM);
-		exit(shell_data->status);
-	}
-	else
-		exit(ERR_LOGIC);
-}
-
-static void	run_child(t_expr *expr, t_shell_data *shell_data)
-{
-	t_exec_info	exec;
-	int			error;
-
-	if (expr->type == EX_CMD)
-	{
-		exec = make_exec_info(expr->u_data.cmd, expr->fd_in, expr->fd_out,
-				shell_data);
-		if (!exec.args)
-		{
-			print_error();
-			close_redirections(expr->fd_in, expr->fd_out);
-			exit(ERR_SYSTEM);
-		}
-		if (exec.error >= 0)
-		{
-			close_redirections(expr->fd_in, expr->fd_out);
-			error = exec.error;
-			free_exec_info(&exec);
-			exit(error);
-		}
-		run_cmd(exec, shell_data);
-		exit(ERR_UNREACHABLE);
-	}
-	else
-		other_child_cases(expr, shell_data);
-}
 
 static void	child_pipe_linking(t_expr *expr, int redir_res, int *prev_fd,
 		int next_fd[2])
@@ -81,6 +41,35 @@ static t_err	fork_error(int *prev_fd, int next_fd[2])
 	return (ERR_SYSTEM);
 }
 
+static bool	make_pipe(t_list *el, int next_fd[2])
+{
+	t_expr			*next_expr;
+	t_redir_data	*redir;
+	t_list			*list;
+
+	next_expr = NULL;
+	if (el->next)
+	{
+		next_expr = el->next->content;
+		list = next_expr->redirs;
+		while (list)
+		{
+			redir = list->content;
+			if (redir && (redir->type == REDIR_IN
+					|| redir->type == REDIR_HEREDOC))
+			{
+				next_fd[0] = open("/dev/null", O_RDWR);
+				next_fd[1] = open("/dev/null", O_RDWR);
+				return (ERR_OK);
+			}
+			list = list->next;
+		}
+	}
+	if (pipe(next_fd) == -1)
+		return (ERR_SYSTEM);
+	return (ERR_OK);
+}
+
 /// Returns ERR_OK or ERR_SYSTEM
 t_err	fork_and_pipe(t_list *el, t_shell_data *shell_data,
 		int *prev_fd, int next_fd[2])
@@ -89,8 +78,8 @@ t_err	fork_and_pipe(t_list *el, t_shell_data *shell_data,
 	int		redir_res;
 	t_expr	*expr;
 
-	expr = ((t_expr *)el->content);
-	if (pipe(next_fd) == -1)
+	expr = el->content;
+	if (make_pipe(el, next_fd))
 		return (ERR_SYSTEM);
 	redir_res = resolve_redirections(expr, shell_data);
 	if (redir_res == ERR_SYSTEM)
