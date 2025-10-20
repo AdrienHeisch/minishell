@@ -155,6 +155,7 @@ typedef struct s_shell_data
 char						*make_prompt(char **envp);
 
 t_err						init_signals(void);
+t_err						init_signals_heredoc(void);
 int							handle_exit_status(int status_location);
 
 struct termios				set_terminal_attributes(void);
@@ -243,7 +244,7 @@ t_err						ft_setenv(char ***envp, const char *name,
 								const char *value, int overwrite);
 t_err						ft_unsetenv(char ***envp, const char *name);
 t_string					readline_lite(char *prompt);
-t_err						prompt_heredoc(int out, char *delim,
+t_err						prompt_heredoc(int in, int out, char *delim,
 								t_shell_data *shell_data);
 t_err						find_options(int *flags, char **args, size_t *idx,
 								char *options);

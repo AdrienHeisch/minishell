@@ -28,7 +28,8 @@ static t_err	redirin_or_heredoc(t_expr *expr, t_shell_data *shell_data,
 			return (close_redirections(expr->fd_in, expr->fd_out),
 				ERR_COMMAND_FAILED);
 		}
-		if (prompt_heredoc(pipe_fds[1], redir->file_name.content, shell_data))
+		if (prompt_heredoc(pipe_fds[0], pipe_fds[1], redir->file_name.content,
+				shell_data))
 			return (ERR_SYSTEM);
 		close(pipe_fds[1]);
 		expr->fd_in = pipe_fds[0];

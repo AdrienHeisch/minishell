@@ -24,7 +24,6 @@ struct termios	set_terminal_attributes(void)
 	if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
 		return (original_tio);
 	new_tio = original_tio;
-	new_tio.c_lflag &= ~ECHOCTL;
 	if (tcsetattr(STDIN_FILENO, TCSANOW, &new_tio))
 		return (print_error(), original_tio);
 	return (original_tio);

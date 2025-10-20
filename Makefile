@@ -40,6 +40,7 @@ SRCS = \
 	run_child.c \
 	run_cmd.c \
 	signals.c \
+	signals_heredoc.c \
 	termios.c \
 	utils.c \
 	wildcards.c \
