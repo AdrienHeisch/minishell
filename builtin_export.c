@@ -73,6 +73,7 @@ t_err	print_shelldata(char **args, t_shell_data *shell_data, int fd_out,
 t_err	split_export(char ***split, int *status, size_t *idx)
 {
 	int		valid_var_code;
+	char	*name;
 
 	if ((*split)[0] == NULL)
 	{
@@ -81,7 +82,13 @@ t_err	split_export(char ***split, int *status, size_t *idx)
 		(*idx)++;
 		return (111999);
 	}
-	valid_var_code = is_valid_var((*split)[0]);
+	name = ft_strdup((*split)[0]);
+	if (!name)
+		return (ERR_SYSTEM);
+	if (name[ft_strlen(name) - 1] == '+')
+		name[ft_strlen(name) - 1] = '\0';
+	valid_var_code = is_valid_var(name);
+	free(name);
 	if (valid_var_code)
 	{
 		print_error_msg("export: not a valid identifier");
@@ -89,7 +96,7 @@ t_err	split_export(char ***split, int *status, size_t *idx)
 		(*idx)++;
 		return (111999);
 	}
-	return (0);
+	return (ERR_OK);
 }
 
 t_err	export_details_check(int *status, char **args,
@@ -105,8 +112,10 @@ t_err	export_details_check(int *status, char **args,
 	if (ret == 111999 || ret == ERR_SYSTEM)
 		return (free_tab((void ***)&split), 111999);
 	if (split[1])
-		ft_setenv(&shell_data->envp, split[0], args[*idx]
-			+ ft_strlen(split[0]) + 1, true);
+	{
+		if (export_to_env(args, idx, split, shell_data))
+			return (ERR_SYSTEM);
+	}
 	else if (ft_strchr(args[*idx], '='))
 		ft_setenv(&shell_data->envp, split[0], "", true);
 	if (export_var(&shell_data->exported, split[0]))

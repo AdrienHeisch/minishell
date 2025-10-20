@@ -201,6 +201,8 @@ t_err						builtin_exit(t_exec_info *cmd,
 								t_shell_data *shell_data);
 t_err						builtin_export(t_exec_info *cmd,
 								t_shell_data *shell_data);
+t_err						export_to_env(char **args, size_t *idx,
+								char **split, t_shell_data *shell_data);
 int							allowed_char(int c);
 t_err						is_valid_var(char *name);
 
