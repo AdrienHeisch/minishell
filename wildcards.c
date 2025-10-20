@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static int	verification_de_la_validite_du_pattern_en_cours(char *name,
+static int	check_pattern(char *name,
 	char *pattern, int *p_idx, int *n_idx)
 {
 	int		len;
@@ -32,7 +32,9 @@ static int	verification_de_la_validite_du_pattern_en_cours(char *name,
 		target = ft_substr(pattern, *p_idx + 1, len);
 		if (!target)
 			return (-1);
-		if (*target)
+		if (!*target && !(name[*n_idx]))
+			return (free(target), 1);
+		else
 		{
 			found = ft_strnstr(name + *n_idx, target, ft_strlen(name) + 1);
 			free(target);
@@ -40,8 +42,6 @@ static int	verification_de_la_validite_du_pattern_en_cours(char *name,
 				return (-1);
 			*n_idx = found - name + len;
 		}
-		else
-			return (free(target), 1);
 		*p_idx += len;
 	}
 	return (0);
@@ -67,7 +67,7 @@ static bool	is_correct_pattern(char *name, char *pattern)
 		}
 		if (name[n_idx] != pattern[p_idx] && pattern[p_idx] != '*')
 			return (false);
-		err = verification_de_la_validite_du_pattern_en_cours(
+		err = check_pattern(
 				name, pattern, &p_idx, &n_idx);
 		if (err == 1)
 			return (true);
@@ -105,7 +105,7 @@ static void	sort_list(t_list **list)
 	}
 }
 
-static int	while_cards(DIR *dir, t_list **ret, char *pattern)
+static int	wildcards_loop(DIR *dir, t_list **ret, char *pattern)
 {
 	struct dirent	*ent;
 	t_string		name;
@@ -150,9 +150,9 @@ t_list	*expand_wildcards(char *pattern)
 	free(cwd);
 	if (dir == NULL)
 		return (print_error(), NULL);
-	err = while_cards(dir, &ret, pattern);
+	err = wildcards_loop(dir, &ret, pattern);
 	if (err)
-		return (NULL);
+		return (closedir(dir), NULL);
 	if (closedir(dir))
 		return (ft_lstclear(&ret, free), NULL);
 	return (sort_list(&ret), ret);
